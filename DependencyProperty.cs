@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Windows;
+// ReSharper disable UnusedMember.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable IntroduceOptionalParameters.Global
 
 namespace PhotoReviewer
 {
@@ -8,33 +12,32 @@ namespace PhotoReviewer
     {
         public static DependencyProperty Register<TProperty>(Expression<Func<T, TProperty>> propertyExpression)
         {
-            return Register<TProperty>(propertyExpression, default(TProperty), null);
+            return Register(propertyExpression, default(TProperty), null);
         }
 
         public static DependencyProperty Register<TProperty>(Expression<Func<T, TProperty>> propertyExpression,
             TProperty defaultValue)
         {
-            return Register<TProperty>(propertyExpression, defaultValue, null);
+            return Register(propertyExpression, defaultValue, null);
         }
 
         public static DependencyProperty Register<TProperty>(Expression<Func<T, TProperty>> propertyExpression,
             Func<T, PropertyChangedCallback<TProperty>> propertyChangedCallbackFunc)
         {
-            return Register<TProperty>(propertyExpression, default(TProperty), propertyChangedCallbackFunc);
+            return Register(propertyExpression, default(TProperty), propertyChangedCallbackFunc);
         }
 
         public static DependencyProperty Register<TProperty>(Expression<Func<T, TProperty>> propertyExpression,
             TProperty defaultValue, Func<T, PropertyChangedCallback<TProperty>> propertyChangedCallbackFunc)
         {
-            string propertyName = propertyExpression.RetrieveMemberName();
-            PropertyChangedCallback callback = ConvertCallback(propertyChangedCallbackFunc);
+            var propertyName = propertyExpression.RetrieveMemberName();
+            var callback = ConvertCallback(propertyChangedCallbackFunc);
 
             return DependencyProperty.Register(propertyName, typeof(TProperty), typeof(T),
                 new PropertyMetadata(defaultValue, callback));
         }
 
-        private static PropertyChangedCallback ConvertCallback<TProperty>(
-            Func<T, PropertyChangedCallback<TProperty>> propertyChangedCallbackFunc)
+        private static PropertyChangedCallback ConvertCallback<TProperty>(Func<T, PropertyChangedCallback<TProperty>> propertyChangedCallbackFunc)
         {
             if (propertyChangedCallbackFunc == null)
                 return null;
@@ -66,20 +69,17 @@ namespace PhotoReviewer
     {
         public static string RetrieveMemberName<TArg, TRes>(this Expression<Func<TArg, TRes>> propertyExpression)
         {
-            MemberExpression memberExpression = propertyExpression.Body as MemberExpression;
+            var memberExpression = propertyExpression.Body as MemberExpression;
             if (memberExpression == null)
             {
-                UnaryExpression unaryExpression = propertyExpression.Body as UnaryExpression;
+                var unaryExpression = propertyExpression.Body as UnaryExpression;
                 if (unaryExpression != null)
                     memberExpression = unaryExpression.Operand as MemberExpression;
             }
-            if (memberExpression != null)
-            {
-                ParameterExpression parameterExpression = memberExpression.Expression as ParameterExpression;
-                if (parameterExpression != null && parameterExpression.Name == propertyExpression.Parameters[0].Name)
-                    return memberExpression.Member.Name;
-            }
-            throw new ArgumentException("Invalid expression.", "propertyExpression");
+            var parameterExpression = memberExpression?.Expression as ParameterExpression;
+            if (parameterExpression != null && parameterExpression.Name == propertyExpression.Parameters[0].Name)
+                return memberExpression.Member.Name;
+            throw new ArgumentException("Invalid expression.", nameof(propertyExpression));
         }
     }
 }

@@ -171,7 +171,7 @@
         <DockPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,10">
             <Button DockPanel.Dock="Right" Width="80" Click="OnImagesDirChangeClick">Browse...</Button>
             <Label DockPanel.Dock="Left" Margin="0,0,10,0">Path:</Label>
-            <TextBox Name="ImagesDir" Margin="10,0" />
+            <TextBox Name="ImagesDir" Margin="10,0" KeyDown="ImagesDir_KeyDown" />
         </DockPanel>
 
         <GroupBox Grid.Column="0" Grid.Row="1">

@@ -9,7 +9,8 @@ namespace PhotoReviewer
         {
             var mainWindow = new MainWindow();
             mainWindow.Show();
-            mainWindow.Photos = (PhotoCollection) (Resources["Photos"] as ObjectDataProvider).Data;
+            var objectDataProvider = Resources["Photos"] as ObjectDataProvider;
+            mainWindow.Photos = objectDataProvider != null ? (PhotoCollection)objectDataProvider.Data : new PhotoCollection();
             if (!string.IsNullOrEmpty(Settings.Default.LastFolder))
                 mainWindow.Photos.Path = mainWindow.ImagesDir.Text = Settings.Default.LastFolder;
         }

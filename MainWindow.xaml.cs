@@ -20,7 +20,7 @@ namespace PhotoReviewer
 
         private void ViewPhoto(object sender, RoutedEventArgs e)
         {
-            var pvWindow = new PhotoView {MainWindow = this, SelectedPhoto = (Photo) PhotosListBox.SelectedItem};
+            var pvWindow = new PhotoView { MainWindow = this, SelectedPhoto = (Photo)PhotosListBox.SelectedItem };
             pvWindow.Show();
         }
 
@@ -36,7 +36,7 @@ namespace PhotoReviewer
 
         private void OpenInExplorer(object sender, RoutedEventArgs e)
         {
-            var photo = (Photo) PhotosListBox.SelectedItem;
+            var photo = (Photo)PhotosListBox.SelectedItem;
             new Process
             {
                 StartInfo =
@@ -57,6 +57,8 @@ namespace PhotoReviewer
                 return;
             Photos.Path = Settings.Default.LastFolder = ImagesDir.Text = dialog.SelectedPath;
             Settings.Default.Save();
+            if (PhotosListBox.HasItems)
+                PhotosListBox.SelectedIndex = 0;
         }
 
         private void PhotosListBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -84,7 +86,17 @@ namespace PhotoReviewer
                 }
                 DbProvider.Delete(photo.Source);
             }
-            //MessageBox.Show("Deleted");
+        }
+
+        private void ImagesDir_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Photos.Path = Settings.Default.LastFolder = ImagesDir.Text;
+                Settings.Default.Save();
+                if (PhotosListBox.HasItems)
+                    PhotosListBox.SelectedIndex = 0;
+            }
         }
     }
 }

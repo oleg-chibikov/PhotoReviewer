@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -21,10 +22,13 @@ namespace PhotoReviewer
             set
             {
                 directory = new DirectoryInfo(value);
-                Update();
+                if (directory.Exists)
+                    Update();
+                else
+                    MessageBox.Show("No such directory");
             }
         }
-        
+
         private void Update()
         {
             Clear();
@@ -33,7 +37,7 @@ namespace PhotoReviewer
                 var context = SynchronizationContext.Current;
                 Task.Run(() =>
                 {
-                    var files = directory.GetFiles("*.jpg");
+                    var files = directory.GetFiles("*.jpg").OrderBy(f => f.FullName);
                     foreach (var f in files)
                     {
                         BitmapSource thumbnail = null;
@@ -42,9 +46,9 @@ namespace PhotoReviewer
                             using (var reader = new ExifReader(f.FullName))
                                 thumbnail = Photo.LoadImage(reader.GetJpegThumbnailBytes());
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
-                            
+                            // ignored
                         }
                         context.Send(x =>
                         {

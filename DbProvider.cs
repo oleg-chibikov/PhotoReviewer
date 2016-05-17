@@ -19,6 +19,7 @@ namespace PhotoReviewer
             public string Path
             {
                 get;
+                // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
                 [UsedImplicitly]
                 set;
             }

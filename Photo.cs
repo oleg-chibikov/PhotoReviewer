@@ -41,8 +41,6 @@ namespace PhotoReviewer
 
         public int Index => collection.IndexOf(this);
 
-        private readonly decimal aspectRatio;
-
         public Photo(string source, BitmapSource thumbnail, PhotoCollection collection)
         {
             this.collection = collection;
@@ -50,10 +48,9 @@ namespace PhotoReviewer
             Name = Path.GetFileNameWithoutExtension(source);
             MarkedForDeletion = DbProvider.IsMarkedForDeletion(Source);
             Thumbnail = thumbnail;
-            aspectRatio = thumbnail.PixelWidth / (decimal)thumbnail.PixelHeight;
         }
 
-        public static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion, false);
+        public static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
 
         public bool MarkedForDeletion
         {
@@ -71,13 +68,13 @@ namespace PhotoReviewer
             get
             {
                 var bytes = File.ReadAllBytes(Source);
-                var bitmap = LoadImage(bytes, (int)SystemParameters.FullPrimaryScreenWidth, aspectRatio);
+                var bitmap = LoadImage(bytes, (int)SystemParameters.FullPrimaryScreenWidth);
                 GC.Collect();
                 return bitmap;
             }
         }
 
-        public static BitmapSource LoadImage(byte[] imageData, int sizeAnchor = 0, decimal aspectRatio = 0)
+        public static BitmapSource LoadImage(byte[] imageData, int sizeAnchor = 0)
         {
             if (imageData == null || imageData.Length == 0) return null;
             var image = new BitmapImage();
@@ -88,10 +85,7 @@ namespace PhotoReviewer
                 image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
                 image.CacheOption = BitmapCacheOption.OnLoad;
                 if (sizeAnchor > 0)
-                {
                     image.DecodePixelWidth = sizeAnchor;
-                    image.DecodePixelHeight = (int)(sizeAnchor / aspectRatio);
-                }
                 image.UriSource = null;
                 image.StreamSource = mem;
                 image.EndInit();
