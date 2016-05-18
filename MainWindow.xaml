@@ -15,6 +15,9 @@
                 <DataTrigger Binding="{Binding Path=MarkedForDeletion}" Value="True">
                     <Setter Property="Background" Value="Red"/>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding Path=Favorited}" Value="True">
+                    <Setter Property="Background" Value="LimeGreen"/>
+                </DataTrigger>
             </Style.Triggers>
             <Style.Setters>
                 <Setter Property="Background" Value="White"/>
@@ -30,19 +33,19 @@
                     <Border.RenderTransform>
                         <TranslateTransform X="5" Y="5" />
                     </Border.RenderTransform>
-                    <Border.BitmapEffect>
-                        <BlurBitmapEffect Radius="8" />
-                    </Border.BitmapEffect>
+                    <Border.Effect>
+                        <BlurEffect Radius="8" />
+                    </Border.Effect>
                 </Border>
                 <!-- Image Template -->
                 <Border Padding="4" Style="{StaticResource ColorByDeleted}" BorderBrush="#22000000" BorderThickness="1">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="{Binding Thumbnail}" />
                         <Label Content="{Binding Name}">
                             <Label.ToolTip>
                                 Only JPeg images with a stored thumbnail will display a thumbnail during preview.
                             </Label.ToolTip>
                         </Label>
+                        <Image Source="{Binding Thumbnail}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -69,8 +72,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                        <Border SnapsToDevicePixels="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                Background="{TemplateBinding Background}">
+                        <Border SnapsToDevicePixels="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{TemplateBinding Background}">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -104,13 +106,13 @@
                                 <Border CornerRadius="4" BorderBrush="#88FFFFFF" BorderThickness="1"
                                         ClipToBounds="true">
                                     <Border CornerRadius="6" BorderThickness="2" BorderBrush="#ABB497">
-                                        <Border.BitmapEffect>
-                                            <BlurBitmapEffect Radius="6" />
-                                        </Border.BitmapEffect>
+                                        <Border.Effect>
+                                            <BlurEffect Radius="6" />
+                                        </Border.Effect>
                                         <Border CornerRadius="6" BorderThickness="2" BorderBrush="#DEF2AD">
-                                            <Border.BitmapEffect>
-                                                <BlurBitmapEffect Radius="6" />
-                                            </Border.BitmapEffect>
+                                            <Border.Effect>
+                                                <BlurEffect Radius="6" />
+                                            </Border.Effect>
                                         </Border>
                                     </Border>
                                 </Border>
@@ -165,6 +167,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Photo Management Canvas -->
@@ -188,6 +191,8 @@
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="View" Click="ViewPhoto" />
+                            <MenuItem Header="Favorite" Click="Favorite" />
+                            <MenuItem Header="Rename to Date" Click="RenameToDate" />
                             <MenuItem Header="Mark As Deleted" Click="MarkAsDeleted" />
                             <MenuItem Header="Open in Explorer" Click="OpenInExplorer" />
                         </ContextMenu>
@@ -196,6 +201,12 @@
             </ScrollViewer>
         </GroupBox>
 
+        <!-- Total -->
+        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
+            <Label>Total:</Label>
+            <Label Content="{Binding Path=Count}" />
+        </StackPanel>
+        
         <!-- Splitter -->
         <GridSplitter Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="15"
                       Background="Transparent" ShowsPreview="True" />
@@ -203,6 +214,11 @@
         <!-- Right Hand Panel -->
         <DockPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
                    Margin="15,0,0,0">
+            
+            <!-- Delete Button -->
+            <DockPanel DockPanel.Dock="Bottom" Margin="5">
+                <Button Content="Move Favorited" Click="MoveFavoritedButton_Click"/>
+            </DockPanel>
 
             <!-- Delete Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
@@ -230,6 +246,8 @@
                     <StackPanel>
                         <Label Style="{StaticResource MetadataHeader}">Source:</Label>
                         <Label Content="{Binding Path=Source}" />
+                        <Label Style="{StaticResource MetadataHeader}">Index:</Label>
+                        <Label Content="{Binding Path=PositionInCollection}" />
                         <Label Style="{StaticResource MetadataHeader}">Size:</Label>
                         <Label>
                             <Label.Content>

@@ -26,33 +26,40 @@ namespace PhotoReviewer
         }
 
         const string DbName = "Data.db";
-        const string TableName = "markedForDeletion";
+        const string MarkedForDeletionTable = "markedForDeletion";
+        const string FavoritedTable = "favorited";
 
-        public static void Save(string path)
+        public enum OperationType
+        {
+            MarkForDeletion,
+            Favorite
+        }
+
+        public static void Save(string path, OperationType operationType)
         {
             using (var db = new LiteDatabase(DbName))
             {
-                var dbPhotos = db.GetCollection<DbPhoto>(TableName);
+                var dbPhotos = db.GetCollection<DbPhoto>(operationType==OperationType.MarkForDeletion?MarkedForDeletionTable: FavoritedTable);
                 var dbPhoto = new DbPhoto(path);
                 dbPhotos.Insert(dbPhoto);
                 dbPhotos.EnsureIndex(x => x.Path);
             }
         }
 
-        public static bool IsMarkedForDeletion(string path)
+        public static bool Check(string path, OperationType operationType)
         {
             using (var db = new LiteDatabase(DbName))
             {
-                var dbPhotos = db.GetCollection<DbPhoto>(TableName);
+                var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
                 return dbPhotos.Exists(x => x.Path == path);
             }
         }
 
-        public static void Delete(string path)
+        public static void Delete(string path, OperationType operationType)
         {
             using (var db = new LiteDatabase(DbName))
             {
-                var dbPhotos = db.GetCollection<DbPhoto>(TableName);
+                var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
                 dbPhotos.Delete(x => x.Path == path);
             }
         }

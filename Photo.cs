@@ -41,16 +41,19 @@ namespace PhotoReviewer
 
         public int Index => collection.IndexOf(this);
 
+        public string PositionInCollection => $"{Index + 1} of {collection.Count}";
+
         public Photo(string source, BitmapSource thumbnail, PhotoCollection collection)
         {
             this.collection = collection;
             Source = source;
             Name = Path.GetFileNameWithoutExtension(source);
-            MarkedForDeletion = DbProvider.IsMarkedForDeletion(Source);
+            MarkedForDeletion = DbProvider.Check(Source, DbProvider.OperationType.MarkForDeletion);
+            Favorited = DbProvider.Check(Source, DbProvider.OperationType.Favorite);
             Thumbnail = thumbnail;
         }
 
-        public static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
+        private static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
 
         public bool MarkedForDeletion
         {
@@ -58,12 +61,44 @@ namespace PhotoReviewer
             set { SetValue(MarkedForDeletionProperty, value); }
         }
 
-        public string Source { get; }
-        public string Name { get; }
+        private static readonly DependencyProperty FavoritedProperty = DependencyProperty<Photo>.Register(x => x.Favorited);
+
+        public bool Favorited
+        {
+            get { return (bool)GetValue(FavoritedProperty); }
+            set { SetValue(FavoritedProperty, value); }
+        }
+
+        private static readonly DependencyProperty NameProperty = DependencyProperty<Photo>.Register(x => x.Name);
+
+        public string Name
+        {
+            get { return (string)GetValue(NameProperty); }
+            set { SetValue(NameProperty, value); }
+        }
+
+        private static readonly DependencyProperty SourceProperty = DependencyProperty<Photo>.Register(x => x.Source);
+
+        public string Source
+        {
+            get { return (string)GetValue(SourceProperty); }
+            set { SetValue(SourceProperty, value); }
+        }
 
         public BitmapSource Thumbnail { get; }
 
         public BitmapSource Image
+        {
+            get
+            {
+                var bytes = File.ReadAllBytes(Source);
+                var bitmap = LoadImage(bytes, 800);
+                GC.Collect();
+                return bitmap;
+            }
+        }
+
+        public BitmapSource FullImage
         {
             get
             {

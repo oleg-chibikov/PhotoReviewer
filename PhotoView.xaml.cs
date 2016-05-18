@@ -1,32 +1,27 @@
 using System;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace PhotoReviewer
 {
     public partial class PhotoView
     {
-        public PhotoView()
+        public PhotoView(Photo selectedPhoto)
         {
+            SelectedPhoto = selectedPhoto;
             InitializeComponent();
         }
 
-        public Photo SelectedPhoto { private get; set; }
+        private bool fullImageLoaded;
 
-        public MainWindow MainWindow { private get; set; }
+        private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
+        public Photo SelectedPhoto
         {
-            OnLoad();
-        }
-
-        private void OnLoad()
-        {
-            var image = SelectedPhoto.Image;
-            ViewedPhoto.Source = image;
-            ViewedCaption.Content = SelectedPhoto.Name;
-            Colorize();
+            get { return (Photo)GetValue(SelectedPhotoProperty); }
+            set { SetValue(SelectedPhotoProperty, value); }
         }
 
         private void ChangePhoto(Photo photo)
@@ -34,9 +29,19 @@ namespace PhotoReviewer
             if (photo == null)
                 return;
             SelectedPhoto = photo;
-            MainWindow.PhotosListBox.SelectedIndex = photo.Index;
-            MainWindow.PhotosListBox.ScrollIntoView(photo);
-            OnLoad();
+            if (fullImageLoaded)
+            {
+                var bind = new Binding
+                {
+                    Path = new PropertyPath("SelectedPhoto.Image")
+                };
+                ViewedPhoto.SetBinding(Image.SourceProperty, bind);
+                fullImageLoaded = false;
+            }
+            var mainWindow = (MainWindow)Owner;
+            mainWindow.PhotosListBox.SelectedIndex = photo.Index;
+            mainWindow.PhotosListBox.ScrollIntoView(photo);
+            PhotoZoomBorder.Reset();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -46,8 +51,11 @@ namespace PhotoReviewer
                 case Key.Delete:
                 case Key.Back:
                     SelectedPhoto.MarkedForDeletion = !SelectedPhoto.MarkedForDeletion;
-                    DbProvider.Save(SelectedPhoto.Source);
-                    Colorize();
+                    DbProvider.Save(SelectedPhoto.Source, DbProvider.OperationType.MarkForDeletion);
+                    break;
+                case Key.Enter:
+                    SelectedPhoto.Favorited = !SelectedPhoto.Favorited;
+                    DbProvider.Save(SelectedPhoto.Source, DbProvider.OperationType.Favorite);
                     break;
                 case Key.Left:
                     ChangePhoto(SelectedPhoto.Prev);
@@ -56,11 +64,6 @@ namespace PhotoReviewer
                     ChangePhoto(SelectedPhoto.Next);
                     break;
             }
-        }
-
-        private void Colorize()
-        {
-            PhotoBorder.Background = SelectedPhoto.MarkedForDeletion ? Brushes.Red : Brushes.White;
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -89,6 +92,14 @@ namespace PhotoReviewer
         private void Window_Closed(object sender, EventArgs e)
         {
             GC.Collect();
+        }
+
+        private void PhotoZoomBorder_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (fullImageLoaded)
+                return;
+            ViewedPhoto.Source = SelectedPhoto.FullImage;
+            fullImageLoaded = true;
         }
     }
 }
