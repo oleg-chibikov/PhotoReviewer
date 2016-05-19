@@ -6,7 +6,7 @@ using System.Windows.Data;
 namespace PhotoReviewer
 {
     /// <summary>
-    ///     Converts an exposure time from a decimal (e.g. 0.0125) into a string (e.g. 1/80)
+    /// Converts an exposure time from a decimal (e.g. 0.0125) into a string (e.g. 1/80)
     /// </summary>
     public class ExposureTimeConverter : IValueConverter
     {
@@ -31,7 +31,7 @@ namespace PhotoReviewer
     }
 
     /// <summary>
-    ///     Converts a lens aperture from a decimal into a human-preferred string (e.g. 1.8 becomes F1.8)
+    /// Converts a lens aperture from a decimal into a human-preferred string (e.g. 1.8 becomes F1.8)
     /// </summary>
     public class LensApertureConverter : IValueConverter
     {
@@ -55,7 +55,7 @@ namespace PhotoReviewer
     }
 
     /// <summary>
-    ///     Converts a focal length from a decimal into a human-preferred string (e.g. 85 becomes 85mm)
+    /// Converts a focal length from a decimal into a human-preferred string (e.g. 85 becomes 85mm)
     /// </summary>
     public class FocalLengthConverter : IValueConverter
     {
@@ -71,7 +71,7 @@ namespace PhotoReviewer
     }
 
     /// <summary>
-    ///     Converts an x,y size pair into a string value (e.g. 1600x1200)
+    /// Converts an x,y size pair into a string value (e.g. 1600x1200)
     /// </summary>
     public class PhotoSizeConverter : IMultiValueConverter
     {

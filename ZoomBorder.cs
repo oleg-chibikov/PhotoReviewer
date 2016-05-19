@@ -12,6 +12,7 @@ namespace PhotoReviewer
         private Point originTopLeft;
         private Point originBottomRight;
         private Point start;
+        private bool isReseted;
 
         private static TranslateTransform GetTranslateTransform(UIElement element)
         {
@@ -59,7 +60,7 @@ namespace PhotoReviewer
 
         public void Reset()
         {
-            if (child == null)
+            if (isReseted || child == null)
                 return;
             // reset zoom
             var st = GetScaleTransform(child);
@@ -70,6 +71,7 @@ namespace PhotoReviewer
             var tt = GetTranslateTransform(child);
             tt.X = 0.0;
             tt.Y = 0.0;
+            isReseted = true;
         }
 
         #region Child Events
@@ -93,7 +95,6 @@ namespace PhotoReviewer
 
             st.ScaleX += zoom;
             st.ScaleY += zoom;
-
 
             var diffX = relative.X * st.ScaleX;
             var diffY = relative.Y * st.ScaleY;
@@ -121,6 +122,7 @@ namespace PhotoReviewer
             }
 
             #endregion
+            isReseted = false;
         }
 
         private void child_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -196,17 +198,18 @@ namespace PhotoReviewer
 
         private void ZoomBorder_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var tt = GetTranslateTransform(child);
-            var st = GetScaleTransform(child);
-            var bottomRight = new Point(tt.X + child.RenderSize.Width * st.ScaleX, tt.Y + child.RenderSize.Height * st.ScaleY);
-            if (bottomRight.X < child.RenderSize.Width)
-                tt.X += child.RenderSize.Width - bottomRight.X;
+            Reset();
+            //var tt = GetTranslateTransform(child);
+            //var st = GetScaleTransform(child);
+            //var bottomRight = new Point(tt.X + child.RenderSize.Width * st.ScaleX, tt.Y + child.RenderSize.Height * st.ScaleY);
+            //if (bottomRight.X < child.RenderSize.Width)
+            //    tt.X += child.RenderSize.Width - bottomRight.X;
 
-            if (bottomRight.Y < child.RenderSize.Height)
-                tt.Y += child.RenderSize.Height - bottomRight.Y;
+            //if (bottomRight.Y < child.RenderSize.Height)
+            //    tt.Y += child.RenderSize.Height - bottomRight.Y;
 
-            tt.X = tt.X > 0 ? 0 : tt.X;
-            tt.Y = tt.Y > 0 ? 0 : tt.Y;
+            //tt.X = tt.X > 0 ? 0 : tt.X;
+            //tt.Y = tt.Y > 0 ? 0 : tt.Y;
         }
 
         #endregion

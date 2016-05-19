@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Microsoft.VisualBasic.FileIO;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 
 namespace PhotoReviewer
@@ -18,64 +19,25 @@ namespace PhotoReviewer
             InitializeComponent();
         }
 
-        private void ViewPhoto(object sender, RoutedEventArgs e)
+        #region Events
+
+        private void ViewPhotoMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var pvWindow = new PhotoView((Photo)PhotosListBox.SelectedItem) { Owner = this };
             pvWindow.Show();
         }
 
-        private void MarkAsDeleted(object sender, RoutedEventArgs e)
+        private void MarkAsDeletedMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MarkAsDeleted();
         }
 
-        private void Favorite(object sender, RoutedEventArgs e)
+        private void FavoriteMenuItem_Click(object sender, RoutedEventArgs e)
         {
             Favorite();
         }
 
-        private void MarkAsDeleted()
-        {
-            var photos = PhotosListBox.SelectedItems;
-            foreach (Photo photo in photos)
-            {
-                if (photo.MarkedForDeletion)
-                {
-                    photo.MarkedForDeletion = false;
-                    DbProvider.Delete(photo.Source, DbProvider.OperationType.MarkForDeletion);
-                }
-                else
-                {
-                    photo.MarkedForDeletion = true;
-                    DbProvider.Save(photo.Source, DbProvider.OperationType.MarkForDeletion);
-                }
-            }
-        }
-
-        private void Favorite()
-        {
-            var photos = PhotosListBox.SelectedItems;
-            foreach (Photo photo in photos)
-            {
-                if (photo.Favorited)
-                {
-                    photo.Favorited = false;
-                    DbProvider.Delete(photo.Source, DbProvider.OperationType.Favorite);
-                }
-                else
-                {
-                    photo.Favorited = true;
-                    DbProvider.Save(photo.Source, DbProvider.OperationType.Favorite);
-                }
-            }
-        }
-
-        private void OpenInExplorer(object sender, RoutedEventArgs e)
-        {
-            OpenInExplorer(((Photo)PhotosListBox.SelectedItem).Source);
-        }
-
-        private void OnImagesDirChangeClick(object sender, RoutedEventArgs e)
+        private void BrowseDirectoryButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
 
@@ -87,20 +49,6 @@ namespace PhotoReviewer
             Settings.Default.Save();
             if (PhotosListBox.HasItems)
                 PhotosListBox.SelectedIndex = 0;
-        }
-
-        private void PhotosListBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case Key.Delete:
-                case Key.Back:
-                    MarkAsDeleted();
-                    break;
-                case Key.Enter:
-                    Favorite();
-                    break;
-            }
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -121,6 +69,7 @@ namespace PhotoReviewer
                         RecycleOption.SendToRecycleBin);
                 }
                 DbProvider.Delete(photo.Source, DbProvider.OperationType.MarkForDeletion);
+                DbProvider.Delete(photo.Source, DbProvider.OperationType.Favorite);
             }
         }
 
@@ -146,7 +95,35 @@ namespace PhotoReviewer
             Process.Start(dir);
         }
 
-        private void ImagesDir_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void OpenInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            OpenInExplorer(((Photo)PhotosListBox.SelectedItem).Source);
+        }
+
+        private void RenameToDateMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            RenameToDate();
+        }
+
+        private void PhotosListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.R:
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                        RenameToDate();
+                    break;
+                case Key.Delete:
+                case Key.Back:
+                    MarkAsDeleted();
+                    break;
+                case Key.Enter:
+                    Favorite();
+                    break;
+            }
+        }
+
+        private void ImagesDir_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.Enter)
                 return;
@@ -156,7 +133,37 @@ namespace PhotoReviewer
                 PhotosListBox.SelectedIndex = 0;
         }
 
-        private void RenameToDate(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Private
+
+        private static void OpenInExplorer(string filePath)
+        {
+            new Process
+            {
+                StartInfo =
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{filePath}\""
+                }
+            }.Start();
+        }
+
+        private void MarkAsDeleted()
+        {
+            var photos = PhotosListBox.SelectedItems;
+            foreach (Photo photo in photos)
+                photo.MarkForDeletion();
+        }
+
+        private void Favorite()
+        {
+            var photos = PhotosListBox.SelectedItems;
+            foreach (Photo photo in photos)
+                photo.Favorite();
+        }
+
+        private void RenameToDate()
         {
             var photos = PhotosListBox.SelectedItems.Cast<Photo>().ToArray();
             if (!photos.Any())
@@ -184,16 +191,6 @@ namespace PhotoReviewer
             OpenInExplorer(((Photo)PhotosListBox.SelectedItem).Source);
         }
 
-        private static void OpenInExplorer(string filePath)
-        {
-            new Process
-            {
-                StartInfo =
-                {
-                    FileName = "explorer.exe",
-                    Arguments = $"/select,\"{filePath}\""
-                }
-            }.Start();
-        }
+        #endregion
     }
 }

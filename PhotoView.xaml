@@ -58,10 +58,10 @@
         <!-- Nav -->
         <Border Grid.Column="0" Grid.Row="2" Padding="4">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Margin="0,0,10,0" Click="PrevButton_Click">
+                <Button Focusable="False" Margin="0,0,10,0" Click="PrevButton_Click">
                     <Image Source="img\LeftArrow.png" />
                 </Button>
-                <Button Margin="10,0,0,0" Click="NextButton_Click">
+                <Button Focusable="False" Margin="10,0,0,0" Click="NextButton_Click">
                     <Image Source="img\RightArrow.png" />
                 </Button>
             </StackPanel>

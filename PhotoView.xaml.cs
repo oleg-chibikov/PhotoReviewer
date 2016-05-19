@@ -8,15 +8,15 @@ namespace PhotoReviewer
 {
     public partial class PhotoView
     {
+        private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
+        private static readonly Binding Binding = new Binding { Path = new PropertyPath("SelectedPhoto.Image") };
+        private bool fullImageLoaded;
+
         public PhotoView(Photo selectedPhoto)
         {
             SelectedPhoto = selectedPhoto;
             InitializeComponent();
         }
-
-        private bool fullImageLoaded;
-
-        private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
 
         public Photo SelectedPhoto
         {
@@ -24,25 +24,7 @@ namespace PhotoReviewer
             set { SetValue(SelectedPhotoProperty, value); }
         }
 
-        private void ChangePhoto(Photo photo)
-        {
-            if (photo == null)
-                return;
-            SelectedPhoto = photo;
-            if (fullImageLoaded)
-            {
-                var bind = new Binding
-                {
-                    Path = new PropertyPath("SelectedPhoto.Image")
-                };
-                ViewedPhoto.SetBinding(Image.SourceProperty, bind);
-                fullImageLoaded = false;
-            }
-            var mainWindow = (MainWindow)Owner;
-            mainWindow.PhotosListBox.SelectedIndex = photo.Index;
-            mainWindow.PhotosListBox.ScrollIntoView(photo);
-            PhotoZoomBorder.Reset();
-        }
+        #region Events
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -50,18 +32,19 @@ namespace PhotoReviewer
             {
                 case Key.Delete:
                 case Key.Back:
-                    SelectedPhoto.MarkedForDeletion = !SelectedPhoto.MarkedForDeletion;
-                    DbProvider.Save(SelectedPhoto.Source, DbProvider.OperationType.MarkForDeletion);
+                    SelectedPhoto.MarkForDeletion();
                     break;
                 case Key.Enter:
-                    SelectedPhoto.Favorited = !SelectedPhoto.Favorited;
-                    DbProvider.Save(SelectedPhoto.Source, DbProvider.OperationType.Favorite);
+                    SelectedPhoto.Favorite();
                     break;
                 case Key.Left:
                     ChangePhoto(SelectedPhoto.Prev);
                     break;
                 case Key.Right:
                     ChangePhoto(SelectedPhoto.Next);
+                    break;
+                case Key.Escape:
+                    Close();
                     break;
             }
         }
@@ -94,6 +77,10 @@ namespace PhotoReviewer
             GC.Collect();
         }
 
+        #endregion
+
+        #region Private
+
         private void PhotoZoomBorder_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (fullImageLoaded)
@@ -101,5 +88,26 @@ namespace PhotoReviewer
             ViewedPhoto.Source = SelectedPhoto.FullImage;
             fullImageLoaded = true;
         }
+
+        private void UpdateImageBinding()
+        {
+            ViewedPhoto.SetBinding(Image.SourceProperty, Binding);
+            fullImageLoaded = false;
+        }
+
+        private void ChangePhoto(Photo photo)
+        {
+            if (photo == null)
+                return;
+            SelectedPhoto = photo;
+            if (fullImageLoaded)
+                UpdateImageBinding();
+            var mainWindow = (MainWindow)Owner;
+            mainWindow.PhotosListBox.SelectedIndex = photo.Index;
+            mainWindow.PhotosListBox.ScrollIntoView(photo);
+            PhotoZoomBorder.Reset();
+        }
+
+        #endregion
     }
 }
