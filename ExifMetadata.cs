@@ -1,6 +1,9 @@
 ﻿using System;
+using System.IO;
+using System.Threading;
 using System.Windows.Media;
 using ExifLib;
+using JetBrains.Annotations;
 
 namespace PhotoReviewer
 {
@@ -21,82 +24,101 @@ namespace PhotoReviewer
         private object isoSpeed;
         private object exposureTime;
 
-        public ExifMetadata(string source)
+        public ExifMetadata([NotNull] string source)
         {
-            try
-            {
-                using (var reader = new ExifReader(source))
+            const int attemptLimit = 3;
+            var attempt = 0;
+            while (attempt < attemptLimit)
+                try
                 {
-                    DateTime dateImageTaken;
-                    reader.GetTagValue(ExifTags.DateTimeDigitized, out dateImageTaken);
-                    if (dateImageTaken != default(DateTime))
-                        DateImageTaken = dateImageTaken;
-                    reader.GetTagValue(ExifTags.PixelXDimension, out width);
-                    reader.GetTagValue(ExifTags.PixelYDimension, out height);
-                    reader.GetTagValue(ExifTags.Model, out cameraModel);
-                    reader.GetTagValue(ExifTags.MaxApertureValue, out lensAperture);
-                    reader.GetTagValue(ExifTags.FocalLength, out focalLength);
-                    reader.GetTagValue(ExifTags.PhotographicSensitivity, out isoSpeed);
-                    reader.GetTagValue(ExifTags.ExposureTime, out exposureTime);
-                    ushort o;
-                    reader.GetTagValue(ExifTags.Orientation, out o);
-                    if (o != default(ushort))
-                        Orientation = (Orientation)o;
-                    Thumbnail = Photo.LoadImage(reader.GetJpegThumbnailBytes(), Orientation);
+                    using (var reader = new ExifReader(source))
+                    {
+                        DateTime dateImageTaken;
+                        reader.GetTagValue(ExifTags.DateTimeDigitized, out dateImageTaken);
+                        if (dateImageTaken != default(DateTime))
+                            DateImageTaken = dateImageTaken;
+                        reader.GetTagValue(ExifTags.PixelXDimension, out width);
+                        reader.GetTagValue(ExifTags.PixelYDimension, out height);
+                        reader.GetTagValue(ExifTags.Model, out cameraModel);
+                        reader.GetTagValue(ExifTags.MaxApertureValue, out lensAperture);
+                        reader.GetTagValue(ExifTags.FocalLength, out focalLength);
+                        reader.GetTagValue(ExifTags.PhotographicSensitivity, out isoSpeed);
+                        reader.GetTagValue(ExifTags.ExposureTime, out exposureTime);
+                        ushort o;
+                        reader.GetTagValue(ExifTags.Orientation, out o);
+                        if (o != default(ushort))
+                            Orientation = (Orientation)o;
+                        Thumbnail = Photo.LoadImage(reader.GetJpegThumbnailBytes(), Orientation);
+                        return; //break the cycle
+                    }
                 }
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
+                catch (IOException)
+                {
+                    attempt++;
+                    Thread.Sleep(100); //If image is new there should be a little time while it's created
+                }
+                catch (Exception)
+                {
+                    //Ignored
+                }
         }
 
+        [CanBeNull]
         public object Width
         {
             get { return width; }
             set { width = value; }
         }
 
+        [CanBeNull]
         public object Height
         {
             get { return height; }
             set { height = value; }
         }
 
+        [CanBeNull]
         public string CameraModel
         {
             get { return cameraModel; }
             set { cameraModel = value; }
         }
 
+        [CanBeNull]
         public object LensAperture
         {
             get { return lensAperture; }
             set { lensAperture = value; }
         }
 
+        [CanBeNull]
         public object FocalLength
         {
             get { return focalLength; }
             set { focalLength = value; }
         }
 
+        [CanBeNull]
         public object IsoSpeed
         {
             get { return isoSpeed; }
             set { isoSpeed = value; }
         }
 
+        [CanBeNull]
         public object ExposureTime
         {
             get { return exposureTime; }
             set { exposureTime = value; }
         }
 
+        [CanBeNull]
         public DateTime? DateImageTaken { get; set; }
 
+        [CanBeNull]
         public Orientation? Orientation { get; set; }
 
+        [CanBeNull]
         public ImageSource Thumbnail { get; set; }
     }
 }

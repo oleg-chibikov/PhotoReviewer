@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using JetBrains.Annotations;
 
 namespace PhotoReviewer
 {
@@ -11,7 +12,7 @@ namespace PhotoReviewer
         private bool fullImageLoaded;
         private readonly Storyboard sb;
 
-        public PhotoView(Photo selectedPhoto)
+        public PhotoView([NotNull] Photo selectedPhoto)
         {
             SelectedPhoto = selectedPhoto;
             InitializeComponent();
@@ -30,6 +31,7 @@ namespace PhotoReviewer
             sb.Children.Add(fade);
         }
 
+        [NotNull]
         public Photo SelectedPhoto
         {
             get { return (Photo)GetValue(SelectedPhotoProperty); }
@@ -38,7 +40,7 @@ namespace PhotoReviewer
 
         #region Events
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private void Window_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -63,7 +65,7 @@ namespace PhotoReviewer
             }
         }
 
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Window_MouseDown([NotNull] object sender, [NotNull] MouseButtonEventArgs e)
         {
             switch (e.ChangedButton)
             {
@@ -76,34 +78,34 @@ namespace PhotoReviewer
             }
         }
 
-        private void PrevButton_Click(object sender, RoutedEventArgs e)
+        private void PrevButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             ChangePhoto(SelectedPhoto.Prev);
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        private void NextButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             ChangePhoto(SelectedPhoto.Next);
         }
 
-        private void Window_Closed(object sender, EventArgs e)
+        private void Window_Closed([NotNull] object sender, [NotNull] EventArgs e)
         {
             GC.Collect();
         }
 
-        #endregion
-
-        #region Private
-
-        private void PhotoZoomBorder_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void PhotoZoomBorder_MouseWheel([NotNull] object sender, [NotNull] MouseWheelEventArgs e)
         {
             if (fullImageLoaded)
                 return;
             ViewedPhoto.Source = SelectedPhoto.FullImage;
             fullImageLoaded = true;
         }
+
+        #endregion
+
+        #region Private
         
-        private void ChangePhoto(Photo photo)
+        private void ChangePhoto([CanBeNull] Photo photo)
         {
             if (photo == null)
                 return;

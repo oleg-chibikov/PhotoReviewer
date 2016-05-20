@@ -1,9 +1,12 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -12,32 +15,46 @@ namespace PhotoReviewer
 {
     public sealed partial class MainWindow
     {
-        public PhotoCollection Photos;
+        [NotNull]
+        private readonly PhotoCollection photosCollection;
 
-        public MainWindow()
+        [NotNull]
+        private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
         {
+            Filter = "*.jpg"
+        };
+
+        public MainWindow([NotNull] PhotoCollection photosCollection)
+        {
+            this.photosCollection = photosCollection;
             InitializeComponent();
+            var path = Settings.Default.LastFolder;
+            if (!string.IsNullOrEmpty(path))
+                SetNewPath(path);
+            imagesDirectoryWatcher.Created += ImagesDirectoryWatcher_Changed;
+            imagesDirectoryWatcher.Deleted += ImagesDirectoryWatcher_Changed;
+            imagesDirectoryWatcher.Renamed += ImagesDirectoryWatcher_Renamed;
         }
 
         #region Events
 
-        private void ViewPhotoMenuItem_Click(object sender, RoutedEventArgs e)
+        private void ViewPhotoMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             var pvWindow = new PhotoView((Photo)PhotosListBox.SelectedItem) { Owner = this };
             pvWindow.Show();
         }
 
-        private void MarkAsDeletedMenuItem_Click(object sender, RoutedEventArgs e)
+        private void MarkAsDeletedMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             MarkAsDeleted();
         }
 
-        private void FavoriteMenuItem_Click(object sender, RoutedEventArgs e)
+        private void FavoriteMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             Favorite();
         }
 
-        private void BrowseDirectoryButton_Click(object sender, RoutedEventArgs e)
+        private void BrowseDirectoryButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
 
@@ -45,15 +62,12 @@ namespace PhotoReviewer
                 dialog.SelectedPath = Settings.Default.LastFolder;
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 return;
-            Photos.Path = Settings.Default.LastFolder = ImagesDir.Text = dialog.SelectedPath;
-            Settings.Default.Save();
-            if (PhotosListBox.HasItems)
-                PhotosListBox.SelectedIndex = 0;
+            SetNewPath(dialog.SelectedPath);
         }
 
-        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        private void DeleteButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            var photos = Photos.Where(x => x.MarkedForDeletion).ToArray();
+            var photos = photosCollection.Where(x => x.MarkedForDeletion).ToArray();
             if (!photos.Any())
             {
                 MessageBox.Show("Nothing to delete");
@@ -61,7 +75,7 @@ namespace PhotoReviewer
             }
             foreach (var photo in photos)
             {
-                Photos.Remove(photo);
+                photosCollection.Remove(photo);
                 if (File.Exists(photo.Source))
                 {
                     FileSystem.DeleteFile(photo.Source,
@@ -73,9 +87,9 @@ namespace PhotoReviewer
             }
         }
 
-        private void MoveFavoritedButton_Click(object sender, RoutedEventArgs e)
+        private void MoveFavoritedButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            var photos = Photos.Where(x => x.Favorited).ToArray();
+            var photos = photosCollection.Where(x => x.Favorited).ToArray();
             if (!photos.Any())
             {
                 MessageBox.Show("Nothing to move");
@@ -95,17 +109,17 @@ namespace PhotoReviewer
             Process.Start(dir);
         }
 
-        private void OpenInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
+        private void OpenInExplorerMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             OpenInExplorer(((Photo)PhotosListBox.SelectedItem).Source);
         }
 
-        private void RenameToDateMenuItem_Click(object sender, RoutedEventArgs e)
+        private void RenameToDateMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             RenameToDate();
         }
 
-        private void PhotosListBox_KeyDown(object sender, KeyEventArgs e)
+        private void PhotosListBox_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -123,21 +137,42 @@ namespace PhotoReviewer
             }
         }
 
-        private void ImagesDir_KeyDown(object sender, KeyEventArgs e)
+        private void ImagesDir_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
         {
             if (e.Key != Key.Enter)
                 return;
-            Photos.Path = Settings.Default.LastFolder = ImagesDir.Text;
-            Settings.Default.Save();
-            if (PhotosListBox.HasItems)
-                PhotosListBox.SelectedIndex = 0;
+            SetNewPath(ImagesDir.Text);
+        }
+
+        private void ImagesDirectoryWatcher_Changed([NotNull] object sender, [NotNull] FileSystemEventArgs fileSystemEventArgs)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                switch (fileSystemEventArgs.ChangeType)
+                {
+                    case WatcherChangeTypes.Deleted:
+                        photosCollection.DeletePhoto(fileSystemEventArgs.FullPath);
+                        break;
+                    case WatcherChangeTypes.Created:
+                        photosCollection.AddPhoto(fileSystemEventArgs.FullPath);
+                        break;
+                }
+            });
+        }
+
+        private void ImagesDirectoryWatcher_Renamed([NotNull] object sender, [NotNull] RenamedEventArgs renamedEventArgs)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                photosCollection.RenamePhoto(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath);
+            });
         }
 
         #endregion
 
         #region Private
 
-        private static void OpenInExplorer(string filePath)
+        private static void OpenInExplorer([NotNull] string filePath)
         {
             new Process
             {
@@ -172,23 +207,42 @@ namespace PhotoReviewer
                 return;
             }
             var dir = Path.GetDirectoryName(photos.First().Source);
+            string newPath = null;
             foreach (var photo in photos)
             {
                 var oldPath = photo.Source;
                 if (!File.Exists(photo.Source) || !photo.Metadata.DateImageTaken.HasValue)
                     continue;
                 var newName = photo.Metadata.DateImageTaken.Value.ToString("yyyy-MM-dd hh-mm-ss");
-                var newPath = $"{dir}\\{newName}.jpg";
+                newPath = $"{dir}\\{newName}.jpg";
                 if (!File.Exists(newPath))
                     File.Move(oldPath, newPath);
-                photo.Name = newName;
-                photo.Source = newPath;
-                DbProvider.Delete(oldPath, DbProvider.OperationType.MarkForDeletion);
-                DbProvider.Delete(oldPath, DbProvider.OperationType.Favorite);
-                DbProvider.Save(oldPath, DbProvider.OperationType.MarkForDeletion);
-                DbProvider.Save(oldPath, DbProvider.OperationType.Favorite);
+                //FileSystemWatcher will do the rest
             }
-            OpenInExplorer(((Photo)PhotosListBox.SelectedItem).Source);
+            if (newPath != null)
+                OpenInExplorer(newPath);
+            var context = SynchronizationContext.Current;
+            //New thread is required to release current method and trigger fileSystemWatcher
+            Task.Run(() =>
+            {
+                context.Send(t =>
+                {
+                    Photo lastRenamed;
+                    while ((lastRenamed = photosCollection.SingleOrDefault(x => x.Source == newPath)) == null)
+                        Thread.Sleep(100);
+                    PhotosListBox.SelectedItem = lastRenamed;
+                }, null);
+            });
+        }
+
+        private void SetNewPath([NotNull] string path)
+        {
+            imagesDirectoryWatcher.EnableRaisingEvents = false;
+            imagesDirectoryWatcher.Path = photosCollection.Path = Settings.Default.LastFolder = ImagesDir.Text = path;
+            imagesDirectoryWatcher.EnableRaisingEvents = true;
+            Settings.Default.Save();
+            if (PhotosListBox.HasItems)
+                PhotosListBox.SelectedIndex = 0;
         }
 
         #endregion

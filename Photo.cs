@@ -12,23 +12,28 @@ namespace PhotoReviewer
     /// </summary>
     public class Photo : DependencyObject
     {
+        [NotNull]
         private readonly PhotoCollection collection;
+        [NotNull]
         private static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
+        [NotNull]
         private static readonly DependencyProperty FavoritedProperty = DependencyProperty<Photo>.Register(x => x.Favorited);
+        [NotNull]
         private static readonly DependencyProperty NameProperty = DependencyProperty<Photo>.Register(x => x.Name);
+        [NotNull]
         private static readonly DependencyProperty SourceProperty = DependencyProperty<Photo>.Register(x => x.Source);
         private static readonly int SizeAnchor = (int)(SystemParameters.FullPrimaryScreenWidth / 1.5);
 
-        public Photo(string source, ExifMetadata metadata, PhotoCollection collection)
+        public Photo([NotNull] string source, [NotNull] ExifMetadata metadata, [NotNull] PhotoCollection collection)
         {
             this.collection = collection;
-            Source = source;
-            Name = Path.GetFileNameWithoutExtension(source);
+            ChangeSource(source);
             MarkedForDeletion = DbProvider.Check(Source, DbProvider.OperationType.MarkForDeletion);
             Favorited = DbProvider.Check(Source, DbProvider.OperationType.Favorite);
             Metadata = metadata;
         }
 
+        [NotNull]
         public ExifMetadata Metadata { get; }
 
         public bool MarkedForDeletion
@@ -42,20 +47,22 @@ namespace PhotoReviewer
             get { return (bool)GetValue(FavoritedProperty); }
             private set { SetValue(FavoritedProperty, value); }
         }
-        
+
+        [NotNull]
         public string Name
         {
             get { return (string)GetValue(NameProperty); }
-            set { SetValue(NameProperty, value); }
+            private set { SetValue(NameProperty, value); }
         }
 
-
+        [NotNull]
         public string Source
         {
             get { return (string)GetValue(SourceProperty); }
-            set { SetValue(SourceProperty, value); }
+            private set { SetValue(SourceProperty, value); }
         }
 
+        [CanBeNull]
         public BitmapSource Image
         {
             get
@@ -67,6 +74,7 @@ namespace PhotoReviewer
             }
         }
 
+        [CanBeNull]
         public BitmapSource FullImage
         {
             get
@@ -104,9 +112,10 @@ namespace PhotoReviewer
 
         public int Index => collection.IndexOf(this);
 
+        [NotNull]
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
 
-        public static BitmapSource LoadImage(byte[] imageData, Orientation? orientation = null, int sizeAnchor = 0)
+        public static BitmapSource LoadImage([CanBeNull] byte[] imageData, [CanBeNull] Orientation? orientation = null, int sizeAnchor = 0)
         {
             if (imageData == null || imageData.Length == 0)
                 return null;
@@ -189,6 +198,12 @@ namespace PhotoReviewer
             }
         }
 
+        public void ChangeSource([NotNull] string source)
+        {
+            Source = source;
+            Name = Path.GetFileNameWithoutExtension(source);
+        }
+        
         public override string ToString()
         {
             return Source;
