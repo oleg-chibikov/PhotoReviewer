@@ -4,8 +4,9 @@
         xmlns:er="clr-namespace:PhotoReviewer"
         Title="Photo Reviewer"
         Icon="img/Icon.ico"
+        WindowState="Maximized"
         MinWidth="800"
-        MinHeight="600">
+        MinHeight="200">
 
     <!-- Styles and Templates -->
 
@@ -205,6 +206,10 @@
         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
             <Label>Total:</Label>
             <Label Content="{Binding Path=Count}" />
+            <Label>Marked for deletion:</Label>
+            <Label Content="{Binding Path=MarkedForDeletionCount}" />
+            <Label>Favorited:</Label>
+            <Label Content="{Binding Path=FavoritedCount}" />
         </StackPanel>
         
         <!-- Splitter -->
@@ -214,15 +219,15 @@
         <!-- Right Hand Panel -->
         <DockPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
                    Margin="15,0,0,0">
-            
-            <!-- Delete Button -->
+
+            <!-- Move Favorited Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Content="Move Favorited" Click="MoveFavoritedButton_Click"/>
+                <Button Content="{Binding Path=FavoritedCount}" ContentStringFormat="Move favorited (0)" Click="MoveFavoritedButton_Click"/>
             </DockPanel>
 
             <!-- Delete Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Content="Delete Marked" Click="DeleteButton_Click"/>
+                <Button Content="{Binding Path=MarkedForDeletionCount}" ContentStringFormat="Delete marked (0)" Click="DeleteButton_Click"/>
             </DockPanel>
 
             <!-- Zoom Control -->

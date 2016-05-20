@@ -1,21 +1,38 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using JetBrains.Annotations;
+using Application = System.Windows.Application;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace PhotoReviewer
 {
     public partial class PhotoView
     {
+        [NotNull]
         private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
-        private bool fullImageLoaded;
+
+        [NotNull]
         private readonly Storyboard sb;
 
-        public PhotoView([NotNull] Photo selectedPhoto)
+        [NotNull]
+        private readonly IList<PhotoView> photoViews;
+
+        private bool fullImageLoaded;
+
+        public PhotoView([NotNull] Photo selectedPhoto, IList<PhotoView> photoViews)
         {
-            SelectedPhoto = selectedPhoto;
             InitializeComponent();
+            this.photoViews = photoViews;
+            photoViews.Add(this);
+            Show();
+            ArrangeWindows();
+            SelectedPhoto = selectedPhoto;
             ViewedPhoto.Source = SelectedPhoto.Image;
             var fade = new DoubleAnimation
             {
@@ -90,6 +107,8 @@ namespace PhotoReviewer
 
         private void Window_Closed([NotNull] object sender, [NotNull] EventArgs e)
         {
+            photoViews.Remove(this);
+            ArrangeWindows();
             GC.Collect();
         }
 
@@ -104,7 +123,7 @@ namespace PhotoReviewer
         #endregion
 
         #region Private
-        
+
         private void ChangePhoto([CanBeNull] Photo photo)
         {
             if (photo == null)
@@ -117,6 +136,36 @@ namespace PhotoReviewer
             mainWindow.PhotosListBox.ScrollIntoView(photo);
             PhotoZoomBorder.Reset();
             sb.Begin();
+        }
+
+        private void ArrangeWindows()
+        {
+            const double borderWidth = 8;
+            var mainWindow = Application.Current.MainWindow;
+            Screen scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
+            if (photoViews.Any())
+            {
+                var width = scr.WorkingArea.Width / photoViews.Count;
+                double left = scr.WorkingArea.Left;
+                var halfHeight = scr.WorkingArea.Height / 2;
+                foreach (var photoView in photoViews)
+                {
+                    photoView.WindowStartupLocation = WindowStartupLocation.Manual;
+                    photoView.WindowState = WindowState.Normal;
+                    photoView.Left = left - borderWidth;
+                    left += width;
+                    photoView.Width = width + 2 * borderWidth;
+                    photoView.Top = scr.WorkingArea.Y + halfHeight - borderWidth;
+                    photoView.Height = halfHeight + 2 * borderWidth;
+                }
+                mainWindow.WindowState = WindowState.Normal;
+                mainWindow.Top = scr.WorkingArea.Y;
+                mainWindow.Height = halfHeight;
+                mainWindow.Width = scr.WorkingArea.Width + 2 * borderWidth;
+                mainWindow.Left = scr.WorkingArea.X - borderWidth;
+            }
+            else
+                mainWindow.WindowState = WindowState.Maximized;
         }
 
         #endregion

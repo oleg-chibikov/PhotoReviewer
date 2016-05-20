@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -20,6 +21,20 @@ namespace PhotoReviewer
         /// </summary>
         [NotNull]
         private static readonly IComparer<string> Comparer = new WinComparer();
+
+        public void FavoritedChanged()
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(FavoritedCount)));
+        }
+
+        public void MarkedForDeletionChanged()
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(MarkedForDeletionCount)));
+        }
+
+        public int FavoritedCount => this.Count(x => x.Favorited);
+
+        public int MarkedForDeletionCount => this.Count(x => x.MarkedForDeletion);
 
         public string Path
         {

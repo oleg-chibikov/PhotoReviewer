@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,10 @@ namespace PhotoReviewer
 {
     public sealed partial class MainWindow
     {
+
+        [NotNull]
+        private readonly IList<PhotoView> photoViews = new List<PhotoView>();
+
         [NotNull]
         private readonly PhotoCollection photosCollection;
 
@@ -41,8 +46,8 @@ namespace PhotoReviewer
 
         private void ViewPhotoMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            var pvWindow = new PhotoView((Photo)PhotosListBox.SelectedItem) { Owner = this };
-            pvWindow.Show();
+            // ReSharper disable once ObjectCreationAsStatement
+            new PhotoView((Photo)PhotosListBox.SelectedItem, photoViews) { Owner = this };
         }
 
         private void MarkAsDeletedMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)

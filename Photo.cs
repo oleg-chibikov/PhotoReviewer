@@ -39,13 +39,21 @@ namespace PhotoReviewer
         public bool MarkedForDeletion
         {
             get { return (bool)GetValue(MarkedForDeletionProperty); }
-            private set { SetValue(MarkedForDeletionProperty, value); }
+            private set
+            {
+                SetValue(MarkedForDeletionProperty, value);
+                collection.MarkedForDeletionChanged();
+            }
         }
 
         public bool Favorited
         {
             get { return (bool)GetValue(FavoritedProperty); }
-            private set { SetValue(FavoritedProperty, value); }
+            private set
+            {
+                SetValue(FavoritedProperty, value);
+                collection.FavoritedChanged();
+            }
         }
 
         [NotNull]
