@@ -1,21 +1,33 @@
 using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 
 namespace PhotoReviewer
 {
     public partial class PhotoView
     {
         private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
-        private static readonly Binding Binding = new Binding { Path = new PropertyPath("SelectedPhoto.Image") };
         private bool fullImageLoaded;
+        private readonly Storyboard sb;
 
         public PhotoView(Photo selectedPhoto)
         {
             SelectedPhoto = selectedPhoto;
             InitializeComponent();
+            ViewedPhoto.Source = SelectedPhoto.Image;
+            var fade = new DoubleAnimation
+            {
+                From = 0.5,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(0.3)
+            };
+
+            Storyboard.SetTarget(fade, ViewedPhoto);
+            Storyboard.SetTargetProperty(fade, new PropertyPath(OpacityProperty));
+
+            sb = new Storyboard();
+            sb.Children.Add(fade);
         }
 
         public Photo SelectedPhoto
@@ -33,9 +45,11 @@ namespace PhotoReviewer
                 case Key.Delete:
                 case Key.Back:
                     SelectedPhoto.MarkForDeletion();
+                    sb.Begin();
                     break;
                 case Key.Enter:
                     SelectedPhoto.Favorite();
+                    sb.Begin();
                     break;
                 case Key.Left:
                     ChangePhoto(SelectedPhoto.Prev);
@@ -88,24 +102,19 @@ namespace PhotoReviewer
             ViewedPhoto.Source = SelectedPhoto.FullImage;
             fullImageLoaded = true;
         }
-
-        private void UpdateImageBinding()
-        {
-            ViewedPhoto.SetBinding(Image.SourceProperty, Binding);
-            fullImageLoaded = false;
-        }
-
+        
         private void ChangePhoto(Photo photo)
         {
             if (photo == null)
                 return;
             SelectedPhoto = photo;
-            if (fullImageLoaded)
-                UpdateImageBinding();
+            fullImageLoaded = false;
+            ViewedPhoto.Source = SelectedPhoto.Image;
             var mainWindow = (MainWindow)Owner;
             mainWindow.PhotosListBox.SelectedIndex = photo.Index;
             mainWindow.PhotosListBox.ScrollIntoView(photo);
             PhotoZoomBorder.Reset();
+            sb.Begin();
         }
 
         #endregion

@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using ExifLib;
 using JetBrains.Annotations;
 
 namespace PhotoReviewer
@@ -18,53 +17,19 @@ namespace PhotoReviewer
         private static readonly DependencyProperty FavoritedProperty = DependencyProperty<Photo>.Register(x => x.Favorited);
         private static readonly DependencyProperty NameProperty = DependencyProperty<Photo>.Register(x => x.Name);
         private static readonly DependencyProperty SourceProperty = DependencyProperty<Photo>.Register(x => x.Source);
-        private ExifMetadata metadata;
+        private static readonly int SizeAnchor = (int)(SystemParameters.FullPrimaryScreenWidth / 1.5);
 
-        public Photo(string source, BitmapSource thumbnail, PhotoCollection collection)
+        public Photo(string source, ExifMetadata metadata, PhotoCollection collection)
         {
             this.collection = collection;
             Source = source;
             Name = Path.GetFileNameWithoutExtension(source);
             MarkedForDeletion = DbProvider.Check(Source, DbProvider.OperationType.MarkForDeletion);
             Favorited = DbProvider.Check(Source, DbProvider.OperationType.Favorite);
-            Thumbnail = thumbnail;
+            Metadata = metadata;
         }
-        public ExifMetadata Metadata
-        {
-            get
-            {
-                if (metadata != null)
-                    return metadata;
-                try
-                {
-                    using (var reader = new ExifReader(Source))
-                    {
-                        DateTime datePictureTaken;
-                        reader.GetTagValue(ExifTags.DateTimeDigitized, out datePictureTaken);
-                        object width;
-                        reader.GetTagValue(ExifTags.PixelXDimension, out width);
-                        object height;
-                        reader.GetTagValue(ExifTags.PixelYDimension, out height);
-                        string cameraModel;
-                        reader.GetTagValue(ExifTags.Model, out cameraModel);
-                        object lensAperture;
-                        reader.GetTagValue(ExifTags.MaxApertureValue, out lensAperture);
-                        object focalLength;
-                        reader.GetTagValue(ExifTags.FocalLength, out focalLength);
-                        object isoSpeed;
-                        reader.GetTagValue(ExifTags.PhotographicSensitivity, out isoSpeed);
-                        object exposureTime;
-                        reader.GetTagValue(ExifTags.ExposureTime, out exposureTime);
-                        metadata = new ExifMetadata(width, height, datePictureTaken, cameraModel, lensAperture, focalLength, isoSpeed, exposureTime);
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-                return metadata;
-            }
-        }
+
+        public ExifMetadata Metadata { get; }
 
         public bool MarkedForDeletion
         {
@@ -91,14 +56,12 @@ namespace PhotoReviewer
             set { SetValue(SourceProperty, value); }
         }
 
-        public BitmapSource Thumbnail { get; }
-
         public BitmapSource Image
         {
             get
             {
                 var bytes = File.ReadAllBytes(Source);
-                var bitmap = LoadImage(bytes, 800);
+                var bitmap = LoadImage(bytes, Metadata.Orientation, SizeAnchor);
                 GC.Collect();
                 return bitmap;
             }
@@ -109,7 +72,7 @@ namespace PhotoReviewer
             get
             {
                 var bytes = File.ReadAllBytes(Source);
-                var bitmap = LoadImage(bytes, (int)SystemParameters.FullPrimaryScreenWidth);
+                var bitmap = LoadImage(bytes, Metadata.Orientation);
                 GC.Collect();
                 return bitmap;
             }
@@ -143,9 +106,10 @@ namespace PhotoReviewer
 
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
 
-        public static BitmapSource LoadImage(byte[] imageData, int sizeAnchor = 0)
+        public static BitmapSource LoadImage(byte[] imageData, Orientation? orientation = null, int sizeAnchor = 0)
         {
-            if (imageData == null || imageData.Length == 0) return null;
+            if (imageData == null || imageData.Length == 0)
+                return null;
             var image = new BitmapImage();
             using (var mem = new MemoryStream(imageData))
             {
@@ -159,8 +123,38 @@ namespace PhotoReviewer
                 image.StreamSource = mem;
                 image.EndInit();
             }
+
             image.Freeze();
-            return image;
+
+            if (orientation==null)
+                return image;
+
+            var angle = 0;
+            switch (orientation)
+            {
+                case Orientation.Straight:
+                    break;
+                case Orientation.Left:
+                    angle = 90;
+                    break;
+                case Orientation.Right:
+                    angle = 270;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null);
+            }
+            if (angle == 0)
+                return image;
+
+            var tb = new TransformedBitmap();
+            tb.BeginInit();
+            tb.Source = image;
+            var transform = new System.Windows.Media.RotateTransform(angle);
+            tb.Transform = transform;
+            tb.EndInit();
+
+            tb.Freeze();
+            return tb;
         }
 
         public void MarkForDeletion()

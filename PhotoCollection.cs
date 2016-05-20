@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
-using ExifLib;
 using MessageBox = System.Windows.MessageBox;
 
 namespace PhotoReviewer
@@ -37,19 +35,10 @@ namespace PhotoReviewer
                             var files = directory.GetFiles("*.jpg").OrderBy(f => f.FullName, Comparer);
                             foreach (var f in files)
                             {
-                                BitmapSource thumbnail = null;
-                                try
-                                {
-                                    using (var reader = new ExifReader(f.FullName))
-                                        thumbnail = Photo.LoadImage(reader.GetJpegThumbnailBytes());
-                                }
-                                catch (Exception)
-                                {
-                                    // ignored
-                                }
+                                var metadata = new ExifMetadata(f.FullName);
                                 context.Send(x =>
                                 {
-                                    Add(new Photo(f.FullName, thumbnail, this));
+                                    Add(new Photo(f.FullName, metadata, this));
                                 }, null);
                             }
                         });

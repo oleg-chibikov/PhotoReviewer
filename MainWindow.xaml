@@ -45,7 +45,7 @@
                                 Only JPeg images with a stored thumbnail will display a thumbnail during preview.
                             </Label.ToolTip>
                         </Label>
-                        <Image Source="{Binding Thumbnail}" />
+                        <Image Source="{Binding Metadata.Thumbnail}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -192,8 +192,8 @@
                         <ContextMenu>
                             <MenuItem Header="View (Double click)" Click="ViewPhotoMenuItem_Click" />
                             <MenuItem Header="Favorite (Enter)" Click="FavoriteMenuItem_Click" />
-                            <MenuItem Header="Mark As Deleted (Delete|Backspace)" Click="MarkAsDeletedMenuItem_Click" />
-                            <MenuItem Header="Rename to Date (Ctrl+R)" Click="RenameToDateMenuItem_Click" />
+                            <MenuItem Header="Mark as deleted (Delete|Backspace)" Click="MarkAsDeletedMenuItem_Click" />
+                            <MenuItem Header="Rename to date (Ctrl+R)" Click="RenameToDateMenuItem_Click" />
                             <MenuItem Header="Open in Explorer" Click="OpenInExplorerMenuItem_Click" />
                         </ContextMenu>
                     </ListBox.ContextMenu>
@@ -271,6 +271,8 @@
                         <Label Content="{Binding Path=Metadata.IsoSpeed}" />
                         <Label Style="{StaticResource MetadataHeader}">Exposure Time:</Label>
                         <Label Content="{Binding Path=Metadata.ExposureTime, Converter={StaticResource ExposureTimeConverterReference}}" />
+                        <Label Style="{StaticResource MetadataHeader}">Orientation:</Label>
+                        <Label Content="{Binding Path=Metadata.Orientation}" />
                     </StackPanel>
                 </ScrollViewer>
             </GroupBox>

@@ -30,6 +30,15 @@
         </Style>
         <Style TargetType="{x:Type Label}">
             <Setter Property="Foreground" Value="White" />
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" Duration="0:0:0.3" From="0" To="1" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
     <Grid Margin="10" >
@@ -42,16 +51,16 @@
         <!-- Name -->
         <Border HorizontalAlignment="Center" Grid.Column="0" Grid.Row="0" Padding="4">
             <StackPanel Orientation="Horizontal">
-                <Label Content="{Binding Path=SelectedPhoto.Name}" HorizontalAlignment="Left" />
-                <Label Content="{Binding Path=SelectedPhoto.Metadata.CameraModel}" />
-                <Label Content="{Binding Path=SelectedPhoto.PositionInCollection}" />
+                <Label Content="{Binding Path=SelectedPhoto.Name, NotifyOnTargetUpdated=True}" HorizontalAlignment="Left" />
+                <Label Content="{Binding Path=SelectedPhoto.Metadata.CameraModel, NotifyOnTargetUpdated=True}" />
+                <Label Content="{Binding Path=SelectedPhoto.PositionInCollection, NotifyOnTargetUpdated=True}" />
             </StackPanel>
         </Border>
 
         <!-- Photo -->
         <Border Style="{StaticResource ColorByDeleted}" Grid.Column="0" Grid.Row="1" Padding="4" Margin="4" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
             <er:ZoomBorder x:Name="PhotoZoomBorder" ClipToBounds="True" HorizontalAlignment="Center" VerticalAlignment="Center" MouseWheel="PhotoZoomBorder_MouseWheel">
-                <Image Source="{Binding Path=SelectedPhoto.Image}" Name="ViewedPhoto" />
+                <Image Name="ViewedPhoto"/>
             </er:ZoomBorder>
         </Border>
 
