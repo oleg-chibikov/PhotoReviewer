@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -214,7 +215,7 @@ namespace PhotoReviewer
                 if (!File.Exists(photo.Source) || !photo.Metadata.DateImageTaken.HasValue)
                     continue;
                 var newName = photo.Metadata.DateImageTaken.Value.ToString("yyyy-MM-dd hh-mm-ss");
-                newPath = $"{dir}\\{newName}.jpg";
+                newPath = GetFreeFileName($"{dir}\\{newName}.jpg");
                 if (!File.Exists(newPath))
                     File.Move(oldPath, newPath);
                 //FileSystemWatcher will do the rest
@@ -243,6 +244,26 @@ namespace PhotoReviewer
             Settings.Default.Save();
             if (PhotosListBox.HasItems)
                 PhotosListBox.SelectedIndex = 0;
+        }
+
+        [NotNull]
+        private string GetFreeFileName([NotNull]string fullPath)
+        {
+            var count = 1;
+
+            var fileNameOnly = Path.GetFileNameWithoutExtension(fullPath);
+            var extension = Path.GetExtension(fullPath);
+            var path = Path.GetDirectoryName(fullPath);
+            if (path == null)
+                throw new ArgumentException(nameof(fullPath));
+            var newFullPath = fullPath;
+
+            while (File.Exists(newFullPath))
+            {
+                var tempFileName = $"{fileNameOnly} ({count++})";
+                newFullPath = Path.Combine(path, tempFileName + extension);
+            }
+            return newFullPath;
         }
 
         #endregion
