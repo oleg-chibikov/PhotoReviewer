@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -8,11 +9,16 @@ namespace PhotoReviewer
 {
     public class ZoomBorder : Border
     {
+        private const double MaxScale = 4;
+        private const double DefaultScale = 1;
+        private const double DefaultZoom = .4;
+
         private UIElement child;
         private Point originTopLeft;
         private Point originBottomRight;
         private Point start;
         private bool isReseted;
+        private Func<Action, bool> zoomAction;
 
         private static TranslateTransform GetTranslateTransform(UIElement element)
         {
@@ -74,68 +80,37 @@ namespace PhotoReviewer
             isReseted = true;
         }
 
+        public void SetAction(Func<Action, bool> action)
+        {
+            zoomAction = action;
+        }
+
         #region Child Events
 
         private void child_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (child == null)
-                return;
-            var st = GetScaleTransform(child);
-            var tt = GetTranslateTransform(child);
-
-            var zoom = e.Delta > 0 ? .4 : -.4;
-            if (e.Delta <= 0)
-                if (st.ScaleX < 1.2 || st.ScaleY < 1.2)
-                    return;
-
-            var relative = e.GetPosition(child);
-
-            var abosoluteX = relative.X * st.ScaleX + tt.X;
-            var abosoluteY = relative.Y * st.ScaleY + tt.Y;
-
-            st.ScaleX += zoom;
-            st.ScaleY += zoom;
-
-            var diffX = relative.X * st.ScaleX;
-            var diffY = relative.Y * st.ScaleY;
-
-            tt.X = abosoluteX - diffX;
-            tt.Y = abosoluteY - diffY;
-
-            #region Check Bounds For Zoom Out Only
-
-            if (e.Delta <= 0)
-            {
-                var bottomRight = new Point(abosoluteX + child.RenderSize.Width * st.ScaleX, abosoluteY + child.RenderSize.Height * st.ScaleY);
-
-                var newXRight = bottomRight.X - diffX;
-                var newYBottom = bottomRight.Y - diffY;
-
-                if (newXRight < child.RenderSize.Width)
-                    tt.X += child.RenderSize.Width - newXRight;
-
-                if (newYBottom < child.RenderSize.Height)
-                    tt.Y += child.RenderSize.Height - newYBottom;
-
-                tt.X = tt.X > 0 ? 0 : tt.X;
-                tt.Y = tt.Y > 0 ? 0 : tt.Y;
-            }
-
-            #endregion
-            isReseted = false;
+            ExecuteAndZoom(e.Delta > 0 ? DefaultZoom : -DefaultZoom, e);
         }
 
         private void child_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (child == null)
                 return;
-            var tt = GetTranslateTransform(child);
-            var st = GetScaleTransform(child);
-            start = e.GetPosition(this);
-            originTopLeft = new Point(tt.X, tt.Y);
-            originBottomRight = new Point(tt.X + child.RenderSize.Width * st.ScaleX, tt.Y + child.RenderSize.Height * st.ScaleY);
-            Cursor = Cursors.Hand;
-            child.CaptureMouse();
+            if (e.ClickCount >= 2)
+            {
+                var st = GetScaleTransform(child);
+                ExecuteAndZoom(st.ScaleX < MaxScale ? MaxScale - st.ScaleX : -st.ScaleX + DefaultScale, e);
+            }
+            else
+            {
+                var tt = GetTranslateTransform(child);
+                var st = GetScaleTransform(child);
+                start = e.GetPosition(this);
+                originTopLeft = new Point(tt.X, tt.Y);
+                originBottomRight = new Point(tt.X + child.RenderSize.Width * st.ScaleX, tt.Y + child.RenderSize.Height * st.ScaleY);
+                Cursor = Cursors.Hand;
+                child.CaptureMouse();
+            }
         }
 
         private void child_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -210,6 +185,66 @@ namespace PhotoReviewer
 
             //tt.X = tt.X > 0 ? 0 : tt.X;
             //tt.Y = tt.Y > 0 ? 0 : tt.Y;
+        }
+
+        private void ExecuteAndZoom(double zoom, MouseEventArgs e)
+        {
+            Action z = () => Zoom(zoom, e);
+            if (zoomAction != null)
+            {
+                if (!zoomAction(z))
+                    z();
+            }
+            else
+                z();
+        }
+
+        private void Zoom(double zoom, MouseEventArgs e)
+        {
+            if (child == null)
+                return;
+            var st = GetScaleTransform(child);
+            var tt = GetTranslateTransform(child);
+            
+            var newZoom = st.ScaleX + zoom;
+            if (newZoom < DefaultScale || newZoom > MaxScale)
+                return;
+
+            var relative = e.GetPosition(child);
+
+            var abosoluteX = relative.X * st.ScaleX + tt.X;
+            var abosoluteY = relative.Y * st.ScaleY + tt.Y;
+
+            st.ScaleX += zoom;
+            st.ScaleY += zoom;
+
+            var diffX = relative.X * st.ScaleX;
+            var diffY = relative.Y * st.ScaleY;
+
+            tt.X = abosoluteX - diffX;
+            tt.Y = abosoluteY - diffY;
+
+            #region Check Bounds For Zoom Out Only
+
+            if (zoom <= 0)
+            {
+                var bottomRight = new Point(abosoluteX + child.RenderSize.Width * st.ScaleX, abosoluteY + child.RenderSize.Height * st.ScaleY);
+
+                var newXRight = bottomRight.X - diffX;
+                var newYBottom = bottomRight.Y - diffY;
+
+                if (newXRight < child.RenderSize.Width)
+                    tt.X += child.RenderSize.Width - newXRight;
+
+                if (newYBottom < child.RenderSize.Height)
+                    tt.Y += child.RenderSize.Height - newYBottom;
+
+                tt.X = tt.X > 0 ? 0 : tt.X;
+                tt.Y = tt.Y > 0 ? 0 : tt.Y;
+            }
+
+            #endregion
+            isReseted = false;
         }
 
         #endregion

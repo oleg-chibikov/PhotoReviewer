@@ -76,7 +76,7 @@
 
         <!-- Photo -->
         <Border Style="{StaticResource ColorByDeleted}" Grid.Column="1" Grid.Row="1" Padding="4" Margin="4" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
-            <er:ZoomBorder x:Name="PhotoZoomBorder" ClipToBounds="True" HorizontalAlignment="Center" VerticalAlignment="Center" MouseWheel="PhotoZoomBorder_MouseWheel">
+            <er:ZoomBorder x:Name="PhotoZoomBorder" ClipToBounds="True" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Image Name="ViewedPhoto"/>
             </er:ZoomBorder>
         </Border>

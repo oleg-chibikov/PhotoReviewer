@@ -83,15 +83,12 @@ namespace PhotoReviewer
         }
 
         [CanBeNull]
-        public BitmapSource FullImage
+        public BitmapSource GetFullImage([CanBeNull]EventHandler onCompleted = null)
         {
-            get
-            {
-                var bytes = File.ReadAllBytes(Source);
-                var bitmap = LoadImage(bytes, Metadata.Orientation);
-                GC.Collect();
-                return bitmap;
-            }
+            var bytes = File.ReadAllBytes(Source);
+            var bitmap = LoadImage(bytes, Metadata.Orientation, onCompleted:onCompleted);
+            GC.Collect();
+            return bitmap;
         }
 
         [CanBeNull]
@@ -123,7 +120,7 @@ namespace PhotoReviewer
         [NotNull]
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
 
-        public static BitmapSource LoadImage([CanBeNull] byte[] imageData, [CanBeNull] Orientation? orientation = null, int sizeAnchor = 0)
+        public static BitmapSource LoadImage([CanBeNull] byte[] imageData, [CanBeNull] Orientation? orientation = null, int sizeAnchor = 0, [CanBeNull]EventHandler onCompleted = null)
         {
             if (imageData == null || imageData.Length == 0)
                 return null;
@@ -138,6 +135,7 @@ namespace PhotoReviewer
                     image.DecodePixelWidth = sizeAnchor;
                 image.UriSource = null;
                 image.StreamSource = mem;
+                image.Changed += onCompleted;
                 image.EndInit();
             }
 
@@ -173,7 +171,7 @@ namespace PhotoReviewer
             tb.Freeze();
             return tb;
         }
-
+        
         public void MarkForDeletion()
         {
             if (MarkedForDeletion)

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -25,9 +27,10 @@ namespace PhotoReviewer
 
         private bool fullImageLoaded;
 
-        public PhotoView([NotNull] Photo selectedPhoto, IList<PhotoView> photoViews)
+        public PhotoView([NotNull] Photo selectedPhoto, [NotNull] IList<PhotoView> photoViews)
         {
             InitializeComponent();
+            PhotoZoomBorder.SetAction(LoadFullImage);
             this.photoViews = photoViews;
             photoViews.Add(this);
             Show();
@@ -111,18 +114,30 @@ namespace PhotoReviewer
             ArrangeWindows();
             GC.Collect();
         }
-
-        private void PhotoZoomBorder_MouseWheel([NotNull] object sender, [NotNull] MouseWheelEventArgs e)
-        {
-            if (fullImageLoaded)
-                return;
-            ViewedPhoto.Source = SelectedPhoto.FullImage;
-            fullImageLoaded = true;
-        }
-
+        
         #endregion
 
         #region Private
+
+        private bool LoadFullImage([NotNull] Action onCompleted)
+        {
+            if (fullImageLoaded)
+                return false;
+            ViewedPhoto.Source = SelectedPhoto.GetFullImage((x, xx) =>
+            {
+                var context = SynchronizationContext.Current;
+                Task.Run(() =>
+                {
+                    Thread.Sleep(100); //Wait while image is displayed
+                    context.Send(t =>
+                    {
+                        onCompleted();
+                    }, null);
+                });
+            });
+            fullImageLoaded = true;
+            return true;
+        }
 
         private void ChangePhoto([CanBeNull] Photo photo)
         {
