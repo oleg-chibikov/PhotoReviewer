@@ -75,6 +75,44 @@ namespace PhotoReviewer
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(MarkedForDeletionCount)));
         }
 
+        public void MarkForDeletion([NotNull] Photo[] photos)
+        {
+            var notMarked = photos.Where(x => !x.MarkedForDeletion).ToArray();
+            if (notMarked.Any())
+            {
+                foreach (var photo in notMarked)
+                    photo.MarkedForDeletion = true;
+                var paths = notMarked.Select(x => x.Path).ToArray();
+                DbProvider.Save(paths, DbProvider.OperationType.MarkForDeletion);
+                DbProvider.Delete(paths, DbProvider.OperationType.Favorite);
+            }
+            else
+            {
+                foreach (var photo in photos)
+                    photo.MarkedForDeletion = false;
+                DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.MarkForDeletion);
+            }
+        }
+
+        public void Favorite([NotNull] Photo[] photos)
+        {
+            var notFavorited = photos.Where(x => !x.Favorited).ToArray();
+            if (notFavorited.Any())
+            {
+                foreach (var photo in notFavorited)
+                    photo.Favorited = true;
+                var paths = notFavorited.Select(x => x.Path).ToArray();
+                DbProvider.Save(paths, DbProvider.OperationType.Favorite);
+                DbProvider.Delete(paths, DbProvider.OperationType.MarkForDeletion);
+            }
+            else
+            {
+                foreach (var photo in photos)
+                    photo.Favorited = false;
+                DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.Favorite);
+            }
+        }
+
         public void DeletePhoto([NotNull] string path)
         {
             DbProvider.Delete(path);

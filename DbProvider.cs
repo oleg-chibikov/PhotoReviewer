@@ -63,6 +63,14 @@ namespace PhotoReviewer
             dbPhotos.EnsureIndex(x => x.Path);
         }
 
+        public void Save([NotNull] string[] paths, OperationType operationType)
+        {
+            var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
+            dbPhotos.EnsureIndex(x => x.Path);
+            foreach (var path in paths)
+                dbPhotos.Insert(new DbPhoto(path));
+        }
+
         public bool Check([NotNull] string path, OperationType operationType)
         {
             var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
@@ -87,7 +95,7 @@ namespace PhotoReviewer
             Delete(paths, OperationType.Favorite);
         }
 
-        private void Delete([NotNull] string[] paths, OperationType operationType)
+        public void Delete([NotNull] string[] paths, OperationType operationType)
         {
             var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
             dbPhotos.Delete(Query.In("Path", paths.Select(x => new BsonValue(x)).ToArray()));

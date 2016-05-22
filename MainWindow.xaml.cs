@@ -199,16 +199,12 @@ namespace PhotoReviewer
 
         private void MarkAsDeleted()
         {
-            var photos = PhotosListBox.SelectedItems;
-            foreach (Photo photo in photos)
-                photo.MarkForDeletion();
+            photosCollection.MarkForDeletion(PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
         }
 
         private void Favorite()
         {
-            var photos = PhotosListBox.SelectedItems;
-            foreach (Photo photo in photos)
-                photo.Favorite();
+            photosCollection.Favorite(PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
         }
 
         private void RenameToDate()

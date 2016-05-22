@@ -45,7 +45,7 @@ namespace PhotoReviewer
         public bool MarkedForDeletion
         {
             get { return (bool)GetValue(MarkedForDeletionProperty); }
-            private set
+            set
             {
                 SetValue(MarkedForDeletionProperty, value);
                 collection.MarkedForDeletionChanged();
@@ -55,7 +55,7 @@ namespace PhotoReviewer
         public bool Favorited
         {
             get { return (bool)GetValue(FavoritedProperty); }
-            private set
+            set
             {
                 SetValue(FavoritedProperty, value);
                 collection.FavoritedChanged();
