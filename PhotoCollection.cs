@@ -16,13 +16,25 @@ namespace PhotoReviewer
     /// <summary>
     /// This class represents a collection of photos in a directory.
     /// </summary>
-    public class PhotoCollection : ObservableCollection<Photo>
+    public sealed class PhotoCollection : ObservableCollection<Photo>
     {
         /// <summary>
         /// Sorts files as Windows does.
         /// </summary>
         [NotNull]
         private static readonly IComparer<string> Comparer = new WinComparer();
+
+        public class ProgressEventArgs
+        {
+            public ProgressEventArgs(int percent)
+            {
+                Percent = percent;
+            }
+
+            public int Percent { get; private set; }
+        }
+
+        public event EventHandler<ProgressEventArgs> Progress;
 
         [NotNull]
         public readonly DbProvider DbProvider = new DbProvider();
@@ -77,13 +89,22 @@ namespace PhotoReviewer
 
         public void MarkForDeletion([NotNull] Photo[] photos)
         {
+            if (!photos.Any())
+            {
+                MessageBox.Show("Nothing to mark");
+                OnProgress(100);
+                return;
+            }
             var notMarked = photos.Where(x => !x.MarkedForDeletion).ToArray();
             if (notMarked.Any())
             {
+                var i = 0;
+                var count = notMarked.Length;
                 foreach (var photo in notMarked)
                 {
                     photo.MarkedForDeletion = true;
                     photo.Favorited = false;
+                    OnProgress(100 * ++i / count);
                 }
                 var paths = notMarked.Select(x => x.Path).ToArray();
                 DbProvider.Save(paths, DbProvider.OperationType.MarkForDeletion);
@@ -91,21 +112,35 @@ namespace PhotoReviewer
             }
             else
             {
+                var i = 0;
+                var count = photos.Length;
                 foreach (var photo in photos)
+                {
                     photo.MarkedForDeletion = false;
+                    OnProgress(100 * ++i / count);
+                }
                 DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.MarkForDeletion);
             }
         }
 
         public void Favorite([NotNull] Photo[] photos)
         {
+            if (!photos.Any())
+            {
+                MessageBox.Show("Nothing to favorite");
+                OnProgress(100);
+                return;
+            }
             var notFavorited = photos.Where(x => !x.Favorited).ToArray();
             if (notFavorited.Any())
             {
+                var i = 0;
+                var count = notFavorited.Length;
                 foreach (var photo in notFavorited)
                 {
                     photo.Favorited = true;
                     photo.MarkedForDeletion = false;
+                    OnProgress(100 * ++i / count);
                 }
                 var paths = notFavorited.Select(x => x.Path).ToArray();
                 DbProvider.Save(paths, DbProvider.OperationType.Favorite);
@@ -113,8 +148,13 @@ namespace PhotoReviewer
             }
             else
             {
+                var i = 0;
+                var count = photos.Length;
                 foreach (var photo in photos)
+                {
                     photo.Favorited = false;
+                    OnProgress(100 * ++i / count);
+                }
                 DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.Favorite);
             }
         }
@@ -124,6 +164,7 @@ namespace PhotoReviewer
             if (!photos.Any())
             {
                 MessageBox.Show("Nothing to rename");
+                OnProgress(100);
                 return;
             }
             string newPath = null;
@@ -131,8 +172,13 @@ namespace PhotoReviewer
             var context = SynchronizationContext.Current;
             Task.Run(() =>
             {
+                var i = 0;
+                var count = data.Length;
                 foreach (var item in data)
+                {
                     newPath = RenameToDate(item.Name, item.Path, item.DateImageTaken);
+                    OnProgress(100 * ++i / count);
+                }
                 if (newPath != null)
                     context.Send(t => { callback(newPath); }, null);
             });
@@ -144,10 +190,13 @@ namespace PhotoReviewer
             if (!paths.Any())
             {
                 MessageBox.Show("Nothing to delete");
+                OnProgress(100);
                 return;
             }
             Task.Run(() =>
             {
+                var i = 0;
+                var count = paths.Length;
                 foreach (var path in paths)
                 {
                     if (File.Exists(path))
@@ -156,6 +205,7 @@ namespace PhotoReviewer
                             UIOption.OnlyErrorDialogs,
                             RecycleOption.SendToRecycleBin);
                     }
+                    OnProgress(100 * ++i / count);
                 }
                 DbProvider.Delete(paths);
             });
@@ -167,6 +217,7 @@ namespace PhotoReviewer
             if (!paths.Any())
             {
                 MessageBox.Show("Nothing to move");
+                OnProgress(100);
                 return;
             }
             Task.Run(() =>
@@ -174,6 +225,8 @@ namespace PhotoReviewer
                 var dir = System.IO.Path.GetDirectoryName(paths.First()) + "\\Favorite\\";
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
+                var i = 0;
+                var count = paths.Length;
                 foreach (var path in paths)
                 {
                     if (!File.Exists(path))
@@ -181,6 +234,7 @@ namespace PhotoReviewer
                     var newName = dir + System.IO.Path.GetFileName(path);
                     if (!File.Exists(newName))
                         File.Copy(path, newName);
+                    OnProgress(100 * ++i / count);
                 }
                 Process.Start(dir);
             });
@@ -262,6 +316,11 @@ namespace PhotoReviewer
                 newFullPath = System.IO.Path.Combine(path, tempFileName + extension);
             }
             return newFullPath;
+        }
+
+        private void OnProgress(int percent)
+        {
+            Progress?.Invoke(this, new ProgressEventArgs(percent));
         }
     }
 }

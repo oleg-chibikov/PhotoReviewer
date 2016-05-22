@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using JetBrains.Annotations;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
@@ -25,6 +27,13 @@ namespace PhotoReviewer
         [NotNull]
         private readonly IList<PhotoView> photoViews = new List<PhotoView>();
 
+        [NotNull]
+        private readonly Storyboard sbProgressHide;
+        [NotNull]
+        private readonly Storyboard sbProgressShow;
+
+        private bool isInProgress;
+
         public MainWindow([NotNull] PhotoCollection photosCollection)
         {
             this.photosCollection = photosCollection;
@@ -32,9 +41,35 @@ namespace PhotoReviewer
             var path = Settings.Default.LastFolder;
             if (!string.IsNullOrEmpty(path))
                 SetNewPath(path);
+            photosCollection.Progress += PhotosCollection_Progress;
             imagesDirectoryWatcher.Created += ImagesDirectoryWatcher_Changed;
             imagesDirectoryWatcher.Deleted += ImagesDirectoryWatcher_Changed;
             imagesDirectoryWatcher.Renamed += ImagesDirectoryWatcher_Renamed;
+
+            //ProgressBarContainer.Visibility=Visibility.Collapsed;
+            var hideAnimation = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = TimeSpan.FromSeconds(1)
+            };
+
+            Storyboard.SetTarget(hideAnimation, ProgressBarContainer);
+            Storyboard.SetTargetProperty(hideAnimation, new PropertyPath(OpacityProperty));
+
+            sbProgressHide = new Storyboard();
+            sbProgressHide.Children.Add(hideAnimation);
+            var showAnimation = new DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(1)
+            };
+            Storyboard.SetTarget(showAnimation, ProgressBarContainer);
+            Storyboard.SetTargetProperty(showAnimation, new PropertyPath(OpacityProperty));
+
+            sbProgressShow = new Storyboard();
+            sbProgressShow.Children.Add(showAnimation);
         }
 
         #region Events
@@ -78,11 +113,15 @@ namespace PhotoReviewer
 
         private void DeleteButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
+            if (!BeginProgress())
+                return;
             photosCollection.DeleteMarked();
         }
 
         private void MoveFavoritedButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
+            if (!BeginProgress())
+                return;
             photosCollection.MoveFavorited();
         }
 
@@ -132,6 +171,16 @@ namespace PhotoReviewer
             Dispatcher.Invoke(() => { photosCollection.RenamePhoto(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath); });
         }
 
+        private void PhotosCollection_Progress(object sender, PhotoCollection.ProgressEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ProgressBar.Value = e.Percent;
+                if (e.Percent == 100)
+                    EndProgress();
+            });
+        }
+
         #endregion
 
         #region Public
@@ -153,22 +202,24 @@ namespace PhotoReviewer
             PhotosListBox.ScrollIntoView(PhotosListBox.SelectedItem);
         }
 
-        #endregion
-
-        #region Private
-
         public void MarkAsDeleted()
         {
+            if (!BeginProgress())
+                return;
             photosCollection.MarkForDeletion(PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
         }
 
         public void Favorite()
         {
+            if (!BeginProgress())
+                return;
             photosCollection.Favorite(PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
         }
 
         public void RenameToDate()
         {
+            if (!BeginProgress())
+                return;
             photosCollection.RenameToDate(PhotosListBox.SelectedItems.Cast<Photo>().ToArray(), path =>
             {
                 var i = 0;
@@ -178,6 +229,33 @@ namespace PhotoReviewer
                 PhotosListBox.SelectedItem = lastRenamed;
                 ScrollToSelected();
             });
+        }
+
+        #endregion
+
+        #region Private
+
+        private bool BeginProgress()
+        {
+            if (isInProgress)
+                return false;
+            MoveFavoritedButton.IsEnabled = false;
+            DeleteButton.IsEnabled = false;
+            isInProgress = true;
+            ProgressBar.Value = 0;
+            // ProgressBarContainer.Visibility = Visibility.Visible;
+            sbProgressShow.Begin();
+            return true;
+        }
+
+        private void EndProgress()
+        {
+            MoveFavoritedButton.IsEnabled = true;
+            DeleteButton.IsEnabled = true;
+            isInProgress = false;
+            ProgressBar.Value = 0;
+            //ProgressBarContainer.Visibility=Visibility.Collapsed;
+            sbProgressHide.Begin();
         }
 
         private void SetNewPath([NotNull] string path)

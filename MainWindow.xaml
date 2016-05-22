@@ -223,14 +223,12 @@
 
             <!-- Move Favorited Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Content="{Binding Path=FavoritedCount}" ContentStringFormat="Move favorited (0)"
-                        Click="MoveFavoritedButton_Click" />
+                <Button Name="MoveFavoritedButton" Content="{Binding Path=FavoritedCount}" ContentStringFormat="Move favorited (0)" Click="MoveFavoritedButton_Click" />
             </DockPanel>
 
             <!-- Delete Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Content="{Binding Path=MarkedForDeletionCount}" ContentStringFormat="Delete marked (0)"
-                        Click="DeleteButton_Click" />
+                <Button Name="DeleteButton" Content="{Binding Path=MarkedForDeletionCount}" ContentStringFormat="Delete marked (0)" Click="DeleteButton_Click" />
             </DockPanel>
 
             <!-- Zoom Control -->
@@ -246,6 +244,11 @@
                         TickPlacement="BottomRight"
                         SmallChange="5"
                         LargeChange="20" />
+            </DockPanel>
+
+            <!-- Progress Bar -->
+            <DockPanel Name="ProgressBarContainer" Opacity="0" DockPanel.Dock="Bottom" Margin="5">
+                <ProgressBar Name="ProgressBar" Minimum="0" Maximum="100" Height="20" />
             </DockPanel>
 
             <!-- Metadata Panel -->
