@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.VisualBasic.FileIO;
 using MessageBox = System.Windows.MessageBox;
 
 namespace PhotoReviewer
@@ -22,15 +23,8 @@ namespace PhotoReviewer
         [NotNull]
         private static readonly IComparer<string> Comparer = new WinComparer();
 
-        public void FavoritedChanged()
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(FavoritedCount)));
-        }
-
-        public void MarkedForDeletionChanged()
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(MarkedForDeletionCount)));
-        }
+        [NotNull]
+        public readonly DbProvider DbProvider = new DbProvider();
 
         public int FavoritedCount => this.Count(x => x.Favorited);
 
@@ -71,12 +65,48 @@ namespace PhotoReviewer
             }
         }
 
+        public void FavoritedChanged()
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(FavoritedCount)));
+        }
+
+        public void MarkedForDeletionChanged()
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(MarkedForDeletionCount)));
+        }
+
         public void DeletePhoto([NotNull] string path)
         {
             DbProvider.Delete(path);
-            var photo = this.SingleOrDefault(x => x.Source == path);
-            if (photo != null)
-                Remove(photo);
+            var photo = this.SingleOrDefault(x => x.Path == path);
+            if (photo == null)
+                return;
+            Remove(photo);
+            MarkedForDeletionChanged();
+            FavoritedChanged();
+        }
+
+        public void DeleteMarked()
+        {
+            var paths = this.Where(x => x.MarkedForDeletion).Select(x => x.Path).ToArray();
+            if (!paths.Any())
+            {
+                MessageBox.Show("Nothing to delete");
+                return;
+            }
+            Task.Run(() =>
+            {
+                foreach (var path in paths)
+                {
+                    if (File.Exists(path))
+                    {
+                        FileSystem.DeleteFile(path,
+                            UIOption.OnlyErrorDialogs,
+                            RecycleOption.SendToRecycleBin);
+                    }
+                }
+                DbProvider.Delete(paths);
+            });
         }
 
         public void AddPhoto([NotNull] string path)
@@ -95,11 +125,11 @@ namespace PhotoReviewer
         public void RenamePhoto([NotNull] string oldPath, [NotNull] string newPath)
         {
             DbProvider.Rename(oldPath, newPath);
-            var photo = this.SingleOrDefault(x => x.Source == oldPath);
+            var photo = this.SingleOrDefault(x => x.Path == oldPath);
             if (photo == null)
                 return;
             Remove(photo);
-            photo.ChangeSource(newPath);
+            photo.ChangePath(newPath);
             AddNewPhoto(photo);
         }
 

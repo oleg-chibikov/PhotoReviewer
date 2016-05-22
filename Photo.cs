@@ -1,8 +1,11 @@
 using System;
 using System.IO;
 using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
+using Application = System.Windows.Application;
 
 namespace PhotoReviewer
 {
@@ -14,22 +17,25 @@ namespace PhotoReviewer
     {
         [NotNull]
         private readonly PhotoCollection collection;
+
         [NotNull]
         private static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
+
         [NotNull]
         private static readonly DependencyProperty FavoritedProperty = DependencyProperty<Photo>.Register(x => x.Favorited);
+
         [NotNull]
         private static readonly DependencyProperty NameProperty = DependencyProperty<Photo>.Register(x => x.Name);
-        [NotNull]
-        private static readonly DependencyProperty SourceProperty = DependencyProperty<Photo>.Register(x => x.Source);
-        private static readonly int SizeAnchor = (int)(SystemParameters.FullPrimaryScreenWidth / 1.5);
 
-        public Photo([NotNull] string source, [NotNull] ExifMetadata metadata, [NotNull] PhotoCollection collection)
+        [NotNull]
+        private static readonly DependencyProperty PathProperty = DependencyProperty<Photo>.Register(x => x.Path);
+
+        public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, [NotNull] PhotoCollection collection)
         {
             this.collection = collection;
-            ChangeSource(source);
-            MarkedForDeletion = DbProvider.Check(Source, DbProvider.OperationType.MarkForDeletion);
-            Favorited = DbProvider.Check(Source, DbProvider.OperationType.Favorite);
+            ChangePath(path);
+            MarkedForDeletion = collection.DbProvider.Check(Path, DbProvider.OperationType.MarkForDeletion);
+            Favorited = collection.DbProvider.Check(Path, DbProvider.OperationType.Favorite);
             Metadata = metadata;
         }
 
@@ -64,10 +70,10 @@ namespace PhotoReviewer
         }
 
         [NotNull]
-        public string Source
+        public string Path
         {
-            get { return (string)GetValue(SourceProperty); }
-            private set { SetValue(SourceProperty, value); }
+            get { return (string)GetValue(PathProperty); }
+            private set { SetValue(PathProperty, value); }
         }
 
         [CanBeNull]
@@ -75,18 +81,19 @@ namespace PhotoReviewer
         {
             get
             {
-                var bytes = File.ReadAllBytes(Source);
-                var bitmap = LoadImage(bytes, Metadata.Orientation, SizeAnchor);
+                var bytes = File.ReadAllBytes(Path);
+                var scr = Screen.FromHandle(new WindowInteropHelper(Application.Current.MainWindow).Handle);
+                var bitmap = LoadImage(bytes, Metadata.Orientation, scr.WorkingArea.Width / 2);
                 GC.Collect();
                 return bitmap;
             }
         }
 
         [CanBeNull]
-        public BitmapSource GetFullImage([CanBeNull]EventHandler onCompleted = null)
+        public BitmapSource GetFullImage([CanBeNull] EventHandler onCompleted = null)
         {
-            var bytes = File.ReadAllBytes(Source);
-            var bitmap = LoadImage(bytes, Metadata.Orientation, onCompleted:onCompleted);
+            var bytes = File.ReadAllBytes(Path);
+            var bitmap = LoadImage(bytes, Metadata.Orientation, onCompleted: onCompleted);
             GC.Collect();
             return bitmap;
         }
@@ -120,7 +127,7 @@ namespace PhotoReviewer
         [NotNull]
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
 
-        public static BitmapSource LoadImage([CanBeNull] byte[] imageData, [CanBeNull] Orientation? orientation = null, int sizeAnchor = 0, [CanBeNull]EventHandler onCompleted = null)
+        public static BitmapSource LoadImage([CanBeNull] byte[] imageData, [CanBeNull] Orientation? orientation = null, int sizeAnchor = 0, [CanBeNull] EventHandler onCompleted = null)
         {
             if (imageData == null || imageData.Length == 0)
                 return null;
@@ -141,7 +148,7 @@ namespace PhotoReviewer
 
             image.Freeze();
 
-            if (orientation==null)
+            if (orientation == null)
                 return image;
 
             var angle = 0;
@@ -171,20 +178,37 @@ namespace PhotoReviewer
             tb.Freeze();
             return tb;
         }
-        
+
+        [CanBeNull]
+        public string RenameToDate()
+        {
+            var oldPath = Path;
+            if (!File.Exists(Path) || !Metadata.DateImageTaken.HasValue)
+                return null;
+            var newName = Metadata.DateImageTaken.Value.ToString("yyyy-MM-dd hh-mm-ss");
+            if (newName == Name)
+                return null;
+            var dir = System.IO.Path.GetDirectoryName(Path);
+            var newPath = GetFreeFileName($"{dir}\\{newName}.jpg");
+            if (!File.Exists(newPath))
+                File.Move(oldPath, newPath);
+            //FileSystemWatcher will do the rest
+            return newPath;
+        }
+
         public void MarkForDeletion()
         {
             if (MarkedForDeletion)
             {
                 MarkedForDeletion = false;
-                DbProvider.Delete(Source, DbProvider.OperationType.MarkForDeletion);
+                collection.DbProvider.Delete(Path, DbProvider.OperationType.MarkForDeletion);
             }
             else
             {
                 MarkedForDeletion = true;
-                DbProvider.Save(Source, DbProvider.OperationType.MarkForDeletion);
+                collection.DbProvider.Save(Path, DbProvider.OperationType.MarkForDeletion);
                 Favorited = false;
-                DbProvider.Delete(Source, DbProvider.OperationType.Favorite); //clear favorited when marked for deletion
+                collection.DbProvider.Delete(Path, DbProvider.OperationType.Favorite); //clear favorited when marked for deletion
             }
         }
 
@@ -193,26 +217,46 @@ namespace PhotoReviewer
             if (Favorited)
             {
                 Favorited = false;
-                DbProvider.Delete(Source, DbProvider.OperationType.Favorite);
+                collection.DbProvider.Delete(Path, DbProvider.OperationType.Favorite);
             }
             else
             {
                 Favorited = true;
-                DbProvider.Save(Source, DbProvider.OperationType.Favorite);
+                collection.DbProvider.Save(Path, DbProvider.OperationType.Favorite);
                 MarkedForDeletion = false;
-                DbProvider.Delete(Source, DbProvider.OperationType.MarkForDeletion); //clear deleted when favorited
+                collection.DbProvider.Delete(Path, DbProvider.OperationType.MarkForDeletion); //clear deleted when favorited
             }
         }
 
-        public void ChangeSource([NotNull] string source)
+        public void ChangePath([NotNull] string path)
         {
-            Source = source;
-            Name = Path.GetFileNameWithoutExtension(source);
+            Path = path;
+            Name = System.IO.Path.GetFileNameWithoutExtension(path);
         }
-        
+
         public override string ToString()
         {
-            return Source;
+            return Path;
+        }
+
+        [NotNull]
+        private string GetFreeFileName([NotNull] string fullPath)
+        {
+            var count = 1;
+
+            var fileNameOnly = System.IO.Path.GetFileNameWithoutExtension(fullPath);
+            var extension = System.IO.Path.GetExtension(fullPath);
+            var path = System.IO.Path.GetDirectoryName(fullPath);
+            if (path == null)
+                throw new ArgumentException(nameof(fullPath));
+            var newFullPath = fullPath;
+
+            while (File.Exists(newFullPath))
+            {
+                var tempFileName = $"{fileNameOnly} ({count++})";
+                newFullPath = System.IO.Path.Combine(path, tempFileName + extension);
+            }
+            return newFullPath;
         }
     }
 }

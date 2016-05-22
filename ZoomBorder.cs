@@ -12,6 +12,7 @@ namespace PhotoReviewer
         private const double MaxScale = 4;
         private const double DefaultScale = 1;
         private const double DefaultZoom = .4;
+        //private readonly Duration zoomAnimationDuration = new Duration(TimeSpan.FromMilliseconds(50));
 
         private UIElement child;
         private Point originTopLeft;
@@ -60,7 +61,7 @@ namespace PhotoReviewer
                 MouseLeftButtonUp += child_MouseLeftButtonUp;
                 SizeChanged += ZoomBorder_SizeChanged;
                 MouseMove += child_MouseMove;
-                PreviewMouseRightButtonDown += child_PreviewMouseRightButtonDown;
+                PreviewMouseDown += child_PreviewMouseButtonDown;
             }
         }
 
@@ -121,9 +122,10 @@ namespace PhotoReviewer
             Cursor = Cursors.Arrow;
         }
 
-        private void child_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        private void child_PreviewMouseButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Reset();
+            if (e.ChangedButton == MouseButton.Middle)
+                Reset();
         }
 
         private void child_MouseMove(object sender, MouseEventArgs e)
@@ -205,45 +207,92 @@ namespace PhotoReviewer
                 return;
             var st = GetScaleTransform(child);
             var tt = GetTranslateTransform(child);
-            
-            var newZoom = st.ScaleX + zoom;
-            if (newZoom < DefaultScale || newZoom > MaxScale)
+
+            var newScale = st.ScaleX + zoom;
+            if (newScale < DefaultScale)
+                zoom = DefaultScale - st.ScaleX;
+            else if (newScale > MaxScale)
+                zoom = st.ScaleX - MaxScale;
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (zoom == 0)
                 return;
 
             var relative = e.GetPosition(child);
 
             var abosoluteX = relative.X * st.ScaleX + tt.X;
             var abosoluteY = relative.Y * st.ScaleY + tt.Y;
+            var newScaleX = st.ScaleX + zoom;
+            var newScaleY = st.ScaleY + zoom;
 
-            st.ScaleX += zoom;
-            st.ScaleY += zoom;
+            var diffX = relative.X * newScaleX;
+            var diffY = relative.Y * newScaleY;
 
-            var diffX = relative.X * st.ScaleX;
-            var diffY = relative.Y * st.ScaleY;
-
-            tt.X = abosoluteX - diffX;
-            tt.Y = abosoluteY - diffY;
+            var newX = abosoluteX - diffX;
+            var newY = abosoluteY - diffY;
 
             #region Check Bounds For Zoom Out Only
 
             if (zoom <= 0)
             {
-                var bottomRight = new Point(abosoluteX + child.RenderSize.Width * st.ScaleX, abosoluteY + child.RenderSize.Height * st.ScaleY);
+                var bottomRight = new Point(abosoluteX + child.RenderSize.Width * newScaleX, abosoluteY + child.RenderSize.Height * newScaleY);
 
                 var newXRight = bottomRight.X - diffX;
                 var newYBottom = bottomRight.Y - diffY;
 
                 if (newXRight < child.RenderSize.Width)
-                    tt.X += child.RenderSize.Width - newXRight;
+                    newX += child.RenderSize.Width - newXRight;
 
                 if (newYBottom < child.RenderSize.Height)
-                    tt.Y += child.RenderSize.Height - newYBottom;
+                    newY += child.RenderSize.Height - newYBottom;
 
-                tt.X = tt.X > 0 ? 0 : tt.X;
-                tt.Y = tt.Y > 0 ? 0 : tt.Y;
+                newX = newX > 0 ? 0 : newX;
+                newY = newY > 0 ? 0 : newY;
             }
 
             #endregion
+
+            #region Animate changes
+
+            //var scaleXAnimation = new DoubleAnimation
+            //{
+            //    From = st.ScaleX,
+            //    To = newScaleX,
+            //    Duration = zoomAnimationDuration
+            //};
+            //var scaleYAnimation = new DoubleAnimation
+            //{
+            //    From = st.ScaleY,
+            //    To = newScaleY,
+            //    Duration = zoomAnimationDuration
+            //};
+            //st.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+            //st.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+
+            st.ScaleX += zoom;
+            st.ScaleY += zoom;
+
+            //var aX = new DoubleAnimation
+            //{
+            //    From = tt.X,
+            //    To = newX,
+            //    Duration = zoomAnimationDuration
+            //};
+            //var aY = new DoubleAnimation
+            //{
+            //    From = tt.Y,
+            //    To = newY,
+            //    Duration = zoomAnimationDuration
+            //};
+
+            //tt.BeginAnimation(TranslateTransform.XProperty, aX);
+            //tt.BeginAnimation(TranslateTransform.YProperty, aY);
+
+            tt.X = newX;
+            tt.Y = newY;
+
+            #endregion
+
             isReseted = false;
         }
 

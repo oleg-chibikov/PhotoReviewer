@@ -249,8 +249,8 @@
             <GroupBox>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
-                        <Label Style="{StaticResource MetadataHeader}">Source:</Label>
-                        <Label Content="{Binding Path=Source}" />
+                        <Label Style="{StaticResource MetadataHeader}">Path:</Label>
+                        <Label Content="{Binding Path=Path}" />
                         <Label Style="{StaticResource MetadataHeader}">Index:</Label>
                         <Label Content="{Binding Path=PositionInCollection}" />
                         <Label Style="{StaticResource MetadataHeader}">Size:</Label>

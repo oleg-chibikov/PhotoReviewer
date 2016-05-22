@@ -59,6 +59,26 @@ namespace PhotoReviewer
         }
 
         #region Events
+        
+        private void MarkAsDeletedMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
+        {
+            MarkForDeletion();
+        }
+
+        private void FavoriteMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
+        {
+            Favorite();
+        }
+
+        private void OpenInExplorerMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
+        {
+            MainWindow.OpenInExplorer(SelectedPhoto.Path);
+        }
+
+        private void RenameToDateMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
+        {
+            RenameToDate();
+        }
 
         private void Window_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
         {
@@ -66,18 +86,20 @@ namespace PhotoReviewer
             {
                 case Key.Delete:
                 case Key.Back:
-                    SelectedPhoto.MarkForDeletion();
-                    sb.Begin();
+                    MarkForDeletion();
                     break;
                 case Key.Enter:
-                    SelectedPhoto.Favorite();
-                    sb.Begin();
+                    Favorite();
                     break;
                 case Key.Left:
                     ChangePhoto(SelectedPhoto.Prev);
                     break;
                 case Key.Right:
                     ChangePhoto(SelectedPhoto.Next);
+                    break;
+                case Key.R:
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                        RenameToDate();
                     break;
                 case Key.Escape:
                     Close();
@@ -131,6 +153,7 @@ namespace PhotoReviewer
                     Thread.Sleep(100); //Wait while image is displayed
                     context.Send(t =>
                     {
+                        sb.Begin();
                         onCompleted();
                     }, null);
                 });
@@ -148,7 +171,7 @@ namespace PhotoReviewer
             ViewedPhoto.Source = SelectedPhoto.Image;
             var mainWindow = (MainWindow)Owner;
             mainWindow.PhotosListBox.SelectedIndex = photo.Index;
-            mainWindow.PhotosListBox.ScrollIntoView(photo);
+            mainWindow.ScrollToSelected();
             PhotoZoomBorder.Reset();
             sb.Begin();
         }
@@ -156,13 +179,14 @@ namespace PhotoReviewer
         private void ArrangeWindows()
         {
             const double borderWidth = 8;
-            var mainWindow = Application.Current.MainWindow;
-            Screen scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            var scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
             if (photoViews.Any())
             {
                 var width = scr.WorkingArea.Width / photoViews.Count;
                 double left = scr.WorkingArea.Left;
-                var halfHeight = scr.WorkingArea.Height / 2;
+                var thirdHeight = scr.WorkingArea.Height / 3;
+                var twoThirdsHeight = thirdHeight * 2;
                 foreach (var photoView in photoViews)
                 {
                     photoView.WindowStartupLocation = WindowStartupLocation.Manual;
@@ -170,17 +194,37 @@ namespace PhotoReviewer
                     photoView.Left = left - borderWidth;
                     left += width;
                     photoView.Width = width + 2 * borderWidth;
-                    photoView.Top = scr.WorkingArea.Y + halfHeight - borderWidth;
-                    photoView.Height = halfHeight + 2 * borderWidth;
+                    photoView.Top = scr.WorkingArea.Y + thirdHeight - borderWidth;
+                    photoView.Height = twoThirdsHeight + 2 * borderWidth;
                 }
                 mainWindow.WindowState = WindowState.Normal;
                 mainWindow.Top = scr.WorkingArea.Y;
-                mainWindow.Height = halfHeight;
+                mainWindow.Height = thirdHeight;
                 mainWindow.Width = scr.WorkingArea.Width + 2 * borderWidth;
                 mainWindow.Left = scr.WorkingArea.X - borderWidth;
             }
             else
                 mainWindow.WindowState = WindowState.Maximized;
+            mainWindow.ScrollToSelected();
+        }
+
+        private void Favorite()
+        {
+            SelectedPhoto.Favorite();
+            sb.Begin();
+        }
+
+        private void MarkForDeletion()
+        {
+            SelectedPhoto.MarkForDeletion();
+            sb.Begin();
+        }
+
+        private void RenameToDate()
+        {
+            var newPath = SelectedPhoto.RenameToDate();
+            if (newPath != null)
+                ((MainWindow)Owner).ChangeSelectedItemWithWait(newPath);
         }
 
         #endregion

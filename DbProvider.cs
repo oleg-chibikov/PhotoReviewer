@@ -1,10 +1,24 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using System.Linq;
+using JetBrains.Annotations;
 using LiteDB;
 
 namespace PhotoReviewer
 {
-    internal static class DbProvider
+    public class DbProvider : IDisposable
     {
+        private readonly LiteDatabase db;
+
+        public DbProvider()
+        {
+            db = new LiteDatabase(DbName);
+        }
+
+        public void Dispose()
+        {
+            db.Dispose();
+        }
+
         private class DbPhoto
         {
             // ReSharper disable once NotNullMemberIsNotInitialized
@@ -17,7 +31,7 @@ namespace PhotoReviewer
                 Path = path;
             }
 
-            [NotNull] 
+            [NotNull]
             public string Path
             {
                 get;
@@ -29,8 +43,10 @@ namespace PhotoReviewer
 
         [NotNull]
         const string DbName = "Data.db";
+
         [NotNull]
         const string MarkedForDeletionTable = "markedForDeletion";
+
         [NotNull]
         const string FavoritedTable = "favorited";
 
@@ -40,58 +56,50 @@ namespace PhotoReviewer
             Favorite
         }
 
-        public static void Save([NotNull] string path, OperationType operationType)
+        public void Save([NotNull] string path, OperationType operationType)
         {
-            using (var db = new LiteDatabase(DbName))
-            {
-                var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
-                dbPhotos.Insert(new DbPhoto(path));
-                dbPhotos.EnsureIndex(x => x.Path);
-            }
+            var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
+            dbPhotos.Insert(new DbPhoto(path));
+            dbPhotos.EnsureIndex(x => x.Path);
         }
 
-        public static bool Check([NotNull] string path, OperationType operationType)
+        public bool Check([NotNull] string path, OperationType operationType)
         {
-            using (var db = new LiteDatabase(DbName))
-            {
-                var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
-                return dbPhotos.Exists(x => x.Path == path);
-            }
+            var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
+            return dbPhotos.Exists(x => x.Path == path);
+        }
+        
+        public void Delete([NotNull] string path)
+        {
+            Delete(path, OperationType.MarkForDeletion);
+            Delete(path, OperationType.Favorite);
         }
 
-        public static void Delete([NotNull] string path, OperationType operationType)
-        {
-            using (var db = new LiteDatabase(DbName))
-            {
-                Delete(db, path, operationType);
-            }
-        }
-
-        public static void Delete([NotNull] string path)
-        {
-            using (var db = new LiteDatabase(DbName))
-            {
-                Delete(db, path, OperationType.MarkForDeletion);
-                Delete(db, path, OperationType.Favorite);
-            }
-        }
-
-        private static void Delete([NotNull] LiteDatabase db, string path, OperationType operationType)
+        public void Delete([NotNull] string path, OperationType operationType)
         {
             var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
             dbPhotos.Delete(x => x.Path == path);
         }
 
-        public static void Rename([NotNull] string oldPath, [NotNull] string newPath)
+        public void Delete([NotNull] string[] paths)
         {
-            using (var db = new LiteDatabase(DbName))
-            {
-                Rename(db, oldPath, newPath, OperationType.MarkForDeletion);
-                Rename(db, oldPath, newPath, OperationType.Favorite);
-            }
+            Delete(paths, OperationType.MarkForDeletion);
+            Delete(paths, OperationType.Favorite);
         }
 
-        private static void Rename([NotNull] LiteDatabase db, [NotNull] string oldPath, [NotNull] string newPath, OperationType operationType)
+        private void Delete([NotNull] string[] paths, OperationType operationType)
+        {
+            var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
+            dbPhotos.Delete(Query.In("Path", paths.Select(x => new BsonValue(x)).ToArray()));
+        }
+
+        public void Rename([NotNull] string oldPath, [NotNull] string newPath)
+        {
+            Rename(oldPath, newPath, OperationType.MarkForDeletion);
+            Rename(oldPath, newPath, OperationType.Favorite);
+        }
+
+        private void Rename([NotNull] string oldPath, [NotNull] string newPath, OperationType operationType)
         {
             var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
             if (!dbPhotos.Exists(x => x.Path == oldPath))

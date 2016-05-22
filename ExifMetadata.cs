@@ -24,14 +24,14 @@ namespace PhotoReviewer
         private object isoSpeed;
         private object exposureTime;
 
-        public ExifMetadata([NotNull] string source)
+        public ExifMetadata([NotNull] string path)
         {
             const int attemptLimit = 3;
             var attempt = 0;
             while (attempt < attemptLimit)
                 try
                 {
-                    using (var reader = new ExifReader(source))
+                    using (var reader = new ExifReader(path))
                     {
                         DateTime dateImageTaken;
                         reader.GetTagValue(ExifTags.DateTimeDigitized, out dateImageTaken);
