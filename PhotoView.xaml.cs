@@ -9,7 +9,6 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using JetBrains.Annotations;
-using Application = System.Windows.Application;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace PhotoReviewer
@@ -27,9 +26,13 @@ namespace PhotoReviewer
 
         private bool fullImageLoaded;
 
-        public PhotoView([NotNull] Photo selectedPhoto, [NotNull] IList<PhotoView> photoViews)
+        [NotNull]
+        private readonly MainWindow mainWindow;
+
+        public PhotoView([NotNull] Photo selectedPhoto, [NotNull] IList<PhotoView> photoViews, [NotNull] MainWindow mainWindow)
         {
             InitializeComponent();
+            this.mainWindow = mainWindow;
             PhotoZoomBorder.SetAction(LoadFullImage);
             this.photoViews = photoViews;
             photoViews.Add(this);
@@ -162,24 +165,27 @@ namespace PhotoReviewer
             return true;
         }
 
+        private void SelectAndAct([NotNull]Action action)
+        {
+            mainWindow.PhotosListBox.SelectedItem = SelectedPhoto;
+            mainWindow.ScrollToSelected();
+            action();
+            sb.Begin();
+        }
+
         private void ChangePhoto([CanBeNull] Photo photo)
         {
             if (photo == null)
                 return;
-            SelectedPhoto = photo;
             fullImageLoaded = false;
+            SelectedPhoto = photo;
             ViewedPhoto.Source = SelectedPhoto.Image;
-            var mainWindow = (MainWindow)Owner;
-            mainWindow.PhotosListBox.SelectedIndex = photo.Index;
-            mainWindow.ScrollToSelected();
-            PhotoZoomBorder.Reset();
-            sb.Begin();
+            SelectAndAct(()=> PhotoZoomBorder.Reset());
         }
 
         private void ArrangeWindows()
         {
             const double borderWidth = 8;
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
             var scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
             if (photoViews.Any())
             {
@@ -210,21 +216,17 @@ namespace PhotoReviewer
 
         private void Favorite()
         {
-            SelectedPhoto.Favorite();
-            sb.Begin();
+            SelectAndAct(() => mainWindow.Favorite());
         }
 
         private void MarkForDeletion()
         {
-            SelectedPhoto.MarkForDeletion();
-            sb.Begin();
+            SelectAndAct(() => mainWindow.MarkAsDeleted());
         }
 
         private void RenameToDate()
         {
-            var newPath = SelectedPhoto.RenameToDate();
-            if (newPath != null)
-                ((MainWindow)Owner).ChangeSelectedItemWithWait(newPath);
+            SelectAndAct(() => mainWindow.RenameToDate());
         }
 
         #endregion

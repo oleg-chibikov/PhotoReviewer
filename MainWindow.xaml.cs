@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -44,7 +43,7 @@ namespace PhotoReviewer
         private void ViewPhotoMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             // ReSharper disable once ObjectCreationAsStatement
-            new PhotoView((Photo)PhotosListBox.SelectedItem, photoViews) { Owner = this };
+            new PhotoView((Photo)PhotosListBox.SelectedItem, photoViews, this) { Owner = this };
         }
 
         private void MarkAsDeletedMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
@@ -172,20 +171,12 @@ namespace PhotoReviewer
 
         public void ChangeSelectedItemWithWait([NotNull] string path)
         {
-            var context = SynchronizationContext.Current;
             var i = 0;
-            //New thread is required to release current method and trigger fileSystemWatcher
-            Task.Run(() =>
-            {
-                context.Send(t =>
-                {
-                    Photo lastRenamed = null;
-                    while (i++ < 5 && (lastRenamed = photosCollection.SingleOrDefault(x => x.Path == path)) == null)
-                        Thread.Sleep(100);
-                    PhotosListBox.SelectedItem = lastRenamed;
-                    ScrollToSelected();
-                }, null);
-            });
+            Photo lastRenamed = null;
+            while (i++ < 5 && (lastRenamed = photosCollection.SingleOrDefault(x => x.Path == path)) == null)
+                Thread.Sleep(100);
+            PhotosListBox.SelectedItem = lastRenamed;
+            ScrollToSelected();
         }
 
         public void ScrollToSelected()
@@ -197,29 +188,27 @@ namespace PhotoReviewer
 
         #region Private
 
-        private void MarkAsDeleted()
+        public void MarkAsDeleted()
         {
             photosCollection.MarkForDeletion(PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
         }
 
-        private void Favorite()
+        public void Favorite()
         {
             photosCollection.Favorite(PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
         }
 
-        private void RenameToDate()
+        public void RenameToDate()
         {
-            var photos = PhotosListBox.SelectedItems.Cast<Photo>().ToArray();
-            if (!photos.Any())
+            photosCollection.RenameToDate(path =>
             {
-                MessageBox.Show("Nothing to rename");
-                return;
-            }
-            string newPath = null;
-            foreach (var photo in photos)
-                newPath = photo.RenameToDate();
-            if (newPath != null)
-                ChangeSelectedItemWithWait(newPath);
+                var i = 0;
+                Photo lastRenamed = null;
+                while (i++ < 5 && (lastRenamed = photosCollection.SingleOrDefault(x => x.Path == path)) == null)
+                    Thread.Sleep(100);
+                PhotosListBox.SelectedItem = lastRenamed;
+                ScrollToSelected();
+            }, PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
         }
 
         private void SetNewPath([NotNull] string path)

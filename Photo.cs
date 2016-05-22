@@ -178,56 +178,8 @@ namespace PhotoReviewer
             tb.Freeze();
             return tb;
         }
-
-        [CanBeNull]
-        public string RenameToDate()
-        {
-            var oldPath = Path;
-            if (!File.Exists(Path) || !Metadata.DateImageTaken.HasValue)
-                return null;
-            var newName = Metadata.DateImageTaken.Value.ToString("yyyy-MM-dd hh-mm-ss");
-            if (newName == Name)
-                return null;
-            var dir = System.IO.Path.GetDirectoryName(Path);
-            var newPath = GetFreeFileName($"{dir}\\{newName}.jpg");
-            if (!File.Exists(newPath))
-                File.Move(oldPath, newPath);
-            //FileSystemWatcher will do the rest
-            return newPath;
-        }
-
-        public void MarkForDeletion()
-        {
-            if (MarkedForDeletion)
-            {
-                MarkedForDeletion = false;
-                collection.DbProvider.Delete(Path, DbProvider.OperationType.MarkForDeletion);
-            }
-            else
-            {
-                MarkedForDeletion = true;
-                collection.DbProvider.Save(Path, DbProvider.OperationType.MarkForDeletion);
-                Favorited = false;
-                collection.DbProvider.Delete(Path, DbProvider.OperationType.Favorite); //clear favorited when marked for deletion
-            }
-        }
-
-        public void Favorite()
-        {
-            if (Favorited)
-            {
-                Favorited = false;
-                collection.DbProvider.Delete(Path, DbProvider.OperationType.Favorite);
-            }
-            else
-            {
-                Favorited = true;
-                collection.DbProvider.Save(Path, DbProvider.OperationType.Favorite);
-                MarkedForDeletion = false;
-                collection.DbProvider.Delete(Path, DbProvider.OperationType.MarkForDeletion); //clear deleted when favorited
-            }
-        }
-
+        
+        
         public void ChangePath([NotNull] string path)
         {
             Path = path;
@@ -237,26 +189,6 @@ namespace PhotoReviewer
         public override string ToString()
         {
             return Path;
-        }
-
-        [NotNull]
-        private string GetFreeFileName([NotNull] string fullPath)
-        {
-            var count = 1;
-
-            var fileNameOnly = System.IO.Path.GetFileNameWithoutExtension(fullPath);
-            var extension = System.IO.Path.GetExtension(fullPath);
-            var path = System.IO.Path.GetDirectoryName(fullPath);
-            if (path == null)
-                throw new ArgumentException(nameof(fullPath));
-            var newFullPath = fullPath;
-
-            while (File.Exists(newFullPath))
-            {
-                var tempFileName = $"{fileNameOnly} ({count++})";
-                newFullPath = System.IO.Path.Combine(path, tempFileName + extension);
-            }
-            return newFullPath;
         }
     }
 }

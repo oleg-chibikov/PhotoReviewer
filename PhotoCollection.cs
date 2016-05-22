@@ -81,7 +81,10 @@ namespace PhotoReviewer
             if (notMarked.Any())
             {
                 foreach (var photo in notMarked)
+                {
                     photo.MarkedForDeletion = true;
+                    photo.Favorited = false;
+                }
                 var paths = notMarked.Select(x => x.Path).ToArray();
                 DbProvider.Save(paths, DbProvider.OperationType.MarkForDeletion);
                 DbProvider.Delete(paths, DbProvider.OperationType.Favorite);
@@ -100,7 +103,10 @@ namespace PhotoReviewer
             if (notFavorited.Any())
             {
                 foreach (var photo in notFavorited)
+                {
                     photo.Favorited = true;
+                    photo.MarkedForDeletion = false;
+                }
                 var paths = notFavorited.Select(x => x.Path).ToArray();
                 DbProvider.Save(paths, DbProvider.OperationType.Favorite);
                 DbProvider.Delete(paths, DbProvider.OperationType.MarkForDeletion);
@@ -112,16 +118,24 @@ namespace PhotoReviewer
                 DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.Favorite);
             }
         }
-
-        public void DeletePhoto([NotNull] string path)
+        
+        public void RenameToDate(Action<string> callback, [NotNull]params Photo[] photos)
         {
-            DbProvider.Delete(path);
-            var photo = this.SingleOrDefault(x => x.Path == path);
-            if (photo == null)
+            if (!photos.Any())
+            {
+                MessageBox.Show("Nothing to rename");
                 return;
-            Remove(photo);
-            MarkedForDeletionChanged();
-            FavoritedChanged();
+            }
+            string newPath = null;
+            var data = photos.Select(x => new { x.Name, x.Path, x.Metadata.DateImageTaken }).ToArray();
+            var context = SynchronizationContext.Current;
+            Task.Run(() =>
+            {
+                foreach (var item in data)
+                    newPath = RenameToDate(item.Name, item.Path, item.DateImageTaken);
+                if (newPath != null)
+                    context.Send(t => { callback(newPath); }, null);
+            });
         }
 
         public void DeleteMarked()
@@ -155,9 +169,20 @@ namespace PhotoReviewer
                 var metadata = new ExifMetadata(path);
                 context.Send(x =>
                 {
-                    AddNewPhoto(new Photo(path, metadata, this));
+                    AddPhoto(new Photo(path, metadata, this));
                 }, null);
             });
+        }
+
+        public void DeletePhoto([NotNull] string path)
+        {
+            DbProvider.Delete(path);
+            var photo = this.SingleOrDefault(x => x.Path == path);
+            if (photo == null)
+                return;
+            Remove(photo);
+            MarkedForDeletionChanged();
+            FavoritedChanged();
         }
 
         public void RenamePhoto([NotNull] string oldPath, [NotNull] string newPath)
@@ -168,16 +193,53 @@ namespace PhotoReviewer
                 return;
             Remove(photo);
             photo.ChangePath(newPath);
-            AddNewPhoto(photo);
+            AddPhoto(photo);
         }
 
-        private void AddNewPhoto([NotNull] Photo photo)
+        private void AddPhoto([NotNull] Photo photo)
         {
             //http://stackoverflow.com/questions/748596/finding-best-position-for-element-in-list
             var name = photo.Name;
             var index = Array.BinarySearch(this.Select(x => x.Name).ToArray(), name, Comparer);
             var insertIndex = ~index;
             Insert(insertIndex, photo);
+        }
+
+        [CanBeNull]
+        private static string RenameToDate([NotNull] string name, [NotNull] string path, [CanBeNull] DateTime? dateImageTaken)
+        {
+            var oldPath = path;
+            if (!File.Exists(path) || !dateImageTaken.HasValue)
+                return null;
+            var newName = dateImageTaken.Value.ToString("yyyy-MM-dd hh-mm-ss");
+            if (newName == name)
+                return null;
+            var dir = System.IO.Path.GetDirectoryName(path);
+            var newPath = GetFreeFileName($"{dir}\\{newName}.jpg");
+            if (!File.Exists(newPath))
+                File.Move(oldPath, newPath);
+            //FileSystemWatcher will do the rest
+            return newPath;
+        }
+        
+        [NotNull]
+        private static string GetFreeFileName([NotNull] string fullPath)
+        {
+            var count = 1;
+
+            var fileNameOnly = System.IO.Path.GetFileNameWithoutExtension(fullPath);
+            var extension = System.IO.Path.GetExtension(fullPath);
+            var path = System.IO.Path.GetDirectoryName(fullPath);
+            if (path == null)
+                throw new ArgumentException(nameof(fullPath));
+            var newFullPath = fullPath;
+
+            while (File.Exists(newFullPath))
+            {
+                var tempFileName = $"{fileNameOnly} ({count++})";
+                newFullPath = System.IO.Path.Combine(path, tempFileName + extension);
+            }
+            return newFullPath;
         }
     }
 }
