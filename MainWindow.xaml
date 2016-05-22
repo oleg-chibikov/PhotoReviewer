@@ -14,14 +14,14 @@
         <Style TargetType="Border" x:Key="ColorByDeleted">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=MarkedForDeletion}" Value="True">
-                    <Setter Property="Background" Value="Red"/>
+                    <Setter Property="Background" Value="Red" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Favorited}" Value="True">
-                    <Setter Property="Background" Value="LimeGreen"/>
+                    <Setter Property="Background" Value="LimeGreen" />
                 </DataTrigger>
             </Style.Triggers>
             <Style.Setters>
-                <Setter Property="Background" Value="White"/>
+                <Setter Property="Background" Value="White" />
             </Style.Setters>
         </Style>
 
@@ -73,7 +73,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                        <Border SnapsToDevicePixels="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{TemplateBinding Background}">
+                        <Border SnapsToDevicePixels="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                Background="{TemplateBinding Background}">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -211,7 +212,7 @@
             <Label>Favorited:</Label>
             <Label Content="{Binding Path=FavoritedCount}" />
         </StackPanel>
-        
+
         <!-- Splitter -->
         <GridSplitter Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="15"
                       Background="Transparent" ShowsPreview="True" />
@@ -222,12 +223,14 @@
 
             <!-- Move Favorited Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Content="{Binding Path=FavoritedCount}" ContentStringFormat="Move favorited (0)" Click="MoveFavoritedButton_Click"/>
+                <Button Content="{Binding Path=FavoritedCount}" ContentStringFormat="Move favorited (0)"
+                        Click="MoveFavoritedButton_Click" />
             </DockPanel>
 
             <!-- Delete Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Content="{Binding Path=MarkedForDeletionCount}" ContentStringFormat="Delete marked (0)" Click="DeleteButton_Click"/>
+                <Button Content="{Binding Path=MarkedForDeletionCount}" ContentStringFormat="Delete marked (0)"
+                        Click="DeleteButton_Click" />
             </DockPanel>
 
             <!-- Zoom Control -->
@@ -263,7 +266,8 @@
                             </Label.Content>
                         </Label>
                         <Label Style="{StaticResource MetadataHeader}">Date Image Taken:</Label>
-                        <Label Content="{Binding Path=Metadata.DateImageTaken}" ContentStringFormat="yyyy-MM-dd hh:mm:ss" />
+                        <Label Content="{Binding Path=Metadata.DateImageTaken}"
+                               ContentStringFormat="yyyy-MM-dd hh:mm:ss" />
                         <Label Style="{StaticResource MetadataHeader}">Camera Model:</Label>
                         <Label Content="{Binding Path=Metadata.CameraModel}" />
                         <Label Style="{StaticResource MetadataHeader}">Lens Aperture:</Label>
@@ -275,7 +279,8 @@
                         <Label Style="{StaticResource MetadataHeader}">ISO Speed:</Label>
                         <Label Content="{Binding Path=Metadata.IsoSpeed}" />
                         <Label Style="{StaticResource MetadataHeader}">Exposure Time:</Label>
-                        <Label Content="{Binding Path=Metadata.ExposureTime, Converter={StaticResource ExposureTimeConverterReference}}" />
+                        <Label
+                            Content="{Binding Path=Metadata.ExposureTime, Converter={StaticResource ExposureTimeConverterReference}}" />
                         <Label Style="{StaticResource MetadataHeader}">Orientation:</Label>
                         <Label Content="{Binding Path=Metadata.Orientation}" />
                     </StackPanel>

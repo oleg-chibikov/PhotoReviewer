@@ -15,11 +15,22 @@ namespace PhotoReviewer
         //private readonly Duration zoomAnimationDuration = new Duration(TimeSpan.FromMilliseconds(50));
 
         private UIElement child;
-        private Point originTopLeft;
-        private Point originBottomRight;
-        private Point start;
         private bool isReseted;
+        private Point originBottomRight;
+        private Point originTopLeft;
+        private Point start;
         private Func<Action, bool> zoomAction;
+
+        public override UIElement Child
+        {
+            get { return base.Child; }
+            set
+            {
+                if (value != null && !Equals(value, Child))
+                    Initialize(value);
+                base.Child = value;
+            }
+        }
 
         private static TranslateTransform GetTranslateTransform(UIElement element)
         {
@@ -31,17 +42,6 @@ namespace PhotoReviewer
         {
             return (ScaleTransform)((TransformGroup)element.RenderTransform)
                 .Children.First(tr => tr is ScaleTransform);
-        }
-
-        public override UIElement Child
-        {
-            get { return base.Child; }
-            set
-            {
-                if (value != null && !Equals(value, Child))
-                    Initialize(value);
-                base.Child = value;
-            }
         }
 
         private void Initialize(UIElement element)

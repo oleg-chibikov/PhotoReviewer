@@ -14,14 +14,14 @@
         <Style TargetType="Border" x:Key="ColorByDeleted">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=SelectedPhoto.MarkedForDeletion}" Value="True">
-                    <Setter Property="Background" Value="Red"/>
+                    <Setter Property="Background" Value="Red" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=SelectedPhoto.Favorited}" Value="True">
-                    <Setter Property="Background" Value="LimeGreen"/>
+                    <Setter Property="Background" Value="LimeGreen" />
                 </DataTrigger>
             </Style.Triggers>
             <Style.Setters>
-                <Setter Property="Background" Value="White"/>
+                <Setter Property="Background" Value="White" />
             </Style.Setters>
         </Style>
         <Style TargetType="{x:Type Button}">
@@ -43,22 +43,22 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    <Grid Margin="10" >
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*"  />
+            <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <!-- Nav -->
         <Border Grid.Column="0" Grid.Row="1" Padding="4">
-                <Button Focusable="False" Click="PrevButton_Click">
-                    <Image Source="img\LeftArrow.png" />
-                </Button>
+            <Button Focusable="False" Click="PrevButton_Click">
+                <Image Source="img\LeftArrow.png" />
+            </Button>
         </Border>
         <Border Grid.Column="2" Grid.Row="1" Padding="4">
             <Button Focusable="False" Click="NextButton_Click">
@@ -68,15 +68,18 @@
         <!-- Name -->
         <Border HorizontalAlignment="Center" Grid.Column="1" Grid.Row="0" Padding="4">
             <StackPanel Orientation="Horizontal">
-                <Label Content="{Binding Path=SelectedPhoto.Name, NotifyOnTargetUpdated=True}" HorizontalAlignment="Left" />
+                <Label Content="{Binding Path=SelectedPhoto.Name, NotifyOnTargetUpdated=True}"
+                       HorizontalAlignment="Left" />
                 <Label Content="{Binding Path=SelectedPhoto.Metadata.CameraModel, NotifyOnTargetUpdated=True}" />
                 <Label Content="{Binding Path=SelectedPhoto.PositionInCollection, NotifyOnTargetUpdated=True}" />
             </StackPanel>
         </Border>
 
         <!-- Photo -->
-        <Border Style="{StaticResource ColorByDeleted}" Grid.Column="1" Grid.Row="1" Padding="4" Margin="4" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
-            <er:ZoomBorder x:Name="PhotoZoomBorder" ClipToBounds="True" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border Style="{StaticResource ColorByDeleted}" Grid.Column="1" Grid.Row="1" Padding="4" Margin="4"
+                HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
+            <er:ZoomBorder x:Name="PhotoZoomBorder" ClipToBounds="True" HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
                 <Image Name="ViewedPhoto">
                     <Image.ContextMenu>
                         <ContextMenu>

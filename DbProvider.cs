@@ -7,6 +7,21 @@ namespace PhotoReviewer
 {
     public class DbProvider : IDisposable
     {
+        public enum OperationType
+        {
+            MarkForDeletion,
+            Favorite
+        }
+
+        [NotNull]
+        private const string DbName = "Data.db";
+
+        [NotNull]
+        private const string MarkedForDeletionTable = "markedForDeletion";
+
+        [NotNull]
+        private const string FavoritedTable = "favorited";
+
         private readonly LiteDatabase db;
 
         public DbProvider()
@@ -17,43 +32,6 @@ namespace PhotoReviewer
         public void Dispose()
         {
             db.Dispose();
-        }
-
-        private class DbPhoto
-        {
-            // ReSharper disable once NotNullMemberIsNotInitialized
-            public DbPhoto()
-            {
-            }
-
-            public DbPhoto(string path)
-            {
-                Path = path;
-            }
-
-            [NotNull]
-            public string Path
-            {
-                get;
-                // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
-                [UsedImplicitly]
-                set;
-            }
-        }
-
-        [NotNull]
-        const string DbName = "Data.db";
-
-        [NotNull]
-        const string MarkedForDeletionTable = "markedForDeletion";
-
-        [NotNull]
-        const string FavoritedTable = "favorited";
-
-        public enum OperationType
-        {
-            MarkForDeletion,
-            Favorite
         }
 
         public void Save([NotNull] string path, OperationType operationType)
@@ -76,7 +54,7 @@ namespace PhotoReviewer
             var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
             return dbPhotos.Exists(x => x.Path == path);
         }
-        
+
         public void Delete([NotNull] string path)
         {
             Delete(path, OperationType.MarkForDeletion);
@@ -115,6 +93,28 @@ namespace PhotoReviewer
             {
                 dbPhotos.Delete(x => x.Path == oldPath);
                 dbPhotos.Insert(new DbPhoto(newPath));
+            }
+        }
+
+        private class DbPhoto
+        {
+            // ReSharper disable once NotNullMemberIsNotInitialized
+            public DbPhoto()
+            {
+            }
+
+            public DbPhoto(string path)
+            {
+                Path = path;
+            }
+
+            [NotNull]
+            public string Path
+            {
+                get;
+                // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
+                [UsedImplicitly]
+                set;
             }
         }
     }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
 using Application = System.Windows.Application;
@@ -16,9 +17,6 @@ namespace PhotoReviewer
     public class Photo : DependencyObject
     {
         [NotNull]
-        private readonly PhotoCollection collection;
-
-        [NotNull]
         private static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
 
         [NotNull]
@@ -29,6 +27,9 @@ namespace PhotoReviewer
 
         [NotNull]
         private static readonly DependencyProperty PathProperty = DependencyProperty<Photo>.Register(x => x.Path);
+
+        [NotNull]
+        private readonly PhotoCollection collection;
 
         public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, [NotNull] PhotoCollection collection)
         {
@@ -90,15 +91,6 @@ namespace PhotoReviewer
         }
 
         [CanBeNull]
-        public BitmapSource GetFullImage([CanBeNull] EventHandler onCompleted = null)
-        {
-            var bytes = File.ReadAllBytes(Path);
-            var bitmap = LoadImage(bytes, Metadata.Orientation, onCompleted: onCompleted);
-            GC.Collect();
-            return bitmap;
-        }
-
-        [CanBeNull]
         public Photo Next
         {
             get
@@ -126,6 +118,15 @@ namespace PhotoReviewer
 
         [NotNull]
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
+
+        [CanBeNull]
+        public BitmapSource GetFullImage([CanBeNull] EventHandler onCompleted = null)
+        {
+            var bytes = File.ReadAllBytes(Path);
+            var bitmap = LoadImage(bytes, Metadata.Orientation, onCompleted: onCompleted);
+            GC.Collect();
+            return bitmap;
+        }
 
         public static BitmapSource LoadImage([CanBeNull] byte[] imageData, [CanBeNull] Orientation? orientation = null, int sizeAnchor = 0, [CanBeNull] EventHandler onCompleted = null)
         {
@@ -171,15 +172,15 @@ namespace PhotoReviewer
             var tb = new TransformedBitmap();
             tb.BeginInit();
             tb.Source = image;
-            var transform = new System.Windows.Media.RotateTransform(angle);
+            var transform = new RotateTransform(angle);
             tb.Transform = transform;
             tb.EndInit();
 
             tb.Freeze();
             return tb;
         }
-        
-        
+
+
         public void ChangePath([NotNull] string path)
         {
             Path = path;

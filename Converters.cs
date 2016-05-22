@@ -14,7 +14,7 @@ namespace PhotoReviewer
         {
             try
             {
-                var exposure = Math.Round(1/(double)value);
+                var exposure = Math.Round(1 / (double)value);
                 return $"1/{exposure}";
             }
             catch (NullReferenceException)
@@ -25,8 +25,8 @@ namespace PhotoReviewer
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
         {
-            var exposure = ((string) value).Substring(2);
-            return 1/decimal.Parse(exposure);
+            var exposure = ((string)value).Substring(2);
+            return 1 / decimal.Parse(exposure);
         }
     }
 
@@ -46,9 +46,9 @@ namespace PhotoReviewer
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
         {
-            if (!string.IsNullOrEmpty((string) value))
+            if (!string.IsNullOrEmpty((string)value))
             {
-                return decimal.Parse(((string) value).Substring(1));
+                return decimal.Parse(((string)value).Substring(1));
             }
             return null;
         }
@@ -85,9 +85,9 @@ namespace PhotoReviewer
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
-            if ((string) value == string.Empty)
+            if ((string)value == string.Empty)
                 return new object[2];
-            var sSize = ((string) value).Split('x');
+            var sSize = ((string)value).Split('x');
 
             var size = new object[2];
             size[0] = uint.Parse(sSize[0]);

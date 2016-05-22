@@ -19,15 +19,15 @@ namespace PhotoReviewer
         private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
 
         [NotNull]
-        private readonly Storyboard sb;
+        private readonly MainWindow mainWindow;
 
         [NotNull]
         private readonly IList<PhotoView> photoViews;
 
-        private bool fullImageLoaded;
-
         [NotNull]
-        private readonly MainWindow mainWindow;
+        private readonly Storyboard sb;
+
+        private bool fullImageLoaded;
 
         public PhotoView([NotNull] Photo selectedPhoto, [NotNull] IList<PhotoView> photoViews, [NotNull] MainWindow mainWindow)
         {
@@ -62,7 +62,7 @@ namespace PhotoReviewer
         }
 
         #region Events
-        
+
         private void MarkAsDeletedMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             MarkForDeletion();
@@ -139,7 +139,7 @@ namespace PhotoReviewer
             ArrangeWindows();
             GC.Collect();
         }
-        
+
         #endregion
 
         #region Private
@@ -165,7 +165,7 @@ namespace PhotoReviewer
             return true;
         }
 
-        private void SelectAndAct([NotNull]Action action)
+        private void SelectAndAct([NotNull] Action action)
         {
             mainWindow.PhotosListBox.SelectedItem = SelectedPhoto;
             mainWindow.ScrollToSelected();
@@ -180,7 +180,7 @@ namespace PhotoReviewer
             fullImageLoaded = false;
             SelectedPhoto = photo;
             ViewedPhoto.Source = SelectedPhoto.Image;
-            SelectAndAct(()=> PhotoZoomBorder.Reset());
+            SelectAndAct(() => PhotoZoomBorder.Reset());
         }
 
         private void ArrangeWindows()

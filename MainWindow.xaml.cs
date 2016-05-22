@@ -8,23 +8,22 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using MessageBox = System.Windows.MessageBox;
 
 namespace PhotoReviewer
 {
     public sealed partial class MainWindow
     {
         [NotNull]
-        private readonly IList<PhotoView> photoViews = new List<PhotoView>();
+        private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
+        {
+            Filter = "*.jpg"
+        };
 
         [NotNull]
         private readonly PhotoCollection photosCollection;
 
         [NotNull]
-        private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
-        {
-            Filter = "*.jpg"
-        };
+        private readonly IList<PhotoView> photoViews = new List<PhotoView>();
 
         public MainWindow([NotNull] PhotoCollection photosCollection)
         {
@@ -84,24 +83,7 @@ namespace PhotoReviewer
 
         private void MoveFavoritedButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            var photos = photosCollection.Where(x => x.Favorited).ToArray();
-            if (!photos.Any())
-            {
-                MessageBox.Show("Nothing to move");
-                return;
-            }
-            var dir = Path.GetDirectoryName(photos.First().Path) + "\\Favorite\\";
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-            foreach (var photo in photos)
-            {
-                if (!File.Exists(photo.Path))
-                    continue;
-                var newName = dir + Path.GetFileName(photo.Path);
-                if (!File.Exists(newName))
-                    File.Copy(photo.Path, newName);
-            }
-            Process.Start(dir);
+            photosCollection.MoveFavorited();
         }
 
         private void PhotosListBox_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
@@ -147,10 +129,7 @@ namespace PhotoReviewer
 
         private void ImagesDirectoryWatcher_Renamed([NotNull] object sender, [NotNull] RenamedEventArgs renamedEventArgs)
         {
-            Dispatcher.Invoke(() =>
-            {
-                photosCollection.RenamePhoto(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath);
-            });
+            Dispatcher.Invoke(() => { photosCollection.RenamePhoto(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath); });
         }
 
         #endregion
@@ -167,16 +146,6 @@ namespace PhotoReviewer
                     Arguments = $"/select,\"{filePath}\""
                 }
             }.Start();
-        }
-
-        public void ChangeSelectedItemWithWait([NotNull] string path)
-        {
-            var i = 0;
-            Photo lastRenamed = null;
-            while (i++ < 5 && (lastRenamed = photosCollection.SingleOrDefault(x => x.Path == path)) == null)
-                Thread.Sleep(100);
-            PhotosListBox.SelectedItem = lastRenamed;
-            ScrollToSelected();
         }
 
         public void ScrollToSelected()
@@ -200,7 +169,7 @@ namespace PhotoReviewer
 
         public void RenameToDate()
         {
-            photosCollection.RenameToDate(path =>
+            photosCollection.RenameToDate(PhotosListBox.SelectedItems.Cast<Photo>().ToArray(), path =>
             {
                 var i = 0;
                 Photo lastRenamed = null;
@@ -208,7 +177,7 @@ namespace PhotoReviewer
                     Thread.Sleep(100);
                 PhotosListBox.SelectedItem = lastRenamed;
                 ScrollToSelected();
-            }, PhotosListBox.SelectedItems.Cast<Photo>().ToArray());
+            });
         }
 
         private void SetNewPath([NotNull] string path)

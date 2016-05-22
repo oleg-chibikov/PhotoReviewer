@@ -16,13 +16,13 @@ namespace PhotoReviewer
 
     public class ExifMetadata
     {
-        private object width;
-        private object height;
         private string cameraModel;
-        private object lensAperture;
-        private object focalLength;
-        private object isoSpeed;
         private object exposureTime;
+        private object focalLength;
+        private object height;
+        private object isoSpeed;
+        private object lensAperture;
+        private object width;
 
         public ExifMetadata([NotNull] string path)
         {

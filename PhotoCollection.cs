@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
-using MessageBox = System.Windows.MessageBox;
 
 namespace PhotoReviewer
 {
@@ -47,11 +48,10 @@ namespace PhotoReviewer
                             foreach (var f in files)
                             {
                                 var metadata = new ExifMetadata(f.FullName);
-                                context.Send(x =>
-                                {
-                                    Add(new Photo(f.FullName, metadata, this));
-                                }, null);
+                                context.Send(x => { Add(new Photo(f.FullName, metadata, this)); }, null);
                             }
+                            FavoritedChanged();
+                            MarkedForDeletionChanged();
                         });
                     }
                     catch (DirectoryNotFoundException)
@@ -118,8 +118,8 @@ namespace PhotoReviewer
                 DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.Favorite);
             }
         }
-        
-        public void RenameToDate(Action<string> callback, [NotNull]params Photo[] photos)
+
+        public void RenameToDate([NotNull] Photo[] photos, Action<string> callback)
         {
             if (!photos.Any())
             {
@@ -161,16 +161,38 @@ namespace PhotoReviewer
             });
         }
 
+        public void MoveFavorited()
+        {
+            var paths = this.Where(x => x.Favorited).Select(x => x.Path).ToArray();
+            if (!paths.Any())
+            {
+                MessageBox.Show("Nothing to move");
+                return;
+            }
+            Task.Run(() =>
+            {
+                var dir = System.IO.Path.GetDirectoryName(paths.First()) + "\\Favorite\\";
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+                foreach (var path in paths)
+                {
+                    if (!File.Exists(path))
+                        continue;
+                    var newName = dir + System.IO.Path.GetFileName(path);
+                    if (!File.Exists(newName))
+                        File.Copy(path, newName);
+                }
+                Process.Start(dir);
+            });
+        }
+
         public void AddPhoto([NotNull] string path)
         {
             var context = SynchronizationContext.Current;
             Task.Run(() =>
             {
                 var metadata = new ExifMetadata(path);
-                context.Send(x =>
-                {
-                    AddPhoto(new Photo(path, metadata, this));
-                }, null);
+                context.Send(x => { AddPhoto(new Photo(path, metadata, this)); }, null);
             });
         }
 
@@ -221,7 +243,7 @@ namespace PhotoReviewer
             //FileSystemWatcher will do the rest
             return newPath;
         }
-        
+
         [NotNull]
         private static string GetFreeFileName([NotNull] string fullPath)
         {
