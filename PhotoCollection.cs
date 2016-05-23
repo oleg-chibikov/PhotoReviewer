@@ -251,6 +251,7 @@ namespace PhotoReviewer
             Remove(photo);
             MarkedForDeletionChanged();
             FavoritedChanged();
+            photo.OnPositionInCollectionChanged();
         }
 
         public void RenamePhoto([NotNull] string oldPath, [NotNull] string newPath)
@@ -272,6 +273,7 @@ namespace PhotoReviewer
             var index = Array.BinarySearch(this.Select(x => x.Name).ToArray(), name, Comparer);
             var insertIndex = ~index;
             Insert(insertIndex, photo);
+            photo.OnPositionInCollectionChanged();
         }
 
         [CanBeNull]
