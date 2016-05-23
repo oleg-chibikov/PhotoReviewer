@@ -223,12 +223,14 @@
 
             <!-- Move Favorited Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Name="MoveFavoritedButton" Content="{Binding Path=FavoritedCount}" ContentStringFormat="Move favorited (0)" Click="MoveFavoritedButton_Click" />
+                <Button Name="MoveFavoritedButton" Content="{Binding Path=FavoritedCount}"
+                        ContentStringFormat="Move favorited (0)" Click="MoveFavoritedButton_Click" />
             </DockPanel>
 
             <!-- Delete Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Name="DeleteButton" Content="{Binding Path=MarkedForDeletionCount}" ContentStringFormat="Delete marked (0)" Click="DeleteButton_Click" />
+                <Button Name="DeleteButton" Content="{Binding Path=MarkedForDeletionCount}"
+                        ContentStringFormat="Delete marked (0)" Click="DeleteButton_Click" />
             </DockPanel>
 
             <!-- Zoom Control -->

@@ -18,29 +18,14 @@ namespace PhotoReviewer
     /// </summary>
     public sealed class PhotoCollection : ObservableCollection<Photo>
     {
-        public class ProgressEventArgs
-        {
-            public ProgressEventArgs(int percent)
-            {
-                Percent = percent;
-            }
-
-            public int Percent { get; private set; }
-        }
-
         /// <summary>
         /// Sorts files as Windows does.
         /// </summary>
         [NotNull]
         private static readonly IComparer<string> Comparer = new WinComparer();
 
-        public event EventHandler<ProgressEventArgs> Progress;
-
         [NotNull]
         public readonly DbProvider DbProvider = new DbProvider();
-
-        [NotNull]
-        public IList<PhotoView> PhotoViews { private get; set; }
 
         public int FavoritedCount => this.Count(x => x.Favorited);
 
@@ -79,6 +64,8 @@ namespace PhotoReviewer
                     MessageBox.Show("No such directory");
             }
         }
+
+        public event EventHandler<ProgressEventArgs> Progress;
 
         public void FavoritedChanged()
         {
@@ -187,7 +174,7 @@ namespace PhotoReviewer
             });
         }
 
-        public void DeleteMarked()
+        public void DeleteMarked([NotNull] Action<string> onDelete)
         {
             var paths = this.Where(x => x.MarkedForDeletion).Select(x => x.Path).ToArray();
             if (!paths.Any())
@@ -209,7 +196,7 @@ namespace PhotoReviewer
                             UIOption.OnlyErrorDialogs,
                             RecycleOption.SendToRecycleBin);
                     }
-                    context.Send(t => { CloseViews(path); }, null);
+                    context.Send(t => { onDelete(path); }, null);
                     OnProgress(100 * ++i / count);
                 }
                 DbProvider.Delete(paths);
@@ -262,7 +249,6 @@ namespace PhotoReviewer
             if (photo == null)
                 return;
             Remove(photo);
-            CloseViews(path);
             MarkedForDeletionChanged();
             FavoritedChanged();
         }
@@ -330,18 +316,14 @@ namespace PhotoReviewer
             Progress?.Invoke(this, new ProgressEventArgs(percent));
         }
 
-        private void CloseViews(string path)
+        public class ProgressEventArgs
         {
-            for (var i = 0; i < PhotoViews.Count; i++)
+            public ProgressEventArgs(int percent)
             {
-                var view = PhotoViews[i];
-                if (view.SelectedPhoto.Path == path)
-                {
-                    view.Close();
-                    PhotoViews.Remove(view);
-                    i--;
-                }
+                Percent = percent;
             }
+
+            public int Percent { get; private set; }
         }
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -16,7 +15,7 @@ namespace PhotoReviewer
     /// This class describes a single photo - its location, the image and
     /// the metadata extracted from the image.
     /// </summary>
-    public class Photo : DependencyObject,INotifyPropertyChanged
+    public class Photo : DependencyObject, INotifyPropertyChanged
     {
         [NotNull]
         private static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
@@ -121,6 +120,8 @@ namespace PhotoReviewer
         [NotNull]
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         [CanBeNull]
         public BitmapSource GetFullImage([CanBeNull] EventHandler onCompleted = null)
         {
@@ -181,7 +182,7 @@ namespace PhotoReviewer
             tb.Freeze();
             return tb;
         }
-        
+
         public void ChangePath([NotNull] string path)
         {
             Path = path;
@@ -192,8 +193,6 @@ namespace PhotoReviewer
         {
             return Path;
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
         public void OnPositionInCollectionChanged()

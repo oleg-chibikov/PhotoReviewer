@@ -28,16 +28,31 @@ namespace PhotoReviewer
         private readonly IList<PhotoView> photoViews = new List<PhotoView>();
 
         [NotNull]
-        private readonly Storyboard sbProgressHide;
+        private static readonly DoubleAnimation HideAnimation = new DoubleAnimation
+        {
+            From = 1,
+            To = 0,
+            Duration = TimeSpan.FromSeconds(1)
+        };
+
+        private static readonly DoubleAnimation ShowAnimation = new DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(1)
+            };
+
         [NotNull]
-        private readonly Storyboard sbProgressShow;
+        private static readonly Storyboard ProgressHideStoryBoard = new Storyboard { Children = new TimelineCollection { HideAnimation } };
+
+        [NotNull]
+        private static readonly Storyboard ProgressShowStoryBoard = new Storyboard { Children = new TimelineCollection { ShowAnimation } };
 
         private bool isInProgress;
 
         public MainWindow([NotNull] PhotoCollection photosCollection)
         {
             this.photosCollection = photosCollection;
-            photosCollection.PhotoViews = photoViews;
             InitializeComponent();
             var path = Settings.Default.LastFolder;
             if (!string.IsNullOrEmpty(path))
@@ -48,29 +63,11 @@ namespace PhotoReviewer
             imagesDirectoryWatcher.Renamed += ImagesDirectoryWatcher_Renamed;
 
             //ProgressBarContainer.Visibility=Visibility.Collapsed;
-            var hideAnimation = new DoubleAnimation
-            {
-                From = 1,
-                To = 0,
-                Duration = TimeSpan.FromSeconds(1)
-            };
 
-            Storyboard.SetTarget(hideAnimation, ProgressBarContainer);
-            Storyboard.SetTargetProperty(hideAnimation, new PropertyPath(OpacityProperty));
-
-            sbProgressHide = new Storyboard();
-            sbProgressHide.Children.Add(hideAnimation);
-            var showAnimation = new DoubleAnimation
-            {
-                From = 0,
-                To = 1,
-                Duration = TimeSpan.FromSeconds(1)
-            };
-            Storyboard.SetTarget(showAnimation, ProgressBarContainer);
-            Storyboard.SetTargetProperty(showAnimation, new PropertyPath(OpacityProperty));
-
-            sbProgressShow = new Storyboard();
-            sbProgressShow.Children.Add(showAnimation);
+            Storyboard.SetTarget(HideAnimation, ProgressBarContainer);
+            Storyboard.SetTargetProperty(HideAnimation, new PropertyPath(OpacityProperty));
+            Storyboard.SetTarget(ShowAnimation, ProgressBarContainer);
+            Storyboard.SetTargetProperty(ShowAnimation, new PropertyPath(OpacityProperty));
         }
 
         #region Events
@@ -116,7 +113,7 @@ namespace PhotoReviewer
         {
             if (!BeginProgress())
                 return;
-            photosCollection.DeleteMarked();
+            photosCollection.DeleteMarked(CloseViews);
         }
 
         private void MoveFavoritedButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
@@ -155,13 +152,15 @@ namespace PhotoReviewer
         {
             Dispatcher.Invoke(() =>
             {
+                var path = fileSystemEventArgs.FullPath;
                 switch (fileSystemEventArgs.ChangeType)
                 {
                     case WatcherChangeTypes.Deleted:
-                        photosCollection.DeletePhoto(fileSystemEventArgs.FullPath);
+                        photosCollection.DeletePhoto(path);
+                        CloseViews(path);
                         break;
                     case WatcherChangeTypes.Created:
-                        photosCollection.AddPhoto(fileSystemEventArgs.FullPath);
+                        photosCollection.AddPhoto(path);
                         break;
                 }
             });
@@ -247,7 +246,7 @@ namespace PhotoReviewer
             isInProgress = true;
             ProgressBar.Value = 0;
             // ProgressBarContainer.Visibility = Visibility.Visible;
-            sbProgressShow.Begin();
+            ProgressShowStoryBoard.Begin();
             return true;
         }
 
@@ -260,7 +259,7 @@ namespace PhotoReviewer
             isInProgress = false;
             ProgressBar.Value = 0;
             //ProgressBarContainer.Visibility=Visibility.Collapsed;
-            sbProgressHide.Begin();
+            ProgressHideStoryBoard.Begin();
         }
 
         private void SetNewPath([NotNull] string path)
@@ -271,6 +270,20 @@ namespace PhotoReviewer
             Settings.Default.Save();
             if (PhotosListBox.HasItems)
                 PhotosListBox.SelectedIndex = 0;
+        }
+
+        private void CloseViews(string path)
+        {
+            for (var i = 0; i < photoViews.Count; i++)
+            {
+                var view = photoViews[i];
+                if (view.SelectedPhoto.Path == path)
+                {
+                    view.Close();
+                    photoViews.Remove(view);
+                    i--;
+                }
+            }
         }
 
         #endregion

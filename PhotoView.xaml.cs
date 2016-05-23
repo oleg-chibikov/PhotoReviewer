@@ -25,7 +25,15 @@ namespace PhotoReviewer
         private readonly IList<PhotoView> photoViews;
 
         [NotNull]
-        private readonly Storyboard sb;
+        private static readonly DoubleAnimation FadeAnimation = new DoubleAnimation
+        {
+            From = 0.5,
+            To = 1,
+            Duration = TimeSpan.FromSeconds(0.3)
+        };
+
+        [NotNull]
+        private static readonly Storyboard FadeStoryBoard = new Storyboard { Children = new TimelineCollection { FadeAnimation } };
 
         private bool fullImageLoaded;
 
@@ -40,18 +48,11 @@ namespace PhotoReviewer
             ArrangeWindows();
             SelectedPhoto = selectedPhoto;
             ViewedPhoto.Source = SelectedPhoto.Image;
-            var fade = new DoubleAnimation
-            {
-                From = 0.5,
-                To = 1,
-                Duration = TimeSpan.FromSeconds(0.3)
-            };
 
-            Storyboard.SetTarget(fade, ViewedPhoto);
-            Storyboard.SetTargetProperty(fade, new PropertyPath(OpacityProperty));
+            Storyboard.SetTarget(FadeAnimation, ViewedPhoto);
+            Storyboard.SetTargetProperty(FadeAnimation, new PropertyPath(OpacityProperty));
 
-            sb = new Storyboard();
-            sb.Children.Add(fade);
+            FocusWindow();
         }
 
         [NotNull]
@@ -156,7 +157,7 @@ namespace PhotoReviewer
                     Thread.Sleep(100); //Wait while image is displayed
                     context.Send(t =>
                     {
-                        sb.Begin();
+                        FadeStoryBoard.Begin();
                         onCompleted();
                     }, null);
                 });
@@ -170,7 +171,7 @@ namespace PhotoReviewer
             mainWindow.PhotosListBox.SelectedItem = SelectedPhoto;
             mainWindow.ScrollToSelected();
             action();
-            sb.Begin();
+            FadeStoryBoard.Begin();
         }
 
         private void ChangePhoto([CanBeNull] Photo photo)
@@ -203,6 +204,7 @@ namespace PhotoReviewer
                     photoView.Top = scr.WorkingArea.Y + thirdHeight - borderWidth;
                     photoView.Height = twoThirdsHeight + 2 * borderWidth;
                 }
+                photoViews.Last().FocusWindow();
                 mainWindow.WindowState = WindowState.Normal;
                 mainWindow.Top = scr.WorkingArea.Y;
                 mainWindow.Height = thirdHeight;
@@ -227,6 +229,14 @@ namespace PhotoReviewer
         private void RenameToDate()
         {
             SelectAndAct(() => mainWindow.RenameToDate());
+        }
+
+        private void FocusWindow()
+        {
+            Activate();
+            Topmost = true;  // important
+            Topmost = false; // important
+            Focus();         // important
         }
 
         #endregion
