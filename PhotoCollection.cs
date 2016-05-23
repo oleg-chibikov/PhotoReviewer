@@ -27,6 +27,11 @@ namespace PhotoReviewer
         [NotNull]
         public readonly DbProvider DbProvider = new DbProvider();
 
+        public PhotoCollection()
+        {
+            CollectionChanged += PhotoCollection_CollectionChanged;
+        }
+
         public int FavoritedCount => this.Count(x => x.Favorited);
 
         public int MarkedForDeletionCount => this.Count(x => x.MarkedForDeletion);
@@ -251,7 +256,6 @@ namespace PhotoReviewer
             Remove(photo);
             MarkedForDeletionChanged();
             FavoritedChanged();
-            photo.OnPositionInCollectionChanged();
         }
 
         public void RenamePhoto([NotNull] string oldPath, [NotNull] string newPath)
@@ -263,7 +267,6 @@ namespace PhotoReviewer
             Remove(photo);
             photo.ChangePath(newPath);
             AddPhoto(photo);
-            photo.OnPositionInCollectionChanged();
         }
 
         private void AddPhoto([NotNull] Photo photo)
@@ -273,7 +276,6 @@ namespace PhotoReviewer
             var index = Array.BinarySearch(this.Select(x => x.Name).ToArray(), name, Comparer);
             var insertIndex = ~index;
             Insert(insertIndex, photo);
-            photo.OnPositionInCollectionChanged();
         }
 
         [CanBeNull]
@@ -316,6 +318,12 @@ namespace PhotoReviewer
         private void OnProgress(int percent)
         {
             Progress?.Invoke(this, new ProgressEventArgs(percent));
+        }
+
+        private void PhotoCollection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            foreach (var photo in this)
+                photo.OnPositionInCollectionChanged();
         }
 
         public class ProgressEventArgs
