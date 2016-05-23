@@ -92,7 +92,7 @@ namespace PhotoReviewer
                 case Key.Back:
                     MarkForDeletion();
                     break;
-                case Key.Enter:
+                case Key.Space:
                     Favorite();
                     break;
                 case Key.Left:

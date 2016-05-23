@@ -74,8 +74,7 @@ namespace PhotoReviewer
 
         private void ViewPhotoMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            // ReSharper disable once ObjectCreationAsStatement
-            new PhotoView((Photo)PhotosListBox.SelectedItem, photoViews, this) { Owner = this };
+            OpenView();
         }
 
         private void MarkAsDeletedMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
@@ -123,7 +122,7 @@ namespace PhotoReviewer
             photosCollection.MoveFavorited();
         }
 
-        private void PhotosListBox_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
+        private void PhotosListBox_PreviewKeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -135,8 +134,11 @@ namespace PhotoReviewer
                 case Key.Back:
                     MarkAsDeleted();
                     break;
-                case Key.Enter:
+                case Key.Space:
                     Favorite();
+                    break;
+                case Key.Enter:
+                    OpenView();
                     break;
             }
         }
@@ -284,6 +286,12 @@ namespace PhotoReviewer
                     i--;
                 }
             }
+        }
+
+        private void OpenView()
+        {
+            // ReSharper disable once ObjectCreationAsStatement
+            new PhotoView((Photo)PhotosListBox.SelectedItem, photoViews, this) { Owner = this };
         }
 
         #endregion
