@@ -18,12 +18,6 @@ namespace PhotoReviewer
     /// </summary>
     public sealed class PhotoCollection : ObservableCollection<Photo>
     {
-        /// <summary>
-        /// Sorts files as Windows does.
-        /// </summary>
-        [NotNull]
-        private static readonly IComparer<string> Comparer = new WinComparer();
-
         public class ProgressEventArgs
         {
             public ProgressEventArgs(int percent)
@@ -34,10 +28,19 @@ namespace PhotoReviewer
             public int Percent { get; private set; }
         }
 
+        /// <summary>
+        /// Sorts files as Windows does.
+        /// </summary>
+        [NotNull]
+        private static readonly IComparer<string> Comparer = new WinComparer();
+
         public event EventHandler<ProgressEventArgs> Progress;
 
         [NotNull]
         public readonly DbProvider DbProvider = new DbProvider();
+
+        [NotNull]
+        public IList<PhotoView> PhotoViews { private get; set; }
 
         public int FavoritedCount => this.Count(x => x.Favorited);
 
@@ -193,6 +196,7 @@ namespace PhotoReviewer
                 OnProgress(100);
                 return;
             }
+            var context = SynchronizationContext.Current;
             Task.Run(() =>
             {
                 var i = 0;
@@ -205,6 +209,7 @@ namespace PhotoReviewer
                             UIOption.OnlyErrorDialogs,
                             RecycleOption.SendToRecycleBin);
                     }
+                    context.Send(t => { CloseViews(path); }, null);
                     OnProgress(100 * ++i / count);
                 }
                 DbProvider.Delete(paths);
@@ -257,6 +262,7 @@ namespace PhotoReviewer
             if (photo == null)
                 return;
             Remove(photo);
+            CloseViews(path);
             MarkedForDeletionChanged();
             FavoritedChanged();
         }
@@ -270,6 +276,7 @@ namespace PhotoReviewer
             Remove(photo);
             photo.ChangePath(newPath);
             AddPhoto(photo);
+            photo.OnPositionInCollectionChanged();
         }
 
         private void AddPhoto([NotNull] Photo photo)
@@ -321,6 +328,20 @@ namespace PhotoReviewer
         private void OnProgress(int percent)
         {
             Progress?.Invoke(this, new ProgressEventArgs(percent));
+        }
+
+        private void CloseViews(string path)
+        {
+            for (var i = 0; i < PhotoViews.Count; i++)
+            {
+                var view = PhotoViews[i];
+                if (view.SelectedPhoto.Path == path)
+                {
+                    view.Close();
+                    PhotoViews.Remove(view);
+                    i--;
+                }
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 using System;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -14,7 +16,7 @@ namespace PhotoReviewer
     /// This class describes a single photo - its location, the image and
     /// the metadata extracted from the image.
     /// </summary>
-    public class Photo : DependencyObject
+    public class Photo : DependencyObject,INotifyPropertyChanged
     {
         [NotNull]
         private static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
@@ -84,7 +86,7 @@ namespace PhotoReviewer
             {
                 var bytes = File.ReadAllBytes(Path);
                 var scr = Screen.FromHandle(new WindowInteropHelper(Application.Current.MainWindow).Handle);
-                var bitmap = LoadImage(bytes, Metadata.Orientation, scr.WorkingArea.Width / 2);
+                var bitmap = LoadImage(bytes, Metadata.Orientation, scr.WorkingArea.Width);
                 GC.Collect();
                 return bitmap;
             }
@@ -114,7 +116,7 @@ namespace PhotoReviewer
             }
         }
 
-        public int Index => collection.IndexOf(this);
+        private int Index => collection.IndexOf(this);
 
         [NotNull]
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
@@ -179,8 +181,7 @@ namespace PhotoReviewer
             tb.Freeze();
             return tb;
         }
-
-
+        
         public void ChangePath([NotNull] string path)
         {
             Path = path;
@@ -190,6 +191,14 @@ namespace PhotoReviewer
         public override string ToString()
         {
             return Path;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        public void OnPositionInCollectionChanged()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PositionInCollection)));
         }
     }
 }

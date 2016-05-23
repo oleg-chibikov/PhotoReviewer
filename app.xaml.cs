@@ -9,8 +9,7 @@ namespace PhotoReviewer
         {
             var objectDataProvider = Resources["Photos"] as ObjectDataProvider;
             var photos = objectDataProvider != null ? (PhotoCollection)objectDataProvider.Data : new PhotoCollection();
-            var mainWindow = new MainWindow(photos);
-            mainWindow.Show();
+            new MainWindow(photos).Show();
         }
     }
 }

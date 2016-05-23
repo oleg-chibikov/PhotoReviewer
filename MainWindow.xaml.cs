@@ -37,6 +37,7 @@ namespace PhotoReviewer
         public MainWindow([NotNull] PhotoCollection photosCollection)
         {
             this.photosCollection = photosCollection;
+            photosCollection.PhotoViews = photoViews;
             InitializeComponent();
             var path = Settings.Default.LastFolder;
             if (!string.IsNullOrEmpty(path))
@@ -143,11 +144,11 @@ namespace PhotoReviewer
             }
         }
 
-        private void ImagesDir_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
+        private void ImagesDirTextBox_KeyDown([NotNull] object sender, [NotNull] KeyEventArgs e)
         {
             if (e.Key != Key.Enter)
                 return;
-            SetNewPath(ImagesDir.Text);
+            SetNewPath(ImagesDirTextBox.Text);
         }
 
         private void ImagesDirectoryWatcher_Changed([NotNull] object sender, [NotNull] FileSystemEventArgs fileSystemEventArgs)
@@ -241,6 +242,8 @@ namespace PhotoReviewer
                 return false;
             MoveFavoritedButton.IsEnabled = false;
             DeleteButton.IsEnabled = false;
+            BrowseDirectoryButton.IsEnabled = false;
+            ImagesDirTextBox.IsEnabled = false;
             isInProgress = true;
             ProgressBar.Value = 0;
             // ProgressBarContainer.Visibility = Visibility.Visible;
@@ -252,6 +255,8 @@ namespace PhotoReviewer
         {
             MoveFavoritedButton.IsEnabled = true;
             DeleteButton.IsEnabled = true;
+            BrowseDirectoryButton.IsEnabled = true;
+            ImagesDirTextBox.IsEnabled = true;
             isInProgress = false;
             ProgressBar.Value = 0;
             //ProgressBarContainer.Visibility=Visibility.Collapsed;
@@ -261,7 +266,7 @@ namespace PhotoReviewer
         private void SetNewPath([NotNull] string path)
         {
             imagesDirectoryWatcher.EnableRaisingEvents = false;
-            imagesDirectoryWatcher.Path = photosCollection.Path = Settings.Default.LastFolder = ImagesDir.Text = path;
+            imagesDirectoryWatcher.Path = photosCollection.Path = Settings.Default.LastFolder = ImagesDirTextBox.Text = path;
             imagesDirectoryWatcher.EnableRaisingEvents = true;
             Settings.Default.Save();
             if (PhotosListBox.HasItems)
