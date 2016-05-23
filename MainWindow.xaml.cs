@@ -16,6 +16,27 @@ namespace PhotoReviewer
     public sealed partial class MainWindow
     {
         [NotNull]
+        private static readonly DoubleAnimation HideAnimation = new DoubleAnimation
+        {
+            From = 1,
+            To = 0,
+            Duration = TimeSpan.FromSeconds(1)
+        };
+
+        private static readonly DoubleAnimation ShowAnimation = new DoubleAnimation
+        {
+            From = 0,
+            To = 1,
+            Duration = TimeSpan.FromSeconds(1)
+        };
+
+        [NotNull]
+        private static readonly Storyboard ProgressHideStoryBoard = new Storyboard { Children = new TimelineCollection { HideAnimation } };
+
+        [NotNull]
+        private static readonly Storyboard ProgressShowStoryBoard = new Storyboard { Children = new TimelineCollection { ShowAnimation } };
+
+        [NotNull]
         private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
         {
             Filter = "*.jpg"
@@ -26,27 +47,6 @@ namespace PhotoReviewer
 
         [NotNull]
         private readonly IList<PhotoView> photoViews = new List<PhotoView>();
-
-        [NotNull]
-        private static readonly DoubleAnimation HideAnimation = new DoubleAnimation
-        {
-            From = 1,
-            To = 0,
-            Duration = TimeSpan.FromSeconds(1)
-        };
-
-        private static readonly DoubleAnimation ShowAnimation = new DoubleAnimation
-            {
-                From = 0,
-                To = 1,
-                Duration = TimeSpan.FromSeconds(1)
-            };
-
-        [NotNull]
-        private static readonly Storyboard ProgressHideStoryBoard = new Storyboard { Children = new TimelineCollection { HideAnimation } };
-
-        [NotNull]
-        private static readonly Storyboard ProgressShowStoryBoard = new Storyboard { Children = new TimelineCollection { ShowAnimation } };
 
         private bool isInProgress;
 
@@ -134,8 +134,9 @@ namespace PhotoReviewer
                 case Key.Back:
                     MarkAsDeleted();
                     break;
-                case Key.Space:
-                    Favorite();
+                case Key.F:
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                        Favorite();
                     break;
                 case Key.Enter:
                     OpenView();

@@ -19,21 +19,13 @@ namespace PhotoReviewer
         private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
 
         [NotNull]
+        private readonly Storyboard fadeStoryBoard;
+
+        [NotNull]
         private readonly MainWindow mainWindow;
 
         [NotNull]
         private readonly IList<PhotoView> photoViews;
-
-        [NotNull]
-        private static readonly DoubleAnimation FadeAnimation = new DoubleAnimation
-        {
-            From = 0.5,
-            To = 1,
-            Duration = TimeSpan.FromSeconds(0.3)
-        };
-
-        [NotNull]
-        private static readonly Storyboard FadeStoryBoard = new Storyboard { Children = new TimelineCollection { FadeAnimation } };
 
         private bool fullImageLoaded;
 
@@ -49,8 +41,16 @@ namespace PhotoReviewer
             SelectedPhoto = selectedPhoto;
             ViewedPhoto.Source = SelectedPhoto.Image;
 
-            Storyboard.SetTarget(FadeAnimation, ViewedPhoto);
-            Storyboard.SetTargetProperty(FadeAnimation, new PropertyPath(OpacityProperty));
+            var fadeAnimation = new DoubleAnimation
+            {
+                From = 0.5,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(0.3)
+            };
+
+            Storyboard.SetTarget(fadeAnimation, ViewedPhoto);
+            Storyboard.SetTargetProperty(fadeAnimation, new PropertyPath(OpacityProperty));
+            fadeStoryBoard = new Storyboard { Children = new TimelineCollection { fadeAnimation } };
 
             FocusWindow();
         }
@@ -92,8 +92,9 @@ namespace PhotoReviewer
                 case Key.Back:
                     MarkForDeletion();
                     break;
-                case Key.Space:
-                    Favorite();
+                case Key.F:
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                        Favorite();
                     break;
                 case Key.Left:
                     ChangePhoto(SelectedPhoto.Prev);
@@ -157,7 +158,7 @@ namespace PhotoReviewer
                     Thread.Sleep(100); //Wait while image is displayed
                     context.Send(t =>
                     {
-                        FadeStoryBoard.Begin();
+                        fadeStoryBoard.Begin();
                         onCompleted();
                     }, null);
                 });
@@ -171,7 +172,7 @@ namespace PhotoReviewer
             mainWindow.PhotosListBox.SelectedItem = SelectedPhoto;
             mainWindow.ScrollToSelected();
             action();
-            FadeStoryBoard.Begin();
+            fadeStoryBoard.Begin();
         }
 
         private void ChangePhoto([CanBeNull] Photo photo)
@@ -234,9 +235,9 @@ namespace PhotoReviewer
         private void FocusWindow()
         {
             Activate();
-            Topmost = true;  // important
+            Topmost = true; // important
             Topmost = false; // important
-            Focus();         // important
+            Focus(); // important
         }
 
         #endregion

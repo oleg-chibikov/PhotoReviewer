@@ -193,7 +193,7 @@
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="View (Double click|Enter)" Click="ViewPhotoMenuItem_Click" />
-                            <MenuItem Header="Favorite (Space)" Click="FavoriteMenuItem_Click" />
+                            <MenuItem Header="Favorite (Ctrl+F)" Click="FavoriteMenuItem_Click" />
                             <MenuItem Header="Mark as deleted (Delete|Backspace)" Click="MarkAsDeletedMenuItem_Click" />
                             <MenuItem Header="Rename to date (Ctrl+R)" Click="RenameToDateMenuItem_Click" />
                             <MenuItem Header="Open in Explorer" Click="OpenInExplorerMenuItem_Click" />

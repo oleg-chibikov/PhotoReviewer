@@ -115,7 +115,7 @@ namespace PhotoReviewer
 
         public void Favorite([NotNull] Photo[] photos)
         {
-            if (!photos.Any())
+             if (!photos.Any())
             {
                 MessageBox.Show("Nothing to favorite");
                 OnProgress(100);
