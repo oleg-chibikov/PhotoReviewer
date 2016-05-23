@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using System.Windows.Shell;
 using JetBrains.Annotations;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
@@ -179,6 +180,7 @@ namespace PhotoReviewer
             Dispatcher.Invoke(() =>
             {
                 ProgressBar.Value = e.Percent;
+                TaskbarItemInfo.ProgressValue = (double)e.Percent / 100;
                 if (e.Percent == 100)
                     EndProgress();
             });
@@ -242,12 +244,14 @@ namespace PhotoReviewer
         {
             if (isInProgress)
                 return false;
+            TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
             MoveFavoritedButton.IsEnabled = false;
             DeleteButton.IsEnabled = false;
             BrowseDirectoryButton.IsEnabled = false;
             ImagesDirTextBox.IsEnabled = false;
             isInProgress = true;
             ProgressBar.Value = 0;
+            TaskbarItemInfo.ProgressValue = 0;
             // ProgressBarContainer.Visibility = Visibility.Visible;
             ProgressShowStoryBoard.Begin();
             return true;
@@ -255,12 +259,12 @@ namespace PhotoReviewer
 
         private void EndProgress()
         {
+            TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
             MoveFavoritedButton.IsEnabled = true;
             DeleteButton.IsEnabled = true;
             BrowseDirectoryButton.IsEnabled = true;
             ImagesDirTextBox.IsEnabled = true;
             isInProgress = false;
-            ProgressBar.Value = 0;
             //ProgressBarContainer.Visibility=Visibility.Collapsed;
             ProgressHideStoryBoard.Begin();
         }
