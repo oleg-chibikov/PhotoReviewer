@@ -90,7 +90,7 @@ namespace PhotoReviewer
 
         private void OpenInExplorerMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            OpenInExplorer(((Photo)PhotosListBox.SelectedItem).Path);
+            OpenInExplorer(((Photo)PhotosListBox.SelectedItem).FilePath);
         }
 
         private void RenameToDateMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
@@ -229,7 +229,7 @@ namespace PhotoReviewer
             {
                 var i = 0;
                 Photo lastRenamed = null;
-                while (i++ < 5 && (lastRenamed = photosCollection.SingleOrDefault(x => x.Path == path)) == null)
+                while (i++ < 5 && (lastRenamed = photosCollection.SingleOrDefault(x => x.FilePath == path)) == null)
                     Thread.Sleep(100);
                 PhotosListBox.SelectedItem = lastRenamed;
                 ScrollToSelected();
@@ -284,7 +284,7 @@ namespace PhotoReviewer
             for (var i = 0; i < photoViews.Count; i++)
             {
                 var view = photoViews[i];
-                if (view.SelectedPhoto.Path == path)
+                if (view.SelectedPhoto.FilePath == path)
                 {
                     view.Close();
                     photoViews.Remove(view);

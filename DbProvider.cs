@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
 using LiteDB;
@@ -26,19 +27,15 @@ namespace PhotoReviewer
 
         public DbProvider()
         {
-            db = new LiteDatabase(DbName);
+            var dbFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), nameof(PhotoReviewer));
+            if (!Directory.Exists(dbFolder))
+                Directory.CreateDirectory(dbFolder);
+            db = new LiteDatabase(Path.Combine(dbFolder, DbName));
         }
 
         public void Dispose()
         {
             db.Dispose();
-        }
-
-        public void Save([NotNull] string path, OperationType operationType)
-        {
-            var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
-            dbPhotos.Insert(new DbPhoto(path));
-            dbPhotos.EnsureIndex(x => x.Path);
         }
 
         public void Save([NotNull] string[] paths, OperationType operationType)
@@ -61,7 +58,7 @@ namespace PhotoReviewer
             Delete(path, OperationType.Favorite);
         }
 
-        public void Delete([NotNull] string path, OperationType operationType)
+        private void Delete([NotNull] string path, OperationType operationType)
         {
             var dbPhotos = db.GetCollection<DbPhoto>(operationType == OperationType.MarkForDeletion ? MarkedForDeletionTable : FavoritedTable);
             dbPhotos.Delete(x => x.Path == path);

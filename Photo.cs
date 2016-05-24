@@ -27,7 +27,7 @@ namespace PhotoReviewer
         private static readonly DependencyProperty NameProperty = DependencyProperty<Photo>.Register(x => x.Name);
 
         [NotNull]
-        private static readonly DependencyProperty PathProperty = DependencyProperty<Photo>.Register(x => x.Path);
+        private static readonly DependencyProperty FilePathProperty = DependencyProperty<Photo>.Register(x => x.FilePath);
 
         [NotNull]
         private readonly PhotoCollection collection;
@@ -36,8 +36,8 @@ namespace PhotoReviewer
         {
             this.collection = collection;
             ChangePath(path);
-            MarkedForDeletion = collection.DbProvider.Check(Path, DbProvider.OperationType.MarkForDeletion);
-            Favorited = collection.DbProvider.Check(Path, DbProvider.OperationType.Favorite);
+            MarkedForDeletion = collection.DbProvider.Check(FilePath, DbProvider.OperationType.MarkForDeletion);
+            Favorited = collection.DbProvider.Check(FilePath, DbProvider.OperationType.Favorite);
             Metadata = metadata;
         }
 
@@ -72,10 +72,10 @@ namespace PhotoReviewer
         }
 
         [NotNull]
-        public string Path
+        public string FilePath
         {
-            get { return (string)GetValue(PathProperty); }
-            private set { SetValue(PathProperty, value); }
+            get { return (string)GetValue(FilePathProperty); }
+            private set { SetValue(FilePathProperty, value); }
         }
 
         [CanBeNull]
@@ -83,7 +83,7 @@ namespace PhotoReviewer
         {
             get
             {
-                var bytes = File.ReadAllBytes(Path);
+                var bytes = File.ReadAllBytes(FilePath);
                 var scr = Screen.FromHandle(new WindowInteropHelper(Application.Current.MainWindow).Handle);
                 var bitmap = LoadImage(bytes, Metadata.Orientation, scr.WorkingArea.Width);
                 GC.Collect();
@@ -125,7 +125,7 @@ namespace PhotoReviewer
         [CanBeNull]
         public BitmapSource GetFullImage([CanBeNull] EventHandler onCompleted = null)
         {
-            var bytes = File.ReadAllBytes(Path);
+            var bytes = File.ReadAllBytes(FilePath);
             var bitmap = LoadImage(bytes, Metadata.Orientation, onCompleted: onCompleted);
             GC.Collect();
             return bitmap;
@@ -185,13 +185,13 @@ namespace PhotoReviewer
 
         public void ChangePath([NotNull] string path)
         {
-            Path = path;
-            Name = System.IO.Path.GetFileNameWithoutExtension(path);
+            FilePath = path;
+            Name = Path.GetFileNameWithoutExtension(path);
         }
 
         public override string ToString()
         {
-            return Path;
+            return FilePath;
         }
 
         [NotifyPropertyChangedInvocator]

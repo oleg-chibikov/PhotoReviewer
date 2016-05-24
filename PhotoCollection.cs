@@ -101,7 +101,7 @@ namespace PhotoReviewer
                     photo.Favorited = false;
                     OnProgress(100 * ++i / count);
                 }
-                var paths = notMarked.Select(x => x.Path).ToArray();
+                var paths = notMarked.Select(x => x.FilePath).ToArray();
                 DbProvider.Save(paths, DbProvider.OperationType.MarkForDeletion);
                 DbProvider.Delete(paths, DbProvider.OperationType.Favorite);
             }
@@ -114,7 +114,7 @@ namespace PhotoReviewer
                     photo.MarkedForDeletion = false;
                     OnProgress(100 * ++i / count);
                 }
-                DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.MarkForDeletion);
+                DbProvider.Delete(photos.Select(x => x.FilePath).ToArray(), DbProvider.OperationType.MarkForDeletion);
             }
         }
 
@@ -137,7 +137,7 @@ namespace PhotoReviewer
                     photo.MarkedForDeletion = false;
                     OnProgress(100 * ++i / count);
                 }
-                var paths = notFavorited.Select(x => x.Path).ToArray();
+                var paths = notFavorited.Select(x => x.FilePath).ToArray();
                 DbProvider.Save(paths, DbProvider.OperationType.Favorite);
                 DbProvider.Delete(paths, DbProvider.OperationType.MarkForDeletion);
             }
@@ -150,7 +150,7 @@ namespace PhotoReviewer
                     photo.Favorited = false;
                     OnProgress(100 * ++i / count);
                 }
-                DbProvider.Delete(photos.Select(x => x.Path).ToArray(), DbProvider.OperationType.Favorite);
+                DbProvider.Delete(photos.Select(x => x.FilePath).ToArray(), DbProvider.OperationType.Favorite);
             }
         }
 
@@ -163,7 +163,7 @@ namespace PhotoReviewer
                 return;
             }
             string newPath = null;
-            var data = photos.Select(x => new { x.Name, x.Path, x.Metadata.DateImageTaken }).ToArray();
+            var data = photos.Select(x => new { x.Name, Path = x.FilePath, x.Metadata.DateImageTaken }).ToArray();
             var context = SynchronizationContext.Current;
             Task.Run(() =>
             {
@@ -181,7 +181,7 @@ namespace PhotoReviewer
 
         public void DeleteMarked([NotNull] Action<string> onDelete)
         {
-            var paths = this.Where(x => x.MarkedForDeletion).Select(x => x.Path).ToArray();
+            var paths = this.Where(x => x.MarkedForDeletion).Select(x => x.FilePath).ToArray();
             if (!paths.Any())
             {
                 MessageBox.Show("Nothing to delete");
@@ -210,7 +210,7 @@ namespace PhotoReviewer
 
         public void MoveFavorited()
         {
-            var paths = this.Where(x => x.Favorited).Select(x => x.Path).ToArray();
+            var paths = this.Where(x => x.Favorited).Select(x => x.FilePath).ToArray();
             if (!paths.Any())
             {
                 MessageBox.Show("Nothing to move");
@@ -250,7 +250,7 @@ namespace PhotoReviewer
         public void DeletePhoto([NotNull] string path)
         {
             DbProvider.Delete(path);
-            var photo = this.SingleOrDefault(x => x.Path == path);
+            var photo = this.SingleOrDefault(x => x.FilePath == path);
             if (photo == null)
                 return;
             Remove(photo);
@@ -261,7 +261,7 @@ namespace PhotoReviewer
         public void RenamePhoto([NotNull] string oldPath, [NotNull] string newPath)
         {
             DbProvider.Rename(oldPath, newPath);
-            var photo = this.SingleOrDefault(x => x.Path == oldPath);
+            var photo = this.SingleOrDefault(x => x.FilePath == oldPath);
             if (photo == null)
                 return;
             Remove(photo);
