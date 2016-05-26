@@ -136,8 +136,7 @@ namespace PhotoReviewer
                     MarkAsDeleted();
                     break;
                 case Key.F:
-                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-                        Favorite();
+                    Favorite();
                     break;
                 case Key.Enter:
                     OpenView();

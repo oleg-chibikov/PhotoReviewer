@@ -83,7 +83,7 @@
                 <Image Name="ViewedPhoto">
                     <Image.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Favorite (Ctrl+F)" Click="FavoriteMenuItem_Click" />
+                            <MenuItem Header="Favorite (F)" Click="FavoriteMenuItem_Click" />
                             <MenuItem Header="Mark as deleted (Delete|Backspace)" Click="MarkAsDeletedMenuItem_Click" />
                             <MenuItem Header="Rename to date (Ctrl+R)" Click="RenameToDateMenuItem_Click" />
                             <MenuItem Header="Open in Explorer" Click="OpenInExplorerMenuItem_Click" />

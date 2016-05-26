@@ -93,8 +93,7 @@ namespace PhotoReviewer
                     MarkForDeletion();
                     break;
                 case Key.F:
-                    if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-                        Favorite();
+                    Favorite();
                     break;
                 case Key.Left:
                     ChangePhoto(SelectedPhoto.Prev);
