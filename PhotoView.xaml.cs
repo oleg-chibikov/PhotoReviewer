@@ -138,7 +138,7 @@ namespace PhotoReviewer
             ChangePhoto(SelectedPhoto.Next);
         }
 
-        private void FullscreenButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
+        private void FullHeightButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
             ToggleFullHeight();
         }
@@ -232,6 +232,8 @@ namespace PhotoReviewer
                 var actualWidth = width + 2 * borderWidth;
                 foreach (var photoView in photoViews)
                 {
+                    photoView.WindowStartupLocation = WindowStartupLocation.Manual;
+                    photoView.WindowState = WindowState.Normal;
                     photoView.Left = left - borderWidth;
                     left += width;
                     photoView.Width = actualWidth;
@@ -271,7 +273,7 @@ namespace PhotoReviewer
 
         private static void ToggleFullheightImage(PhotoView photoView, bool isFullheight)
         {
-            photoView.FullheightImage.Source = isFullheight?FullScreenExitImg:FullScreenImg;
+            photoView.FullHeightImage.Source = isFullheight?FullScreenExitImg:FullScreenImg;
             photoView.isFullHeight = isFullheight;
         }
 

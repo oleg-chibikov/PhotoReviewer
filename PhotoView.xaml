@@ -76,8 +76,8 @@
         </Border>
         
         <Border HorizontalAlignment="Center" Grid.Column="2" Grid.Row="0">
-            <Button Focusable="False" Click="FullscreenButton_Click">
-                <Image Name="FullheightImage" Source="img\Fullscreen.png" />
+            <Button Focusable="False" Click="FullHeightButton_Click">
+                <Image Name="FullHeightImage" Source="img\FullScreen.png" />
             </Button>
         </Border>
 
