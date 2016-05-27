@@ -147,11 +147,11 @@ namespace PhotoReviewer
         {
             if (!e.HeightChanged)
                 return;
-            var fullHeight = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle).WorkingArea.Height;
+            var fullHeight = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle).WorkingArea.Height + WindowBorderWidth;
             var newHeight = e.NewSize.Height;
             var newSizeIsFullHeight = Math.Abs(newHeight - fullHeight) < 50;
             if (newSizeIsFullHeight != isFullHeight)
-                ToggleFullheightImage(this, newSizeIsFullHeight);
+                ToggleFullHeightImage(this, newSizeIsFullHeight);
         }
 
         private void Window_Closed([NotNull] object sender, [NotNull] EventArgs e)
@@ -204,9 +204,10 @@ namespace PhotoReviewer
             SelectAndAct(() => PhotoZoomBorder.Reset());
         }
 
+        const double WindowBorderWidth = 8;
+
         private void ArrangeWindows(bool defaultHeight = false)
         {
-            const double borderWidth = 8;
             var scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
             if (photoViews.Any())
             {
@@ -218,8 +219,8 @@ namespace PhotoReviewer
                 bool isFirstFullHeight;
                 if (defaultHeight)
                 {
-                    firstTop = scr.WorkingArea.Y + thirdHeight - borderWidth;
-                    firstHeight = twoThirdsHeight + 2 * borderWidth;
+                    firstTop = scr.WorkingArea.Y + thirdHeight - WindowBorderWidth;
+                    firstHeight = twoThirdsHeight + 2 * WindowBorderWidth;
                     isFirstFullHeight = false;
                 }
                 else
@@ -229,24 +230,24 @@ namespace PhotoReviewer
                     firstHeight = first.Height;
                     isFirstFullHeight = first.isFullHeight;
                 }
-                var actualWidth = width + 2 * borderWidth;
+                var actualWidth = width + 2 * WindowBorderWidth;
                 foreach (var photoView in photoViews)
                 {
                     photoView.WindowStartupLocation = WindowStartupLocation.Manual;
                     photoView.WindowState = WindowState.Normal;
-                    photoView.Left = left - borderWidth;
+                    photoView.Left = left - WindowBorderWidth;
                     left += width;
                     photoView.Width = actualWidth;
                     photoView.Top = firstTop;
                     photoView.Height = firstHeight;
-                    ToggleFullheightImage(photoView, isFirstFullHeight);
+                    ToggleFullHeightImage(photoView, isFirstFullHeight);
                 }
                 photoViews.Last().FocusWindow();
                 mainWindow.WindowState = WindowState.Normal;
                 mainWindow.Top = scr.WorkingArea.Y;
                 mainWindow.Height = thirdHeight;
-                mainWindow.Width = scr.WorkingArea.Width + 2 * borderWidth;
-                mainWindow.Left = scr.WorkingArea.X - borderWidth;
+                mainWindow.Width = scr.WorkingArea.Width + 2 * WindowBorderWidth;
+                mainWindow.Left = scr.WorkingArea.X - WindowBorderWidth;
             }
             else
                 mainWindow.WindowState = WindowState.Maximized;
@@ -259,21 +260,21 @@ namespace PhotoReviewer
         private void ToggleFullHeight()
         {
             var scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
-
+            var fullHeight = scr.WorkingArea.Height + WindowBorderWidth;
             if (isFullHeight)
                 ArrangeWindows(true);
             else
                 foreach (var photoView in photoViews)
                 {
                     photoView.Top = 0;
-                    photoView.Height = scr.WorkingArea.Height;
-                    ToggleFullheightImage(photoView, true);
+                    photoView.Height = fullHeight;
+                    ToggleFullHeightImage(photoView, true);
                 }
         }
 
-        private static void ToggleFullheightImage(PhotoView photoView, bool isFullheight)
+        private static void ToggleFullHeightImage(PhotoView photoView, bool isFullheight)
         {
-            photoView.FullHeightImage.Source = isFullheight?FullScreenExitImg:FullScreenImg;
+            photoView.FullHeightImage.Source = isFullheight ? FullScreenExitImg : FullScreenImg;
             photoView.isFullHeight = isFullheight;
         }
 
