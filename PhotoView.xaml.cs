@@ -204,22 +204,28 @@ namespace PhotoReviewer
             SelectAndAct(() => PhotoZoomBorder.Reset());
         }
 
-        const double WindowBorderWidth = 8;
+        private const double WindowBorderWidth = 8;
 
         private void ArrangeWindows(bool defaultHeight = false)
         {
             var scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
             if (photoViews.Any())
             {
-                var width = scr.WorkingArea.Width / photoViews.Count;
-                double left = scr.WorkingArea.Left;
                 var thirdHeight = scr.WorkingArea.Height / 3;
+                mainWindow.WindowState = WindowState.Normal;
+                mainWindow.Top = scr.WorkingArea.Top;
+                mainWindow.Height = thirdHeight;
+                mainWindow.Width = scr.WorkingArea.Width + 2 * WindowBorderWidth;
+                mainWindow.Left = scr.WorkingArea.Left - WindowBorderWidth;
+                mainWindow.ScrollToSelected();
+                double left = scr.WorkingArea.Left;
+                var width = scr.WorkingArea.Width / photoViews.Count;
                 var twoThirdsHeight = thirdHeight * 2;
                 double firstTop, firstHeight;
                 bool isFirstFullHeight;
                 if (defaultHeight)
                 {
-                    firstTop = scr.WorkingArea.Y + thirdHeight - WindowBorderWidth;
+                    firstTop = scr.WorkingArea.Top + thirdHeight - WindowBorderWidth;
                     firstHeight = twoThirdsHeight + 2 * WindowBorderWidth;
                     isFirstFullHeight = false;
                 }
@@ -242,16 +248,16 @@ namespace PhotoReviewer
                     photoView.Height = firstHeight;
                     ToggleFullHeightImage(photoView, isFirstFullHeight);
                 }
-                photoViews.Last().FocusWindow();
-                mainWindow.WindowState = WindowState.Normal;
-                mainWindow.Top = scr.WorkingArea.Y;
-                mainWindow.Height = thirdHeight;
-                mainWindow.Width = scr.WorkingArea.Width + 2 * WindowBorderWidth;
-                mainWindow.Left = scr.WorkingArea.X - WindowBorderWidth;
+                Task.Run(() =>
+                {
+                    //Wait while main window is scrolling to selected item
+                    Thread.Sleep(500);
+                    if (photoViews.Any())
+                        Dispatcher.Invoke(photoViews.Last().FocusWindow);
+                });
             }
             else
                 mainWindow.WindowState = WindowState.Maximized;
-            mainWindow.ScrollToSelected();
         }
 
         private static readonly BitmapSource FullScreenImg = new BitmapImage(new Uri(@"/img/FullScreen.png", UriKind.Relative));
