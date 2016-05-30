@@ -168,7 +168,7 @@ namespace PhotoReviewer
                         CloseViews(path);
                         break;
                     case WatcherChangeTypes.Created:
-                        photosCollection.AddPhoto(path);
+                        photosCollection.GetDetailsAndAddPhoto(path);
                         break;
                 }
             });
@@ -179,7 +179,7 @@ namespace PhotoReviewer
             Dispatcher.Invoke(() => { photosCollection.RenamePhoto(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath); });
         }
 
-        private void PhotosCollection_Progress(object sender, PhotoCollection.ProgressEventArgs e)
+        private void PhotosCollection_Progress(object sender, ProgressEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {

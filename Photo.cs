@@ -32,12 +32,12 @@ namespace PhotoReviewer
         [NotNull]
         private readonly PhotoCollection collection;
 
-        public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, [NotNull] PhotoCollection collection)
+        public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, [NotNull] PhotoCollection collection, bool markedForDeletion, bool favorited)
         {
             this.collection = collection;
             ChangePath(path);
-            MarkedForDeletion = collection.DbProvider.Check(FilePath, DbProvider.OperationType.MarkForDeletion);
-            Favorited = collection.DbProvider.Check(FilePath, DbProvider.OperationType.Favorite);
+            MarkedForDeletion = markedForDeletion;
+            Favorited = favorited;
             Metadata = metadata;
         }
 

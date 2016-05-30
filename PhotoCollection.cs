@@ -13,6 +13,16 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace PhotoReviewer
 {
+    public class ProgressEventArgs
+    {
+        public ProgressEventArgs(int percent)
+        {
+            Percent = percent;
+        }
+
+        public int Percent { get; private set; }
+    }
+
     /// <summary>
     /// This class represents a collection of photos in a directory.
     /// </summary>
@@ -25,7 +35,7 @@ namespace PhotoReviewer
         private static readonly IComparer<string> Comparer = new WinComparer();
 
         [NotNull]
-        public readonly DbProvider DbProvider = new DbProvider();
+        private readonly DbProvider dbProvider = new DbProvider();
 
         public PhotoCollection()
         {
@@ -51,10 +61,7 @@ namespace PhotoReviewer
                     {
                         var files = directory.GetFiles("*.jpg").OrderBy(f => f.Name, Comparer);
                         foreach (var f in files)
-                        {
-                            var metadata = new ExifMetadata(f.FullName);
-                            context.Send(x => { Add(new Photo(f.FullName, metadata, this)); }, null);
-                        }
+                            GetDetailsAndAddPhoto(f.FullName, context, false);
                         FavoritedChanged();
                         MarkedForDeletionChanged();
                         GC.Collect();
@@ -97,8 +104,8 @@ namespace PhotoReviewer
                     OnProgress(100 * ++i / count);
                 }
                 var paths = notMarked.Select(x => x.FilePath).ToArray();
-                DbProvider.Save(paths, DbProvider.OperationType.MarkForDeletion);
-                DbProvider.Delete(paths, DbProvider.OperationType.Favorite);
+                dbProvider.Save(paths, DbProvider.OperationType.MarkForDeletion);
+                dbProvider.Delete(paths, DbProvider.OperationType.Favorite);
             }
             else
             {
@@ -109,7 +116,7 @@ namespace PhotoReviewer
                     photo.MarkedForDeletion = false;
                     OnProgress(100 * ++i / count);
                 }
-                DbProvider.Delete(photos.Select(x => x.FilePath).ToArray(), DbProvider.OperationType.MarkForDeletion);
+                dbProvider.Delete(photos.Select(x => x.FilePath).ToArray(), DbProvider.OperationType.MarkForDeletion);
             }
         }
 
@@ -133,8 +140,8 @@ namespace PhotoReviewer
                     OnProgress(100 * ++i / count);
                 }
                 var paths = notFavorited.Select(x => x.FilePath).ToArray();
-                DbProvider.Save(paths, DbProvider.OperationType.Favorite);
-                DbProvider.Delete(paths, DbProvider.OperationType.MarkForDeletion);
+                dbProvider.Save(paths, DbProvider.OperationType.Favorite);
+                dbProvider.Delete(paths, DbProvider.OperationType.MarkForDeletion);
             }
             else
             {
@@ -145,7 +152,7 @@ namespace PhotoReviewer
                     photo.Favorited = false;
                     OnProgress(100 * ++i / count);
                 }
-                DbProvider.Delete(photos.Select(x => x.FilePath).ToArray(), DbProvider.OperationType.Favorite);
+                dbProvider.Delete(photos.Select(x => x.FilePath).ToArray(), DbProvider.OperationType.Favorite);
             }
         }
 
@@ -199,7 +206,7 @@ namespace PhotoReviewer
                     context.Send(t => { onDelete(path); }, null);
                     OnProgress(100 * ++i / count);
                 }
-                DbProvider.Delete(paths);
+                dbProvider.Delete(paths);
             });
         }
 
@@ -232,19 +239,15 @@ namespace PhotoReviewer
             });
         }
 
-        public void AddPhoto([NotNull] string path)
+        public void GetDetailsAndAddPhoto([NotNull] string path)
         {
             var context = SynchronizationContext.Current;
-            Task.Run(() =>
-            {
-                var metadata = new ExifMetadata(path);
-                context.Send(x => { AddPhoto(new Photo(path, metadata, this)); }, null);
-            });
+            Task.Run(() => GetDetailsAndAddPhoto(path, context, true));
         }
 
         public void DeletePhoto([NotNull] string path)
         {
-            DbProvider.Delete(path);
+            dbProvider.Delete(path);
             var photo = this.SingleOrDefault(x => x.FilePath == path);
             if (photo == null)
                 return;
@@ -255,22 +258,13 @@ namespace PhotoReviewer
 
         public void RenamePhoto([NotNull] string oldPath, [NotNull] string newPath)
         {
-            DbProvider.Rename(oldPath, newPath);
+            dbProvider.Rename(oldPath, newPath);
             var photo = this.SingleOrDefault(x => x.FilePath == oldPath);
             if (photo == null)
                 return;
             Remove(photo);
             photo.ChangePath(newPath);
-            AddPhoto(photo);
-        }
-
-        private void AddPhoto([NotNull] Photo photo)
-        {
-            //http://stackoverflow.com/questions/748596/finding-best-position-for-element-in-list
-            var name = photo.Name;
-            var index = Array.BinarySearch(this.Select(x => x.Name).ToArray(), name, Comparer);
-            var insertIndex = ~index;
-            Insert(insertIndex, photo);
+            InsertAtProperIndex(photo);
         }
 
         [CanBeNull]
@@ -315,20 +309,34 @@ namespace PhotoReviewer
             Progress?.Invoke(this, new ProgressEventArgs(percent));
         }
 
-        private void PhotoCollection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void PhotoCollection_CollectionChanged([NotNull]object sender, [NotNull]System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             foreach (var photo in this)
                 photo.OnPositionInCollectionChanged();
         }
 
-        public class ProgressEventArgs
+        private void GetDetailsAndAddPhoto([NotNull] string path, [NotNull] SynchronizationContext context, bool findIndex)
         {
-            public ProgressEventArgs(int percent)
+            var metadata = new ExifMetadata(path);
+            var markedForDeletion = dbProvider.Check(path, DbProvider.OperationType.MarkForDeletion);
+            var favorited = dbProvider.Check(path, DbProvider.OperationType.Favorite);
+            context.Send(x =>
             {
-                Percent = percent;
-            }
+                var photo = new Photo(path, metadata, this, markedForDeletion, favorited);
+                if (findIndex)
+                    InsertAtProperIndex(photo);
+                else
+                    Add(photo);
+            }, null);
+        }
 
-            public int Percent { get; private set; }
+        private void InsertAtProperIndex([NotNull] Photo photo)
+        {
+            //http://stackoverflow.com/questions/748596/finding-best-position-for-element-in-list
+            var name = photo.Name;
+            var index = Array.BinarySearch(this.Select(x => x.Name).ToArray(), name, Comparer);
+            var insertIndex = ~index;
+            Insert(insertIndex, photo);
         }
     }
 }
