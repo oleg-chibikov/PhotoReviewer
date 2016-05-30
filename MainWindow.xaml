@@ -177,6 +177,11 @@
                 <Button Name="DeleteButton" Content="{Binding Path=MarkedForDeletionCount}"
                         ContentStringFormat="Delete marked (0)" Click="DeleteButton_Click" />
             </DockPanel>
+            
+            <!-- Open in Explorer Button -->
+            <DockPanel DockPanel.Dock="Bottom" Margin="5">
+                <Button Content="Open folder in Explorer" Click="OpenInExplorerButton_Click" />
+            </DockPanel>
 
             <!-- Zoom Control -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">

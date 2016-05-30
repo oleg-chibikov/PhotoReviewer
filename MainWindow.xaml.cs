@@ -90,7 +90,7 @@ namespace PhotoReviewer
 
         private void OpenInExplorerMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            OpenInExplorer(((Photo)PhotosListBox.SelectedItem).FilePath);
+            OpenFileInExplorer(((Photo)PhotosListBox.SelectedItem).FilePath);
         }
 
         private void RenameToDateMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
@@ -107,6 +107,11 @@ namespace PhotoReviewer
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 return;
             SetNewPath(dialog.SelectedPath);
+        }
+
+        private void OpenInExplorerButton_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(ImagesDirTextBox.Text);
         }
 
         private void DeleteButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
@@ -189,7 +194,7 @@ namespace PhotoReviewer
 
         #region Public
 
-        public static void OpenInExplorer([NotNull] string filePath)
+        public static void OpenFileInExplorer([NotNull] string filePath)
         {
             new Process
             {

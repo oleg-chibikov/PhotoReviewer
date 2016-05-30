@@ -88,7 +88,7 @@ namespace PhotoReviewer
 
         private void OpenInExplorerMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            MainWindow.OpenInExplorer(SelectedPhoto.FilePath);
+            MainWindow.OpenFileInExplorer(SelectedPhoto.FilePath);
         }
 
         private void RenameToDateMenuItem_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
