@@ -16,6 +16,14 @@ namespace PhotoReviewer
 {
     public partial class PhotoView
     {
+        private const double WindowBorderWidth = 8;
+
+        [NotNull]
+        private static readonly BitmapSource FullScreenImg = new BitmapImage(new Uri(@"/img/FullScreen.png", UriKind.Relative));
+
+        [NotNull]
+        private static readonly BitmapSource FullScreenExitImg = new BitmapImage(new Uri(@"/img/FullScreenExit.png", UriKind.Relative));
+
         [NotNull]
         private static readonly DependencyProperty SelectedPhotoProperty = DependencyProperty<PhotoView>.Register(x => x.SelectedPhoto);
 
@@ -204,8 +212,6 @@ namespace PhotoReviewer
             SelectAndAct(() => PhotoZoomBorder.Reset());
         }
 
-        private const double WindowBorderWidth = 8;
-
         private void ArrangeWindows(bool defaultHeight = false)
         {
             var scr = Screen.FromHandle(new WindowInteropHelper(mainWindow).Handle);
@@ -259,9 +265,6 @@ namespace PhotoReviewer
             else
                 mainWindow.WindowState = WindowState.Maximized;
         }
-
-        private static readonly BitmapSource FullScreenImg = new BitmapImage(new Uri(@"/img/FullScreen.png", UriKind.Relative));
-        private static readonly BitmapSource FullScreenExitImg = new BitmapImage(new Uri(@"/img/FullScreenExit.png", UriKind.Relative));
 
         private void ToggleFullHeight()
         {

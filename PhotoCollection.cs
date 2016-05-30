@@ -40,30 +40,25 @@ namespace PhotoReviewer
         {
             set
             {
+                if (string.IsNullOrWhiteSpace(value))
+                    return;
                 var directory = new DirectoryInfo(value);
                 if (directory.Exists)
                 {
                     Clear();
-                    try
+                    var context = SynchronizationContext.Current;
+                    Task.Run(() =>
                     {
-                        var context = SynchronizationContext.Current;
-                        Task.Run(() =>
+                        var files = directory.GetFiles("*.jpg").OrderBy(f => f.Name, Comparer);
+                        foreach (var f in files)
                         {
-                            var files = directory.GetFiles("*.jpg").OrderBy(f => f.Name, Comparer);
-                            foreach (var f in files)
-                            {
-                                var metadata = new ExifMetadata(f.FullName);
-                                context.Send(x => { Add(new Photo(f.FullName, metadata, this)); }, null);
-                            }
-                            FavoritedChanged();
-                            MarkedForDeletionChanged();
-                        });
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        MessageBox.Show("No such directory");
-                    }
-                    GC.Collect();
+                            var metadata = new ExifMetadata(f.FullName);
+                            context.Send(x => { Add(new Photo(f.FullName, metadata, this)); }, null);
+                        }
+                        FavoritedChanged();
+                        MarkedForDeletionChanged();
+                        GC.Collect();
+                    });
                 }
                 else
                     MessageBox.Show("No such directory");

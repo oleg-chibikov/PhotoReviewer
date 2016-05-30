@@ -9,7 +9,8 @@
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Closed="Window_Closed"
         WindowStartupLocation="Manual"
-        Background="#222" SizeChanged="Window_SizeChanged">
+        Background="#222"
+        SizeChanged="Window_SizeChanged">
     <Window.Resources>
         <Style TargetType="Border" x:Key="ColorByDeleted">
             <Style.Triggers>

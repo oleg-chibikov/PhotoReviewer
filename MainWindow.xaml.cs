@@ -56,7 +56,7 @@ namespace PhotoReviewer
             this.photosCollection = photosCollection;
             InitializeComponent();
             var path = Settings.Default.LastFolder;
-            if (!string.IsNullOrEmpty(path))
+            if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
                 SetNewPath(path);
             photosCollection.Progress += PhotosCollection_Progress;
             imagesDirectoryWatcher.Created += ImagesDirectoryWatcher_Changed;
