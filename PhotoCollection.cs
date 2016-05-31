@@ -28,6 +28,22 @@ namespace PhotoReviewer
     /// </summary>
     public sealed class PhotoCollection : ObservableCollection<Photo>
     {
+        private sealed class PhotoDetails
+        {
+            public string Path { get; }
+            public ExifMetadata Metadata { get; }
+            public bool MarkedForDeletion { get; }
+            public bool Favorited { get; }
+
+            public PhotoDetails(string path, ExifMetadata metadata, bool markedForDeletion, bool favorited)
+            {
+                Path = path;
+                Metadata = metadata;
+                MarkedForDeletion = markedForDeletion;
+                Favorited = favorited;
+            }
+        }
+
         /// <summary>
         /// Sorts files as Windows does.
         /// </summary>
@@ -60,8 +76,15 @@ namespace PhotoReviewer
                     Task.Run(() =>
                     {
                         var files = directory.GetFiles("*.jpg").OrderBy(f => f.Name, Comparer);
-                        foreach (var f in files)
-                            GetDetailsAndAddPhoto(f.FullName, context, false);
+                        RunByBlocks(files, 50, block =>
+                        {
+                            var detailsBlock = block.Select(x => GetPhotoDetails(x.FullName)).ToArray();
+                            context.Send(t =>
+                            {
+                                foreach (var details in detailsBlock)
+                                    Add(new Photo(details.Path, details.Metadata, details.MarkedForDeletion, details.Favorited, this));
+                            }, null);
+                        });
                         FavoritedChanged();
                         MarkedForDeletionChanged();
                         GC.Collect();
@@ -69,6 +92,28 @@ namespace PhotoReviewer
                 }
                 else
                     MessageBox.Show("No such directory");
+            }
+        }
+
+        private static void RunByBlocks<T>([NotNull] IEnumerable<T> items, int maxBlockSize, [NotNull] Action<T[]> action)
+        {
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var arr = items as T[] ?? items.ToArray();
+            if (arr.Length == 0)
+                return;
+
+            if (maxBlockSize <= 0)
+                maxBlockSize = 100;
+
+            for (var i = 0; i <= arr.Length / maxBlockSize; i++)
+            {
+                var part = arr.Skip(i * maxBlockSize).Take(maxBlockSize).ToArray();
+                if (part.Length > 0)
+                    action.Invoke(part);
             }
         }
 
@@ -242,7 +287,12 @@ namespace PhotoReviewer
         public void GetDetailsAndAddPhoto([NotNull] string path)
         {
             var context = SynchronizationContext.Current;
-            Task.Run(() => GetDetailsAndAddPhoto(path, context, true));
+            var details = GetPhotoDetails(path);
+            Task.Run(() => context.Send(x =>
+            {
+                var photo = new Photo(details.Path, details.Metadata, details.MarkedForDeletion, details.Favorited, this);
+                InsertAtProperIndex(photo);
+            }, null));
         }
 
         public void DeletePhoto([NotNull] string path)
@@ -315,19 +365,12 @@ namespace PhotoReviewer
                 photo.OnPositionInCollectionChanged();
         }
 
-        private void GetDetailsAndAddPhoto([NotNull] string path, [NotNull] SynchronizationContext context, bool findIndex)
+        private PhotoDetails GetPhotoDetails([NotNull] string path)
         {
             var metadata = new ExifMetadata(path);
             var markedForDeletion = dbProvider.Check(path, DbProvider.OperationType.MarkForDeletion);
             var favorited = dbProvider.Check(path, DbProvider.OperationType.Favorite);
-            context.Send(x =>
-            {
-                var photo = new Photo(path, metadata, this, markedForDeletion, favorited);
-                if (findIndex)
-                    InsertAtProperIndex(photo);
-                else
-                    Add(photo);
-            }, null);
+            return new PhotoDetails(path, metadata, markedForDeletion, favorited);
         }
 
         private void InsertAtProperIndex([NotNull] Photo photo)

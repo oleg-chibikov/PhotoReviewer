@@ -32,7 +32,7 @@ namespace PhotoReviewer
         [NotNull]
         private readonly PhotoCollection collection;
 
-        public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, [NotNull] PhotoCollection collection, bool markedForDeletion, bool favorited)
+        public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, bool markedForDeletion, bool favorited, [NotNull] PhotoCollection collection)
         {
             this.collection = collection;
             ChangePath(path);
