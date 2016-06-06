@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
 
@@ -53,9 +54,17 @@ namespace PhotoReviewer
         [NotNull]
         private readonly DbProvider dbProvider = new DbProvider();
 
+        [NotNull]
+        private readonly CollectionViewSource filteredViewSource;
+        private bool showOnlyMarked;
+
+        [NotNull]
+        public ICollectionView FilteredView => filteredViewSource.View;
+
         public PhotoCollection()
         {
             CollectionChanged += PhotoCollection_CollectionChanged;
+            filteredViewSource = new CollectionViewSource { Source = this };
         }
 
         public int FavoritedCount => this.Count(x => x.Favorited);
@@ -95,25 +104,16 @@ namespace PhotoReviewer
             }
         }
 
-        private static void RunByBlocks<T>([NotNull] IEnumerable<T> items, int maxBlockSize, [NotNull] Action<T[]> action)
+        public bool ShowOnlyMarked
         {
-            if (items == null)
-                throw new ArgumentNullException(nameof(items));
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            var arr = items as T[] ?? items.ToArray();
-            if (arr.Length == 0)
-                return;
-
-            if (maxBlockSize <= 0)
-                maxBlockSize = 100;
-
-            for (var i = 0; i <= arr.Length / maxBlockSize; i++)
+            get { return showOnlyMarked; }
+            set
             {
-                var part = arr.Skip(i * maxBlockSize).Take(maxBlockSize).ToArray();
-                if (part.Length > 0)
-                    action.Invoke(part);
+                showOnlyMarked = value;
+                if (!value)
+                    filteredViewSource.Filter -= OnFilteredViewSourceOnFilter;
+                else
+                    filteredViewSource.Filter += OnFilteredViewSourceOnFilter;
             }
         }
 
@@ -365,6 +365,12 @@ namespace PhotoReviewer
                 photo.OnPositionInCollectionChanged();
         }
 
+        private static void OnFilteredViewSourceOnFilter(object s, FilterEventArgs e)
+        {
+            var photo = e.Item as Photo;
+            e.Accepted = photo != null && photo.IsValuableOrNearby;
+        }
+
         private PhotoDetails GetPhotoDetails([NotNull] string path)
         {
             var metadata = new ExifMetadata(path);
@@ -380,6 +386,28 @@ namespace PhotoReviewer
             var index = Array.BinarySearch(this.Select(x => x.Name).ToArray(), name, Comparer);
             var insertIndex = ~index;
             Insert(insertIndex, photo);
+        }
+
+        private static void RunByBlocks<T>([NotNull] IEnumerable<T> items, int maxBlockSize, [NotNull] Action<T[]> action)
+        {
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var arr = items as T[] ?? items.ToArray();
+            if (arr.Length == 0)
+                return;
+
+            if (maxBlockSize <= 0)
+                maxBlockSize = 100;
+
+            for (var i = 0; i <= arr.Length / maxBlockSize; i++)
+            {
+                var part = arr.Skip(i * maxBlockSize).Take(maxBlockSize).ToArray();
+                if (part.Length > 0)
+                    action.Invoke(part);
+            }
         }
     }
 }

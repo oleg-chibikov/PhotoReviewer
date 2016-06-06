@@ -132,7 +132,7 @@
                     Style="{StaticResource PhotoListBoxStyle}"
                     Margin="5"
                     SelectionMode="Extended"
-                    ItemsSource="{Binding}"
+                    ItemsSource="{Binding FilteredView}"
                     SelectedIndex="0"
                     MouseDoubleClick="ViewPhotoMenuItem_Click" PreviewKeyDown="PhotosListBox_PreviewKeyDown">
                     <ListBox.ContextMenu>
@@ -198,13 +198,19 @@
                         LargeChange="20" />
             </DockPanel>
 
+            <!-- Visibility CheckBox -->
+            <DockPanel DockPanel.Dock="Bottom" Margin="5">
+                <CheckBox VerticalAlignment="Center" Checked="ShowOnlyMarkedCheckBox_Checked" Unchecked="ShowOnlyMarkedCheckBox_Unchecked" />
+                <Label>Show only marked and nearby</Label>
+            </DockPanel>
+
             <!-- Progress Bar -->
             <DockPanel Name="ProgressBarContainer" Opacity="0" DockPanel.Dock="Bottom" Margin="5">
                 <ProgressBar Name="ProgressBar" Minimum="0" Maximum="100" Height="20" />
             </DockPanel>
 
             <!-- Metadata Panel -->
-            <photoReviewer:Metadata></photoReviewer:Metadata>
+            <photoReviewer:Metadata DataContext="{Binding FilteredView}"></photoReviewer:Metadata>
         </DockPanel>
     </Grid>
 </Window>

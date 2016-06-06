@@ -91,8 +91,55 @@ namespace PhotoReviewer
             }
         }
 
+        public bool IsValuableOrNearby => IsValuable || RealNext?.IsValuable == true || RealPrev?.IsValuable == true;
+
         [CanBeNull]
         public Photo Next
+        {
+            get
+            {
+                if (!collection.ShowOnlyMarked)
+                    return RealNext;
+                for (var i = Index + 1; i < collection.Count; i++)
+                {
+                    var current = collection[i];
+                    if (current.IsValuableOrNearby)
+                        return current;
+                }
+                return null;
+            }
+        }
+
+        [CanBeNull]
+        public Photo Prev
+        {
+            get
+            {
+                if (!collection.ShowOnlyMarked)
+                    return RealPrev;
+                for (var i = Index - 1; i >= 0; i--)
+                {
+                    var current = collection[i];
+                    if (current.IsValuableOrNearby)
+                        return current;
+                }
+                return null;
+            }
+        }
+
+        [NotNull]
+        public string PositionInCollection => $"{Index + 1} of {collection.Count}";
+
+        [CanBeNull]
+        public event PropertyChangedEventHandler PropertyChanged;
+
+
+        private bool IsValuable => MarkedForDeletion || Favorited;
+
+        private int Index => collection.IndexOf(this);
+
+        [CanBeNull]
+        private Photo RealNext
         {
             get
             {
@@ -104,7 +151,7 @@ namespace PhotoReviewer
         }
 
         [CanBeNull]
-        public Photo Prev
+        private Photo RealPrev
         {
             get
             {
@@ -114,13 +161,6 @@ namespace PhotoReviewer
                     : collection[index - 1];
             }
         }
-
-        private int Index => collection.IndexOf(this);
-
-        [NotNull]
-        public string PositionInCollection => $"{Index + 1} of {collection.Count}";
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         [CanBeNull]
         public BitmapSource GetFullImage([CanBeNull] EventHandler onCompleted = null)

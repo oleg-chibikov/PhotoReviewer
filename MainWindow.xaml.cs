@@ -304,5 +304,15 @@ namespace PhotoReviewer
         }
 
         #endregion
+
+        private void ShowOnlyMarkedCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            photosCollection.ShowOnlyMarked = true;
+        }
+
+        private void ShowOnlyMarkedCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            photosCollection.ShowOnlyMarked = false;
+        }
     }
 }
