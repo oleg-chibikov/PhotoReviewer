@@ -100,7 +100,7 @@ namespace PhotoReviewer
                     });
                 }
                 else
-                    MessageBox.Show("No such directory");
+                    MessageBox.Show($"Directory {value} doesn't exist");
             }
         }
 

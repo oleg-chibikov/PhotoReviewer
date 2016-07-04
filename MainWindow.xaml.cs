@@ -11,6 +11,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shell;
 using JetBrains.Annotations;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MessageBox = System.Windows.MessageBox;
 
 namespace PhotoReviewer
 {
@@ -275,6 +276,12 @@ namespace PhotoReviewer
 
         private void SetNewPath([NotNull] string path)
         {
+            if (!Directory.Exists(path))
+            {
+                MessageBox.Show($"Directory {path} doesn't exist");
+                ImagesDirTextBox.Text = Settings.Default.LastFolder;
+                return;
+            }
             imagesDirectoryWatcher.EnableRaisingEvents = false;
             imagesDirectoryWatcher.Path = photosCollection.Path = Settings.Default.LastFolder = ImagesDirTextBox.Text = path;
             imagesDirectoryWatcher.EnableRaisingEvents = true;
