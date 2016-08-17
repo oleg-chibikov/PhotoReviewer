@@ -41,6 +41,8 @@ namespace PhotoReviewer
         [NotNull]
         private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
         {
+            //TODO: polling every n seconds or use queue for handlers
+            InternalBufferSize = 64 * 1024,
             Filter = "*.jpg"
         };
 
