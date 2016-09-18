@@ -84,7 +84,7 @@
                 </Label>
                 <Label Style="{StaticResource MetadataHeader}">Date Image Taken:</Label>
                 <Label Content="{Binding Path=Metadata.DateImageTaken}"
-                               ContentStringFormat="yyyy-MM-dd hh:mm:ss" />
+                               ContentStringFormat="yyyy-MM-dd HH:mm:ss" />
                 <Label Style="{StaticResource MetadataHeader}">Camera Model:</Label>
                 <Label Content="{Binding Path=Metadata.CameraModel}" />
                 <Label Style="{StaticResource MetadataHeader}">Lens Aperture:</Label>
