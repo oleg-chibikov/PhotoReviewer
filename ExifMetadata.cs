@@ -34,7 +34,7 @@ namespace PhotoReviewer
                     using (var reader = new ExifReader(path))
                     {
                         DateTime dateImageTaken;
-                        reader.GetTagValue(ExifTags.DateTimeDigitized, out dateImageTaken);
+                        reader.GetTagValue(ExifTags.DateTimeOriginal, out dateImageTaken);
                         if (dateImageTaken != default(DateTime))
                             DateImageTaken = dateImageTaken;
                         reader.GetTagValue(ExifTags.PixelXDimension, out width);

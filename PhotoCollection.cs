@@ -323,7 +323,7 @@ namespace PhotoReviewer
             var oldPath = path;
             if (!File.Exists(path) || !dateImageTaken.HasValue)
                 return null;
-            var newName = dateImageTaken.Value.ToString("yyyy-MM-dd hh-mm-ss");
+            var newName = dateImageTaken.Value.ToString("yyyy-MM-dd HH-mm-ss");
             if (newName == name)
                 return null;
             var dir = System.IO.Path.GetDirectoryName(path);
