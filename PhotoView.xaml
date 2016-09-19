@@ -46,7 +46,7 @@
     </Window.Resources>
     <Grid Margin="0">
         <!-- Nav -->
-        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Center">
+        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Center">
             <Button Canvas.Top="-19" Canvas.Left="0" Background="Transparent" Focusable="False" Click="PrevButton_Click">
                 <Image Source="img\LeftArrow.png" />
             </Button>
@@ -55,7 +55,7 @@
             </Button>
         </Canvas>
 
-        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Top">
+        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Top">
             <Button Canvas.Top="0" Canvas.Right="0" Background="Transparent" Focusable="False" Click="FullHeightButton_Click">
                 <Image Name="FullHeightImage" Source="img\FullScreen.png" />
             </Button>
