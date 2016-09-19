@@ -130,6 +130,9 @@ namespace PhotoReviewer
         [NotNull]
         public string PositionInCollection => $"{Index + 1} of {collection.Count}";
 
+        [NotNull]
+        public string DisplayedInfo => $"{Name} {Metadata.CameraModel} {PositionInCollection}";
+
         [CanBeNull]
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -235,9 +238,9 @@ namespace PhotoReviewer
         }
 
         [NotifyPropertyChangedInvocator]
-        public void OnPositionInCollectionChanged()
+        public void OnCollectionChanged()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PositionInCollection)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayedInfo)));
         }
     }
 }

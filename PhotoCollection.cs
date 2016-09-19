@@ -362,7 +362,7 @@ namespace PhotoReviewer
         private void PhotoCollection_CollectionChanged([NotNull]object sender, [NotNull]System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             foreach (var photo in this)
-                photo.OnPositionInCollectionChanged();
+                photo.OnCollectionChanged();
         }
 
         private static void OnFilteredViewSourceOnFilter(object s, FilterEventArgs e)
