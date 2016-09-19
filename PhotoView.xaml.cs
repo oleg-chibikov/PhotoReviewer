@@ -151,7 +151,7 @@ namespace PhotoReviewer
             if (photoViews.Count > 1)
                 ToggleFullHeight();
             else
-                ToggleFullScreen();
+                ToggleFullScreen(this);
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -168,7 +168,10 @@ namespace PhotoReviewer
         private void Window_Closed([NotNull] object sender, [NotNull] EventArgs e)
         {
             photoViews.Remove(this);
-            ArrangeWindows();
+            if (photoViews.Count == 1 && photoViews.Single().isFullHeight)
+                ToggleFullScreen(photoViews.Single());
+            else
+                ArrangeWindows();
             GC.Collect();
         }
 
@@ -284,25 +287,25 @@ namespace PhotoReviewer
                 }
         }
 
-        private void ToggleFullScreen()
+        private void ToggleFullScreen(Window photoView)
         {
-            if (WindowState != WindowState.Maximized)
+            if (photoView.WindowState != WindowState.Maximized)
             {
-                WindowState = WindowState.Maximized;
+                photoView.WindowState = WindowState.Maximized;
                 // hide the window before changing window style
-                Visibility = Visibility.Collapsed;
-                Topmost = true;
-                WindowStyle = WindowStyle.None;
-                ResizeMode = ResizeMode.NoResize;
+                photoView.Visibility = Visibility.Collapsed;
+                photoView.Topmost = true;
+                photoView.WindowStyle = WindowStyle.None;
+                photoView.ResizeMode = ResizeMode.NoResize;
                 // re-show the window after changing style
-                Visibility = Visibility.Visible;
+                photoView.Visibility = Visibility.Visible;
             }
             else
             {
-                WindowState = WindowState.Normal;
-                Topmost = false;
-                WindowStyle = WindowStyle.SingleBorderWindow;
-                ResizeMode = ResizeMode.CanResize;
+                photoView.WindowState = WindowState.Normal;
+                photoView.Topmost = false;
+                photoView.WindowStyle = WindowStyle.SingleBorderWindow;
+                photoView.ResizeMode = ResizeMode.CanResize;
                 ArrangeWindows(true);
             }
         }
