@@ -56,6 +56,23 @@
         </Canvas>
 
         <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Top">
+            <StackPanel Canvas.Top="0" Canvas.Left="0" >
+                <Label Content="{Binding Path=SelectedPhoto.Name}" />
+                <Label Content="{Binding Path=SelectedPhoto.Metadata.CameraModel}" />
+                <Label Content="{Binding Path=SelectedPhoto.PositionInCollection}" />
+                <StackPanel.Style>
+                    <Style TargetType="{x:Type StackPanel}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="Normal">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="Maximized">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+            </StackPanel>
             <Button Canvas.Top="0" Canvas.Right="0" Background="Transparent" Focusable="False" Click="FullHeightButton_Click">
                 <Image Name="FullHeightImage" Source="img\FullScreen.png" />
             </Button>

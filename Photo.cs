@@ -241,6 +241,7 @@ namespace PhotoReviewer
         public void OnCollectionChanged()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayedInfo)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PositionInCollection)));
         }
     }
 }
