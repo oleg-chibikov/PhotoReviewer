@@ -148,7 +148,10 @@ namespace PhotoReviewer
 
         private void FullHeightButton_Click([NotNull] object sender, [NotNull] RoutedEventArgs e)
         {
-            ToggleFullHeight();
+            if (photoViews.Count > 1)
+                ToggleFullHeight();
+            else
+                ToggleFullScreen();
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -279,6 +282,29 @@ namespace PhotoReviewer
                     photoView.Height = fullHeight;
                     ToggleFullHeightImage(photoView, true);
                 }
+        }
+
+        private void ToggleFullScreen()
+        {
+            if (WindowState != WindowState.Maximized)
+            {
+                WindowState = WindowState.Maximized;
+                // hide the window before changing window style
+                Visibility = Visibility.Collapsed;
+                Topmost = true;
+                WindowStyle = WindowStyle.None;
+                ResizeMode = ResizeMode.NoResize;
+                // re-show the window after changing style
+                Visibility = Visibility.Visible;
+            }
+            else
+            {
+                WindowState = WindowState.Normal;
+                Topmost = false;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                ResizeMode = ResizeMode.CanResize;
+                ArrangeWindows(true);
+            }
         }
 
         private static void ToggleFullHeightImage(PhotoView photoView, bool isFullheight)
