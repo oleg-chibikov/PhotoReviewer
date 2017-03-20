@@ -122,5 +122,14 @@ namespace PhotoReviewer.Resources {
                 return ResourceManager.GetString("NothingToRename", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is an operation running. Please wait while it&apos;s finished.
+        /// </summary>
+        public static string TaskInProgress {
+            get {
+                return ResourceManager.GetString("TaskInProgress", resourceCulture);
+            }
+        }
     }
 }

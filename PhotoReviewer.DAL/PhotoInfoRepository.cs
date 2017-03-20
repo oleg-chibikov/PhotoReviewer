@@ -2,6 +2,7 @@
 using Common.Logging;
 using JetBrains.Annotations;
 using LiteDB;
+using PhotoReviewer.DAL.Contracts;
 using PhotoReviewer.DAL.Contracts.Model;
 using PhotoReviewer.Resources;
 using Scar.Common.DAL.LiteDB;

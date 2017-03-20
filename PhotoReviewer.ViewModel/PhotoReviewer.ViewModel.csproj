@@ -30,11 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\ThirdParty\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="ExifLib">
-      <HintPath>..\PhotoReviewer\bin\Release\ExifLib.dll</HintPath>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight, Version=5.3.0.19026, Culture=neutral, PublicKeyToken=e7570ab207bcb616, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\ThirdParty\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.dll</HintPath>
@@ -56,6 +56,8 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\ThirdParty\MvvmLightLibs.5.3.0.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -66,10 +68,11 @@
     <Compile Include="..\PhotoReviewer\Properties\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="DependencyProperty.cs" />
+    <Compile Include="MainViewModel.cs" />
     <Compile Include="Photo.cs" />
     <Compile Include="PhotoCollection.cs" />
     <Compile Include="PhotoDeletedEventArgs.cs" />
+    <Compile Include="PhotoViewModel.cs" />
     <Compile Include="ProgressEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -77,6 +80,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Scar.Common.DAL\Scar.Common.DAL.csproj">
+      <Project>{17B01758-0CF5-4A3E-B2CE-77213EFC1E92}</Project>
+      <Name>Scar.Common.DAL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Common\Scar.Common.Drawing\Scar.Common.Drawing.csproj">
       <Project>{9FDEC5F5-4996-45BD-9EFC-CAE6AAD74FB5}</Project>
       <Name>Scar.Common.Drawing</Name>
@@ -85,9 +92,17 @@
       <Project>{A1CBB589-FECD-47C2-A9A8-084B3FF943DA}</Project>
       <Name>Scar.Common.IO</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Common\Scar.Common.WPF\Scar.Common.WPF.csproj">
+      <Project>{B6EB82BA-2A0E-4855-9A17-F5FAB9616355}</Project>
+      <Name>Scar.Common.WPF</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Common\Scar.Common\Scar.Common.csproj">
       <Project>{D6C314D5-F126-4FEC-BD4D-4E6725786FA9}</Project>
       <Name>Scar.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PhotoReviewer.Core\PhotoReviewer.Core.csproj">
+      <Project>{8645331C-324F-4265-A593-13725FE33A0D}</Project>
+      <Name>PhotoReviewer.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.DAL.Contracts\PhotoReviewer.DAL.Contracts.csproj">
       <Project>{F0FB4354-77B0-4132-9593-C7A2493AB319}</Project>
@@ -96,6 +111,10 @@
     <ProjectReference Include="..\PhotoReviewer.Resources\PhotoReviewer.Resources.csproj">
       <Project>{53C22BB7-E54D-49B8-A748-11A795E9DE63}</Project>
       <Name>PhotoReviewer.Resources</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PhotoReviewer.View.Contracts\PhotoReviewer.View.Contracts.csproj">
+      <Project>{37F1D8BD-AE67-4E81-9F6B-D2AABB81AB8D}</Project>
+      <Name>PhotoReviewer.View.Contracts</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

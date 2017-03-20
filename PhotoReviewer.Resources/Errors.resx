@@ -138,4 +138,7 @@
   <data name="NothingToRename" xml:space="preserve">
     <value>Nothing to rename</value>
   </data>
+  <data name="TaskInProgress" xml:space="preserve">
+    <value>There is an operation running. Please wait while it's finished</value>
+  </data>
 </root>

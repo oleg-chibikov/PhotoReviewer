@@ -1,0 +1,145 @@
+﻿<wpf:BaseWindow x:Class="PhotoReviewer.View.PhotoWindow"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:controls="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF"
+                xmlns:wpf="clr-namespace:Scar.Common.WPF;assembly=Scar.Common.WPF"
+                xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
+                xmlns:contracts="clr-namespace:PhotoReviewer.View.Contracts;assembly=PhotoReviewer.View.Contracts"
+                Title="{Binding Path=Photo.DisplayedInfo,StringFormat=Photo Reviewer - {0}}"
+                Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
+                WindowStartupLocation="Manual"
+                Background="#222"
+                SizeToContent="Manual"
+                mc:Ignorable="d"
+                d:DataContext="{d:DesignInstance viewModel:PhotoViewModel}">
+    <wpf:BaseWindow.InputBindings>
+        <KeyBinding Key="R" Modifiers="Control" Command="{Binding RenameToDateCommand}" />
+        <KeyBinding Key="F" Command="{Binding FavoriteCommand}" />
+        <KeyBinding Key="Back" Command="{Binding MarkForDeletionCommand}" />
+        <KeyBinding Key="Delete" Command="{Binding MarkForDeletionCommand}" />
+        <KeyBinding Key="Escape" Command="{Binding CloseCommand}" />
+        <KeyBinding Key="Right" Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Next}" />
+        <KeyBinding Key="Left" Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Prev}" />
+        <!--TODO: XButtons EventToCommand-->
+    </wpf:BaseWindow.InputBindings>
+    <wpf:BaseWindow.Resources>
+        <Style TargetType="Border" x:Key="ColorByDeleted">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Photo.MarkedForDeletion}" Value="True">
+                    <Setter Property="Background" Value="Red" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=Photo.Favorited}" Value="True">
+                    <Setter Property="Background" Value="LimeGreen" />
+                </DataTrigger>
+            </Style.Triggers>
+            <Style.Setters>
+                <Setter Property="Background" Value="White" />
+            </Style.Setters>
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="#222" />
+        </Style>
+        <Style TargetType="{x:Type Label}">
+            <Setter Property="Foreground" Value="White" />
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" Duration="0:0:0.3" From="0" To="1" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+    </wpf:BaseWindow.Resources>
+    <Grid Margin="0">
+        <!-- Nav -->
+        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Center">
+            <Button Canvas.Top="-19" Canvas.Left="0" Background="Transparent" Focusable="False"
+                    Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Prev}">
+                <Image Source="pack://application:,,/PhotoReviewer.Resources;component/Images/LeftArrow.png" />
+            </Button>
+            <Button Canvas.Top="-19" Canvas.Right="0" Background="Transparent" Focusable="False"
+                    Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Next}">
+                <Image Source="pack://application:,,/PhotoReviewer.Resources;component/Images/RightArrow.png" />
+            </Button>
+        </Canvas>
+
+        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Top">
+            <StackPanel Canvas.Top="0" Canvas.Left="0">
+                <Label Content="{Binding Path=Photo.Name}" />
+                <Label Content="{Binding Path=Photo.Metadata.CameraModel}" />
+                <Label Content="{Binding Path=Photo.PositionInCollection}" />
+                <StackPanel.Style>
+                    <Style TargetType="{x:Type StackPanel}">
+                        <Style.Triggers>
+                            <DataTrigger
+                                Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                Value="Normal">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                            <DataTrigger
+                                Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                Value="Maximized">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+            </StackPanel>
+            <Button Canvas.Top="0" Canvas.Right="0" Background="Transparent" Focusable="False"
+                    Command="{Binding ToggleFullHeightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}">
+                <Image>
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}" Value="False">
+                                    <Setter Property="Source" Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreen.png" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                            <Style.Setters>
+                                <Setter Property="Source" Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreenExit.png" />
+                            </Style.Setters>
+                        </Style>
+                    </Image.Style>
+                </Image>
+            </Button>
+        </Canvas>
+
+        <!-- Photo -->
+        <Border Panel.ZIndex="0" Padding="4" Margin="4" Style="{StaticResource ColorByDeleted}"
+                HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
+            <controls:ZoomBorder Name="ZoomBorder"  ClipToBounds="True" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Image Tag="{Binding Photo, NotifyOnTargetUpdated=True}" Source="{Binding BitmapSource}">
+                    <Image.Style>
+                        <Style >
+                            <Style.Triggers>
+                                <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                                    <BeginStoryboard>
+                                        <Storyboard Storyboard.TargetProperty="Opacity">
+                                            <DoubleAnimation From="0.5" To="1" Duration="0:0:0:0.3" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                    <Image.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Favorite (F)" Command="{Binding FavoriteCommand}" />
+                            <MenuItem Header="Mark as deleted (Delete|Backspace)"
+                                      Command="{Binding MarkForDeletionCommand}" />
+                            <MenuItem Header="Rename to date (Ctrl+R)" Command="{Binding RenameToDateCommand}" />
+                            <MenuItem Header="Open in Explorer" Command="{Binding OpenPhotoInExplorerCommand}" />
+                        </ContextMenu>
+                    </Image.ContextMenu>
+                </Image>
+            </controls:ZoomBorder>
+        </Border>
+    </Grid>
+</wpf:BaseWindow>

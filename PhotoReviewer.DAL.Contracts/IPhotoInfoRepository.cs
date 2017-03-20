@@ -1,8 +1,9 @@
 ﻿using JetBrains.Annotations;
 using PhotoReviewer.DAL.Contracts.Model;
 
-namespace PhotoReviewer.DAL
+namespace PhotoReviewer.DAL.Contracts
 {
+    // ReSharper disable once UnusedTypeParameter
     public interface IPhotoInfoRepository<TPhotoInfo>
         where TPhotoInfo : PhotoInfo
     {

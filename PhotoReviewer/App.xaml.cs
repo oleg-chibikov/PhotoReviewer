@@ -3,25 +3,29 @@ using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
 using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
+using PhotoReviewer.Core;
 using PhotoReviewer.DAL;
 using PhotoReviewer.Resources;
 using PhotoReviewer.View;
+using PhotoReviewer.View.Contracts;
 using PhotoReviewer.ViewModel;
+using Scar.Common;
 using Scar.Common.Comparers;
 using Scar.Common.Drawing;
 using Scar.Common.Logging;
+using Scar.Common.WPF;
 using Scar.Common.WPF.Localization;
 
 namespace PhotoReviewer
 {
     public partial class App
     {
-        //TODO: AssemblyId
-        private static readonly string appGuid = "061c97c2-6b31-4084-bb0c-099c50812762";
+        private static readonly Guid AppGuid = AssemblyUtility.GetAssemblyGuid();
         private ILifetimeScope container;
         private IMessenger messenger;
         private Mutex mutex;
@@ -42,7 +46,7 @@ namespace PhotoReviewer
             if (VerifyNotLaunched())
                 return;
 
-            container.Resolve<MainWindow>().ShowDialog();
+            container.Resolve<WindowFactory<IMainWindow>>().GetOrCreateWindow().ShowDialog();
         }
 
         private bool VerifyNotLaunched()
@@ -53,7 +57,7 @@ namespace PhotoReviewer
             mutexSecurity.AddAccessRule(new MutexAccessRule(sid, MutexRights.ChangePermissions, AccessControlType.Deny));
             mutexSecurity.AddAccessRule(new MutexAccessRule(sid, MutexRights.Delete, AccessControlType.Deny));
             bool createdNew;
-            mutex = new Mutex(false, $"Global\\{nameof(PhotoReviewer)}-{appGuid}", out createdNew, mutexSecurity);
+            mutex = new Mutex(false, $"Global\\{nameof(PhotoReviewer)}-{AppGuid}", out createdNew, mutexSecurity);
 
             if (!mutex.WaitOne(0, false))
             {
@@ -69,14 +73,18 @@ namespace PhotoReviewer
 
             var builder = new ContainerBuilder();
 
+            builder.RegisterGeneric(typeof(WindowFactory<>)).SingleInstance();
             builder.RegisterType<WinComparer>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MetadataExtractor>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<Messenger>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterAssemblyTypes(typeof(SettingsRepository).Assembly).AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<TaskFactory>().AsSelf().SingleInstance().WithParameter(new TypedParameter(typeof(TaskScheduler), TaskScheduler.FromCurrentSynchronizationContext()));
+            builder.RegisterType<WindowsArranger>().AsSelf().SingleInstance();
             builder.RegisterModule<LoggingModule>();
 
-            builder.RegisterType<MainWindow>().AsSelf().InstancePerDependency();
-            builder.RegisterType<PhotoCollection>().AsSelf().InstancePerDependency();
+            builder.RegisterAssemblyTypes(typeof(MainWindow).Assembly).AsImplementedInterfaces().InstancePerDependency();
+            //TODO: register resolving mainwindow with factory
+            builder.RegisterAssemblyTypes(typeof(MainViewModel).Assembly).AsSelf().InstancePerDependency();
 
             container = builder.Build();
         }

@@ -1,9 +1,8 @@
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Threading;
-using System.Windows;
 using System.Windows.Media;
+using GalaSoft.MvvmLight;
 using JetBrains.Annotations;
 using Scar.Common.Drawing;
 using Scar.Common.Drawing.Data;
@@ -14,25 +13,11 @@ namespace PhotoReviewer.ViewModel
     /// This class describes a single photo - its location, the image and
     /// the metadata extracted from the image.
     /// </summary>
-    public class Photo : DependencyObject, INotifyPropertyChanged
+    public class Photo : ViewModelBase
     {
         [NotNull]
-        private static readonly DependencyProperty MarkedForDeletionProperty = DependencyProperty<Photo>.Register(x => x.MarkedForDeletion);
-
-        [NotNull]
-        private static readonly DependencyProperty FavoritedProperty = DependencyProperty<Photo>.Register(x => x.Favorited);
-
-        [NotNull]
-        private static readonly DependencyProperty NameProperty = DependencyProperty<Photo>.Register(x => x.Name);
-
-        [NotNull]
-        private static readonly DependencyProperty FilePathProperty = DependencyProperty<Photo>.Register(x => x.FilePath);
-
-        [NotNull]
-        private static readonly DependencyProperty ThumbnailProperty = DependencyProperty<Photo>.Register(x => x.Thumbnail);
-
-        [NotNull]
         private readonly PhotoCollection collection;
+
 
         public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, bool markedForDeletion, bool favorited, [NotNull] PhotoCollection collection, CancellationToken cancellationToken)
         {
@@ -47,22 +32,30 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         public ExifMetadata Metadata { get; }
 
+        #region Dependency Properties
+
+        private bool markedForDeletion;
+        private bool favorited;
+        private string name;
+        private string filePath;
+        private ImageSource thumbnail;
+
         public bool MarkedForDeletion
         {
-            get { return (bool)GetValue(MarkedForDeletionProperty); }
+            get { return markedForDeletion; }
             set
             {
-                SetValue(MarkedForDeletionProperty, value);
+                Set(() => MarkedForDeletion, ref markedForDeletion, value);
                 collection.MarkedForDeletionChanged();
             }
         }
 
         public bool Favorited
         {
-            get { return (bool)GetValue(FavoritedProperty); }
+            get { return favorited; }
             set
             {
-                SetValue(FavoritedProperty, value);
+                Set(() => Favorited, ref favorited, value);
                 collection.FavoritedChanged();
             }
         }
@@ -70,23 +63,25 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         public string Name
         {
-            get { return (string)GetValue(NameProperty); }
-            private set { SetValue(NameProperty, value); }
+            get { return name; }
+            private set { Set(() => Name, ref name, value); }
         }
 
         [NotNull]
         public string FilePath
         {
-            get { return (string)GetValue(FilePathProperty); }
-            private set { SetValue(FilePathProperty, value); }
+            get { return filePath; }
+            private set { Set(() => FilePath, ref filePath, value); }
         }
 
         [CanBeNull]
         public ImageSource Thumbnail
         {
-            get { return (ImageSource)GetValue(ThumbnailProperty); }
-            private set { SetValue(ThumbnailProperty, value); }
+            get { return thumbnail; }
+            set { Set(() => Thumbnail, ref thumbnail, value); }
         }
+
+        #endregion
 
         public bool IsValuableOrNearby => IsValuable || RealNext?.IsValuable == true || RealPrev?.IsValuable == true;
 
@@ -158,9 +153,6 @@ namespace PhotoReviewer.ViewModel
             }
         }
 
-        [CanBeNull]
-        public event PropertyChangedEventHandler PropertyChanged;
-
         private async void SetThumbnailAsync(CancellationToken cancellationToken)
         {
             var thumbnailBytes = Metadata.ThumbnailBytes ?? await FilePath.GetThumbnailAsync(cancellationToken);
@@ -187,8 +179,11 @@ namespace PhotoReviewer.ViewModel
         [NotifyPropertyChangedInvocator]
         public void OnCollectionChanged()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayedInfo)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PositionInCollection)));
+            //TODO: May simplify? investigate
+            // ReSharper disable ExplicitCallerInfoArgument
+            RaisePropertyChanged(nameof(DisplayedInfo));
+            RaisePropertyChanged(nameof(PositionInCollection));
+            // ReSharper restore ExplicitCallerInfoArgument
         }
     }
 }
