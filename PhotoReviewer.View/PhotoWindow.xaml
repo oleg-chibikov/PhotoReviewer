@@ -19,7 +19,6 @@
         <KeyBinding Key="F" Command="{Binding FavoriteCommand}" />
         <KeyBinding Key="Back" Command="{Binding MarkForDeletionCommand}" />
         <KeyBinding Key="Delete" Command="{Binding MarkForDeletionCommand}" />
-        <KeyBinding Key="Escape" Command="{Binding CloseCommand}" />
         <KeyBinding Key="Right" Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Next}" />
         <KeyBinding Key="Left" Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Prev}" />
         <!--TODO: XButtons EventToCommand-->

@@ -9,12 +9,11 @@ using PhotoReviewer.View.Contracts;
 using PropertyChanged;
 using Scar.Common.Drawing;
 using Scar.Common.IO;
-using Scar.Common.WPF;
 
 namespace PhotoReviewer.ViewModel
 {
     [ImplementPropertyChanged]
-    public class PhotoViewModel : IRequestCloseViewModel, IDisposable
+    public class PhotoViewModel : IDisposable
     {
         [NotNull]
         private readonly MainViewModel mainViewModel;
@@ -38,11 +37,8 @@ namespace PhotoReviewer.ViewModel
             MarkForDeletionCommand = new RelayCommand(MarkForDeletion);
             RenameToDateCommand = new RelayCommand(RenameToDate);
             OpenPhotoInExplorerCommand = new RelayCommand(OpenPhotoInExplorer);
-            CloseCommand = new RelayCommand(Close);
             ChangePhotoCommand = new RelayCommand<Photo>(ChangePhoto);
         }
-
-        public event EventHandler RequestClose;
 
         private CancellationToken RecreateCancellationToken()
         {
@@ -52,6 +48,35 @@ namespace PhotoReviewer.ViewModel
             var token = cancellationTokenSource.Token;
             return token;
         }
+
+        private void SelectAndAct([NotNull] Action action)
+        {
+            mainViewModel.SelectedPhoto = Photo;
+            action();
+        }
+
+        #region Dependency Properties
+
+        [CanBeNull]
+        public BitmapSource BitmapSource { get; set; }
+        
+        [NotNull]
+        public Photo Photo { get; set; }
+
+        #endregion
+
+        #region Commands
+
+        public ICommand ToggleFullHeightCommand { get; }
+        public ICommand FavoriteCommand { get; }
+        public ICommand MarkForDeletionCommand { get; }
+        public ICommand OpenPhotoInExplorerCommand { get; }
+        public ICommand RenameToDateCommand { get; }
+        public ICommand ChangePhotoCommand { get; }
+
+        #endregion
+
+        #region Command Handlers
 
         private void ChangePhoto([CanBeNull] Photo newPhoto)
         {
@@ -80,41 +105,6 @@ namespace PhotoReviewer.ViewModel
             });
         }
 
-        private void SelectAndAct([NotNull] Action action)
-        {
-            mainViewModel.SelectedPhoto = Photo;
-            action();
-        }
-
-        #region Dependency Properties
-
-        [CanBeNull]
-        public BitmapSource BitmapSource { get; set; }
-        
-        [NotNull]
-        public Photo Photo { get; set; }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand ToggleFullHeightCommand { get; }
-        public ICommand FavoriteCommand { get; }
-        public ICommand MarkForDeletionCommand { get; }
-        public ICommand OpenPhotoInExplorerCommand { get; }
-        public ICommand RenameToDateCommand { get; }
-        public ICommand CloseCommand { get; }
-        public ICommand ChangePhotoCommand { get; }
-
-        #endregion
-
-        #region Command Handlers
-
-        public void Close()
-        {
-            RequestClose?.Invoke(null, null);
-        }
-
         private void Favorite()
         {
             SelectAndAct(() => mainViewModel.Favorite());
@@ -135,11 +125,11 @@ namespace PhotoReviewer.ViewModel
             DirectoryUtility.OpenFileInExplorer(Photo.FilePath);
         }
 
+        #endregion
+
         public void Dispose()
         {
             cancellationTokenSource.Dispose();
         }
-
-        #endregion
     }
 }
