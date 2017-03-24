@@ -95,6 +95,10 @@
       <Project>{9FDEC5F5-4996-45BD-9EFC-CAE6AAD74FB5}</Project>
       <Name>Scar.Common.Drawing</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Common\Scar.Common.WPF.Controls.ZoomBorder\Scar.Common.WPF.Controls.ZoomBorder.csproj">
+      <Project>{523E90EC-65BB-4EAB-A680-2834C42B840C}</Project>
+      <Name>Scar.Common.WPF.Controls.ZoomBorder</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Common\Scar.Common.WPF\Scar.Common.WPF.csproj">
       <Project>{B6EB82BA-2A0E-4855-9A17-F5FAB9616355}</Project>
       <Name>Scar.Common.WPF</Name>

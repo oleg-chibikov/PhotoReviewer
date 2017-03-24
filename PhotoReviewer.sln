@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoReviewer.View.Contract
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoReviewer.Core", "PhotoReviewer.Core\PhotoReviewer.Core.csproj", "{8645331C-324F-4265-A593-13725FE33A0D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scar.Common.WPF.Controls.ZoomBorder", "..\Common\Scar.Common.WPF.Controls.ZoomBorder\Scar.Common.WPF.Controls.ZoomBorder.csproj", "{523E90EC-65BB-4EAB-A680-2834C42B840C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,10 @@ Global
 		{8645331C-324F-4265-A593-13725FE33A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8645331C-324F-4265-A593-13725FE33A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8645331C-324F-4265-A593-13725FE33A0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{523E90EC-65BB-4EAB-A680-2834C42B840C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{523E90EC-65BB-4EAB-A680-2834C42B840C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{523E90EC-65BB-4EAB-A680-2834C42B840C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{523E90EC-65BB-4EAB-A680-2834C42B840C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
