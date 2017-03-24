@@ -14,18 +14,8 @@ using Scar.Common.WPF;
 
 namespace PhotoReviewer.ViewModel
 {
-    //TODO: Internal
     public class PhotoViewModel : ViewModelBase, IRequestCloseViewModel, IDisposable
     {
-        private CancellationToken RecreateCancellationToken()
-        {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource.Dispose();
-            cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-            return token;
-        }
-
         [NotNull]
         private readonly MainViewModel mainViewModel;
 
@@ -55,6 +45,15 @@ namespace PhotoReviewer.ViewModel
         }
 
         public event EventHandler RequestClose;
+
+        private CancellationToken RecreateCancellationToken()
+        {
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
+            cancellationTokenSource = new CancellationTokenSource();
+            var token = cancellationTokenSource.Token;
+            return token;
+        }
 
         private void ChangePhoto([CanBeNull] Photo newPhoto)
         {
@@ -126,7 +125,6 @@ namespace PhotoReviewer.ViewModel
 
         public void Close()
         {
-            //TODO: thread safe
             RequestClose?.Invoke(null, null);
         }
 

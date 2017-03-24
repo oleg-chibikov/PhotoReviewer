@@ -120,8 +120,11 @@
   <data name="AlreadyRunning" xml:space="preserve">
     <value>Photo Reviewer is already running.</value>
   </data>
-  <data name="DirecoryDoesNotExist" xml:space="preserve">
+  <data name="DirectoryDoesNotExist" xml:space="preserve">
     <value>Directory {0} doesn't exist</value>
+  </data>
+  <data name="SelectDirectory" xml:space="preserve">
+    <value>Please, select a directory</value>
   </data>
   <data name="NothingToDelete" xml:space="preserve">
     <value>Nothing to delete</value>
@@ -133,7 +136,7 @@
     <value>Nothing to mark</value>
   </data>
   <data name="NothingToMove" xml:space="preserve">
-    <value>Nothing to move</value>
+    <value>Nothing to copy</value>
   </data>
   <data name="NothingToRename" xml:space="preserve">
     <value>Nothing to rename</value>

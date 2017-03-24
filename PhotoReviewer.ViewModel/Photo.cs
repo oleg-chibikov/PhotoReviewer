@@ -4,6 +4,7 @@ using System.Threading;
 using System.Windows.Media;
 using GalaSoft.MvvmLight;
 using JetBrains.Annotations;
+using Microsoft.VisualBasic.FileIO;
 using Scar.Common.Drawing;
 using Scar.Common.Drawing.Data;
 
@@ -18,70 +19,23 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         private readonly PhotoCollection collection;
 
-
-        public Photo([NotNull] string path, [NotNull] ExifMetadata metadata, bool markedForDeletion, bool favorited, [NotNull] PhotoCollection collection, CancellationToken cancellationToken)
+        public Photo([NotNull] PhotoDetails photoDetails, [NotNull] PhotoCollection collection, CancellationToken cancellationToken)
         {
+            if (photoDetails == null)
+                throw new ArgumentNullException(nameof(photoDetails));
+            if (collection == null)
+                throw new ArgumentNullException(nameof(collection));
             this.collection = collection;
-            ChangePath(path);
-            MarkedForDeletion = markedForDeletion;
-            Favorited = favorited;
-            Metadata = metadata;
+            filePath = photoDetails.FilePath;
+            name = photoDetails.Name;
+            markedForDeletion = photoDetails.MarkedForDeletion;
+            favorited = photoDetails.Favorited;
+            Metadata = photoDetails.Metadata;
             SetThumbnailAsync(cancellationToken);
         }
 
         [NotNull]
         public ExifMetadata Metadata { get; }
-
-        #region Dependency Properties
-
-        private bool markedForDeletion;
-        private bool favorited;
-        private string name;
-        private string filePath;
-        private ImageSource thumbnail;
-
-        public bool MarkedForDeletion
-        {
-            get { return markedForDeletion; }
-            set
-            {
-                Set(() => MarkedForDeletion, ref markedForDeletion, value);
-                collection.MarkedForDeletionChanged();
-            }
-        }
-
-        public bool Favorited
-        {
-            get { return favorited; }
-            set
-            {
-                Set(() => Favorited, ref favorited, value);
-                collection.FavoritedChanged();
-            }
-        }
-
-        [NotNull]
-        public string Name
-        {
-            get { return name; }
-            private set { Set(() => Name, ref name, value); }
-        }
-
-        [NotNull]
-        public string FilePath
-        {
-            get { return filePath; }
-            private set { Set(() => FilePath, ref filePath, value); }
-        }
-
-        [CanBeNull]
-        public ImageSource Thumbnail
-        {
-            get { return thumbnail; }
-            set { Set(() => Thumbnail, ref thumbnail, value); }
-        }
-
-        #endregion
 
         public bool IsValuableOrNearby => IsValuable || RealNext?.IsValuable == true || RealPrev?.IsValuable == true;
 
@@ -165,12 +119,6 @@ namespace PhotoReviewer.ViewModel
             }
         }
 
-        public void ChangePath([NotNull] string path)
-        {
-            FilePath = path;
-            Name = Path.GetFileNameWithoutExtension(path);
-        }
-
         public override string ToString()
         {
             return FilePath;
@@ -185,5 +133,81 @@ namespace PhotoReviewer.ViewModel
             RaisePropertyChanged(nameof(PositionInCollection));
             // ReSharper restore ExplicitCallerInfoArgument
         }
+
+        public bool DeleteFileIfMarked()
+        {
+            if (!markedForDeletion)
+                return false;
+            if (File.Exists(filePath))
+                FileSystem.DeleteFile(filePath,
+                    UIOption.OnlyErrorDialogs,
+                    RecycleOption.SendToRecycleBin);
+            return true;
+        }
+
+        public bool CopyFileIfFavorited()
+        {
+            if (!favorited || !File.Exists(filePath))
+                return false;
+            var favoritedFilePath = PhotoDetails.GetFavoritedFilePath(filePath);
+            if (!File.Exists(favoritedFilePath))
+                File.Copy(filePath, favoritedFilePath);
+            return true;
+        }
+
+        #region Dependency Properties
+
+        private bool markedForDeletion;
+        private bool favorited;
+        private string name;
+        private string filePath;
+        private ImageSource thumbnail;
+
+        public bool MarkedForDeletion
+        {
+            get { return markedForDeletion; }
+            set
+            {
+                Set(() => MarkedForDeletion, ref markedForDeletion, value);
+                collection.MarkedForDeletionChanged();
+            }
+        }
+
+        public bool Favorited
+        {
+            get { return favorited; }
+            set
+            {
+                Set(() => Favorited, ref favorited, value);
+                collection.FavoritedChanged();
+            }
+        }
+
+        [NotNull]
+        public string Name
+        {
+            get { return name; }
+            private set { Set(() => Name, ref name, value); }
+        }
+
+        [NotNull]
+        public string FilePath
+        {
+            get { return filePath; }
+            set
+            {
+                Set(() => FilePath, ref filePath, value);
+                Name = PhotoDetails.GetName(value);
+            }
+        }
+
+        [CanBeNull]
+        public ImageSource Thumbnail
+        {
+            get { return thumbnail; }
+            set { Set(() => Thumbnail, ref thumbnail, value); }
+        }
+
+        #endregion
     }
 }

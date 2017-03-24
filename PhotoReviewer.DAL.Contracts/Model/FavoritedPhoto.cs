@@ -8,7 +8,7 @@ namespace PhotoReviewer.DAL.Contracts.Model
         {
         }
 
-        public FavoritedPhoto([NotNull] string path) : base(path)
+        public FavoritedPhoto([NotNull] string filePath) : base(filePath)
         {
         }
     }

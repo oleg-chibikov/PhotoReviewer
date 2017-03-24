@@ -6,6 +6,6 @@ namespace PhotoReviewer.DAL.Contracts.Model
     public sealed class Settings : Entity
     {
         [CanBeNull]
-        public string LastUsedPath { get; set; }
+        public string LastUsedDirectoryPath { get; set; }
     }
 }

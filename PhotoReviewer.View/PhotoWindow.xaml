@@ -93,17 +93,22 @@
                 </StackPanel.Style>
             </StackPanel>
             <Button Canvas.Top="0" Canvas.Right="0" Background="Transparent" Focusable="False"
-                    Command="{Binding ToggleFullHeightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}">
+                    Command="{Binding ToggleFullHeightCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}">
                 <Image>
                     <Image.Style>
                         <Style TargetType="{x:Type Image}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}" Value="False">
-                                    <Setter Property="Source" Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreen.png" />
+                                <DataTrigger
+                                    Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}"
+                                    Value="False">
+                                    <Setter Property="Source"
+                                            Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreen.png" />
                                 </DataTrigger>
                             </Style.Triggers>
                             <Style.Setters>
-                                <Setter Property="Source" Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreenExit.png" />
+                                <Setter Property="Source"
+                                        Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreenExit.png" />
                             </Style.Setters>
                         </Style>
                     </Image.Style>
@@ -114,10 +119,11 @@
         <!-- Photo -->
         <Border Panel.ZIndex="0" Padding="4" Margin="4" Style="{StaticResource ColorByDeleted}"
                 HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
-            <controls:ZoomBorder Name="ZoomBorder"  ClipToBounds="True" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <controls:ZoomBorder Name="ZoomBorder" ClipToBounds="True" HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
                 <Image Tag="{Binding Photo, NotifyOnTargetUpdated=True}" Source="{Binding BitmapSource}">
                     <Image.Style>
-                        <Style >
+                        <Style>
                             <Style.Triggers>
                                 <EventTrigger RoutedEvent="Binding.TargetUpdated">
                                     <BeginStoryboard>

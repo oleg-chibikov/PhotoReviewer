@@ -10,9 +10,9 @@ namespace PhotoReviewer.DAL
         {
         }
 
-        protected override FavoritedPhoto CreatePhotoInfo(string path)
+        protected override FavoritedPhoto CreatePhotoInfo(string filePath)
         {
-            return new FavoritedPhoto(path);
+            return new FavoritedPhoto(filePath);
         }
     }
 }

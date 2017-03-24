@@ -12,7 +12,7 @@ namespace PhotoReviewer.View
     {
         [NotNull]
         private readonly PhotoViewModel photoViewModel;
-        
+
         public PhotoWindow([NotNull] Window mainWindow, [NotNull] PhotoViewModel photoViewModel)
         {
             Owner = mainWindow;
@@ -20,21 +20,21 @@ namespace PhotoReviewer.View
                 throw new ArgumentNullException(nameof(mainWindow));
             if (photoViewModel == null)
                 throw new ArgumentNullException(nameof(photoViewModel));
-            photoViewModel.PropertyChanged += PhotoViewModel_PropertyChanged;
             this.photoViewModel = photoViewModel;
+            photoViewModel.PropertyChanged += PhotoViewModel_PropertyChanged;
+            Closed += PhotoWindow_Closed;
             DataContext = photoViewModel;
             InitializeComponent();
             Show();
             FocusWindow();
         }
 
-        protected override void BeforeClosing(object sender, CancelEventArgs e)
+        private void PhotoWindow_Closed(object sender, EventArgs e)
         {
-            base.BeforeClosing(sender, e);
             photoViewModel.PropertyChanged -= PhotoViewModel_PropertyChanged;
         }
 
-        //TODO: Xa
+        //TODO: Xaml only?
         private void PhotoViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(photoViewModel.Photo))

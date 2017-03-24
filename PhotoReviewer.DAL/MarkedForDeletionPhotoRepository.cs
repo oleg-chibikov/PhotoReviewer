@@ -10,9 +10,9 @@ namespace PhotoReviewer.DAL
         {
         }
 
-        protected override MarkedForDeletionPhoto CreatePhotoInfo(string path)
+        protected override MarkedForDeletionPhoto CreatePhotoInfo(string filePath)
         {
-            return new MarkedForDeletionPhoto(path);
+            return new MarkedForDeletionPhoto(filePath);
         }
     }
 }

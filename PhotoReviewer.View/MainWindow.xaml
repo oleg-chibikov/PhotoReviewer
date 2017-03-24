@@ -8,7 +8,7 @@
                 xmlns:wpf="clr-namespace:Scar.Common.WPF;assembly=Scar.Common.WPF"
                 xmlns:converters="clr-namespace:Scar.Common.WPF.Converters;assembly=Scar.Common.WPF"
                 xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-                xmlns:command="http://www.galasoft.ch/mvvmlight"
+                xmlns:controls="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF"
                 Title="Photo Reviewer"
                 Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
                 MinWidth="800"
@@ -16,15 +16,17 @@
                 SizeToContent="Manual"
                 WindowState="Maximized"
                 mc:Ignorable="d"
-                d:DataContext="{d:DesignInstance viewModel:MainViewModel}">
+                d:DataContext="{d:DesignInstance viewModel:MainViewModel}"
+                FocusManager.FocusedElement="{Binding ElementName=PhotosListBox}">
     <!-- Styles and Templates -->
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
-            <command:EventToCommand Command="{Binding WindowClosingCommand}" PassEventArgsToCommand="True" />
+            <i:InvokeCommandAction Command="{Binding WindowClosingCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <wpf:BaseWindow.Resources>
         <converters:PercentageIntToDoubleConverter x:Key="PercentageIntToDoubleConverter" />
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
         <!-- Photo Template -->
         <DataTemplate DataType="{x:Type viewModel:Photo}">
             <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="6">
@@ -136,32 +138,33 @@
 
         <!-- Photo Management Canvas -->
         <DockPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,10">
-            <Button DockPanel.Dock="Right" Width="80" Command="{Binding BrowseDirectoryCommand}">Browse...</Button>
+            <Button DockPanel.Dock="Right" Width="80" Command="{Binding BrowseDirectoryCommand}" Content="Browse..."/>
             <Label DockPanel.Dock="Left" Margin="0,0,10,0">Path:</Label>
-            <TextBox Text="{Binding CurrentPath}" Margin="10,0">
+            <TextBox Text="{Binding CurrentPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0"
+                     VerticalAlignment="Center">
                 <TextBox.InputBindings>
-                    <KeyBinding Command="{Binding ChangePathCommand}"
-                                Key="Enter"
-                                CommandParameter="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" />
+                    <KeyBinding Command="{Binding ChangeDirectoryPathCommand}"
+                                CommandParameter="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}"
+                                Key="Enter" />
                 </TextBox.InputBindings>
             </TextBox>
         </DockPanel>
 
         <GroupBox Grid.Column="0" Grid.Row="1">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <ListBox
-                    IsSynchronizedWithCurrentItem="True"
-                    Style="{StaticResource PhotoListBoxStyle}"
-                    Margin="5"
-                    SelectionMode="Extended"
-                    ItemsSource="{Binding PhotoCollection.FilteredView}"
-                    SelectedItem="{Binding SelectedPhoto, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <ListBox Name="PhotosListBox"
+                         IsSynchronizedWithCurrentItem="True"
+                         Style="{StaticResource PhotoListBoxStyle}"
+                         Margin="5"
+                         SelectionMode="Extended"
+                         ItemsSource="{Binding PhotoCollection.FilteredView}"
+                         SelectedItem="{Binding SelectedPhoto, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
                     <i:Interaction.Behaviors>
                         <wpf:ScrollIntoViewBehavior />
                     </i:Interaction.Behaviors>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged">
-                            <command:EventToCommand
+                            <i:InvokeCommandAction
                                 Command="{Binding SelectionChangedCommand}"
                                 CommandParameter="{Binding SelectedItems, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" />
                         </i:EventTrigger>
@@ -191,6 +194,8 @@
         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
             <Label>Total:</Label>
             <Label Content="{Binding Path=PhotoCollection.Count}" />
+            <Label>Selected:</Label>
+            <Label Content="{Binding Path=SelectedCount}" />
             <Label>Marked for deletion:</Label>
             <Label Content="{Binding Path=PhotoCollection.MarkedForDeletionCount}" />
             <Label>Favorited:</Label>
@@ -205,21 +210,50 @@
         <DockPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
                    Margin="15,0,0,0">
 
-            <!-- Move Favorited Button -->
+            <!-- Copy Favorited Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
                 <Button Content="{Binding Path=PhotoCollection.FavoritedCount}"
-                        ContentStringFormat="Move favorited (0)" Command="{Binding MoveFavoritedCommand}" />
+                        ContentStringFormat="Copy favorited (0)" Command="{Binding CopyFavoritedCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="True" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ProgressState}" Value="Normal">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding PhotoCollection.FavoritedCount}" Value="0">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </DockPanel>
 
             <!-- Delete Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
                 <Button Content="{Binding Path=PhotoCollection.MarkedForDeletionCount}"
-                        ContentStringFormat="Delete marked (0)" Command="{Binding DeleteMarkedCommand}" />
+                        ContentStringFormat="Delete marked (0)" Command="{Binding DeleteMarkedCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="True" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ProgressState}" Value="Normal">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding PhotoCollection.MarkedForDeletionCount}" Value="0">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </DockPanel>
 
             <!-- Open in Explorer Button -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
-                <Button Content="Open folder in Explorer" Command="{Binding OpenDirectoryInExplorerCommand}" />
+                <Button Content="Open folder in Explorer" Command="{Binding OpenDirectoryInExplorerCommand}"
+                        IsEnabled="{Binding CurrentPath, Converter={StaticResource NullToBooleanConverter}}" />
             </DockPanel>
 
             <!-- Zoom Control -->
@@ -240,10 +274,20 @@
             <!-- Visibility CheckBox -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
                 <CheckBox VerticalAlignment="Center" Command="{Binding ShowOnlyMarkedChangedCommand}"
-                          CommandParameter="{Binding}" />
-                <Label>Show only marked and nearby</Label>
+                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}">Show only marked</CheckBox>
+                <!-- Image Buttons -->
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right"  Margin="5">
+                    <controls:ImageButton
+            ToolTip="Show Logs"
+            Source="pack://application:,,/PhotoReviewer.Resources;component/Images/document-32.png"
+            Command="{Binding ViewLogsCommand}" />
+                    <controls:ImageButton
+            ToolTip="Open settings directory"
+            Source="pack://application:,,/PhotoReviewer.Resources;component/Images/settings-32.png"
+            Command="{Binding OpenSettingsFolderCommand}" />
+                </StackPanel>
             </DockPanel>
-
+            
             <!-- Progress Bar -->
             <DockPanel Opacity="0" DockPanel.Dock="Bottom" Margin="5">
                 <DockPanel.Style>

@@ -10,12 +10,12 @@ namespace PhotoReviewer.DAL.Contracts.Model
         {
         }
 
-        public PhotoInfo([NotNull] string path)
+        public PhotoInfo([NotNull] string filePath)
         {
-            Path = path;
+            FilePath = filePath;
         }
 
         [NotNull]
-        public string Path { get; set; }
+        public string FilePath { get; set; }
     }
 }

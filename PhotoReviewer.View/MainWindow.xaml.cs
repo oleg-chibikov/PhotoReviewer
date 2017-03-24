@@ -8,11 +8,11 @@ namespace PhotoReviewer.View
     [UsedImplicitly]
     public sealed partial class MainWindow : IMainWindow
     {
-        public MainWindow([NotNull] MainViewModel mainViewModel)
+        public MainWindow([NotNull] MainViewModel viewModel)
         {
-            if (mainViewModel == null)
-                throw new ArgumentNullException(nameof(mainViewModel));
-            DataContext = mainViewModel;
+            if (viewModel == null)
+                throw new ArgumentNullException(nameof(viewModel));
+            DataContext = viewModel;
             InitializeComponent();
         }
     }

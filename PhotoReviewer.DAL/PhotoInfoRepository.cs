@@ -19,39 +19,45 @@ namespace PhotoReviewer.DAL
 
         protected override string DbPath => Paths.SettingsPath;
 
-        public void Save(string[] paths)
+        public void Save(string filePath)
         {
-            Collection.EnsureIndex(x => x.Path);
-            foreach (var path in paths)
-                Collection.Insert(CreatePhotoInfo(path));
+            Collection.EnsureIndex(x => x.FilePath);
+            Collection.Insert(CreatePhotoInfo(filePath));
         }
 
-        public bool Check(string path)
+        public void Save(string[] filePaths)
         {
-            return Collection.Exists(x => x.Path == path);
+            Collection.EnsureIndex(x => x.FilePath);
+            foreach (var filePath in filePaths)
+                Collection.Insert(CreatePhotoInfo(filePath));
         }
 
-        public void Delete(string path)
+        public bool Check(string filePath)
         {
-            Collection.Delete(x => x.Path == path);
+            return Collection.Exists(x => x.FilePath == filePath);
         }
 
-        public void Delete(string[] paths)
+        public void Delete(string filePath)
         {
-            Collection.Delete(Query.In("Path", paths.Select(x => new BsonValue(x)).ToArray()));
+            Collection.Delete(x => x.FilePath == filePath);
         }
 
-        public void Rename(string oldPath, string newPath)
+        public void Delete(string[] filePaths)
         {
-            if (!Collection.Exists(x => x.Path == oldPath))
+            Collection.Delete(Query.In("FilePath", filePaths.Select(x => new BsonValue(x)).ToArray()));
+        }
+
+        public void Rename(string oldFilePath, string newFilePath)
+        {
+            if (!Collection.Exists(x => x.FilePath == oldFilePath))
                 return;
             {
-                Collection.Delete(x => x.Path == oldPath);
-                Collection.Insert(CreatePhotoInfo(newPath));
+                Collection.Delete(x => x.FilePath == oldFilePath);
+                Collection.Insert(CreatePhotoInfo(newFilePath));
             }
         }
 
         [NotNull]
-        protected abstract TPhotoInfo CreatePhotoInfo([NotNull] string path);
+        protected abstract TPhotoInfo CreatePhotoInfo([NotNull] string filePath);
     }
 }

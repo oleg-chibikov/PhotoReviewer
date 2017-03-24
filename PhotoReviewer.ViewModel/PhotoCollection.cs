@@ -9,16 +9,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using Autofac;
 using Common.Logging;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Threading;
 using JetBrains.Annotations;
-using Microsoft.VisualBasic.FileIO;
 using PhotoReviewer.DAL.Contracts;
 using PhotoReviewer.DAL.Contracts.Model;
 using PhotoReviewer.Resources;
 using Scar.Common;
 using Scar.Common.Drawing;
-using Scar.Common.Drawing.Data;
 using Scar.Common.IO;
 
 //TODO: Transactions, UoW for repositories
@@ -39,7 +39,17 @@ namespace PhotoReviewer.ViewModel
         private readonly IPhotoInfoRepository<FavoritedPhoto> favoritedPhotoRepository;
 
         [NotNull]
-        private readonly CollectionViewSource filteredViewSource;
+        private readonly ICollectionView filteredViewSource;
+
+        [NotNull]
+        private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
+        {
+            //TODO: polling every n seconds or use queue for handlers
+            InternalBufferSize = 64 * 1024
+        };
+
+        [NotNull]
+        private readonly ILifetimeScope lifetimeScope;
 
         [NotNull]
         private readonly ILog logger;
@@ -61,12 +71,16 @@ namespace PhotoReviewer.ViewModel
 
         private bool showOnlyMarked;
 
+        [NotNull]
+        private readonly Predicate<object> showOnlyMarkedFilter = x => ((Photo)x).IsValuableOrNearby;
+
         public PhotoCollection([NotNull] IComparer<string> comparer,
             [NotNull] IPhotoInfoRepository<MarkedForDeletionPhoto> markedForDeletionPhotoRepository,
             [NotNull] IPhotoInfoRepository<FavoritedPhoto> favoritedPhotoRepository,
             [NotNull] IMessenger messenger,
             [NotNull] ILog logger,
-            [NotNull] IMetadataExtractor metadataExtractor)
+            [NotNull] IMetadataExtractor metadataExtractor,
+            [NotNull] ILifetimeScope lifetimeScope)
         {
             if (comparer == null)
                 throw new ArgumentNullException(nameof(comparer));
@@ -80,18 +94,24 @@ namespace PhotoReviewer.ViewModel
                 throw new ArgumentNullException(nameof(logger));
             if (metadataExtractor == null)
                 throw new ArgumentNullException(nameof(metadataExtractor));
+            if (lifetimeScope == null)
+                throw new ArgumentNullException(nameof(lifetimeScope));
             this.comparer = comparer;
             this.markedForDeletionPhotoRepository = markedForDeletionPhotoRepository;
             this.favoritedPhotoRepository = favoritedPhotoRepository;
             this.messenger = messenger;
             this.logger = logger;
             this.metadataExtractor = metadataExtractor;
+            this.lifetimeScope = lifetimeScope;
             CollectionChanged += PhotoCollection_CollectionChanged;
-            filteredViewSource = new CollectionViewSource { Source = this };
+            filteredViewSource = CollectionViewSource.GetDefaultView(this);
+            imagesDirectoryWatcher.Created += ImagesDirectoryWatcher_Changed;
+            imagesDirectoryWatcher.Deleted += ImagesDirectoryWatcher_Changed;
+            imagesDirectoryWatcher.Renamed += ImagesDirectoryWatcher_Renamed;
         }
 
         [NotNull]
-        public ICollectionView FilteredView => filteredViewSource.View;
+        public ICollectionView FilteredView => filteredViewSource;
 
         public int FavoritedCount => this.Count(x => x.Favorited);
 
@@ -103,88 +123,180 @@ namespace PhotoReviewer.ViewModel
             set
             {
                 showOnlyMarked = value;
-                if (!value)
-                    filteredViewSource.Filter -= OnFilteredViewSourceOnFilter;
-                else
-                    filteredViewSource.Filter += OnFilteredViewSourceOnFilter;
+                filteredViewSource.Filter = !value ? null : showOnlyMarkedFilter;
             }
         }
 
         public event EventHandler<ProgressEventArgs> Progress;
-        public event EventHandler<PhotoDeletedEventArgs> PhotoDeleted;
-        
+
         public void CancelCurrentTask()
         {
             cancellationTokenSource.Cancel();
         }
 
+        #region Async operations
+
         [NotNull]
-        public async Task SetPathAsync([NotNull] string path)
+        public async Task SetDirectoryPathAsync([NotNull] string directoryPath)
         {
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
-            logger.Info($"Changing path to '{path}'...");
+            if (directoryPath == null)
+                throw new ArgumentNullException(nameof(directoryPath));
+            logger.Info($"Changing directory path to '{directoryPath}'...");
+            imagesDirectoryWatcher.EnableRaisingEvents = false;
+            imagesDirectoryWatcher.Path = directoryPath;
+            imagesDirectoryWatcher.EnableRaisingEvents = true;
             var token = RecreateCancellationToken();
             Clear();
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(directoryPath))
                 return;
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(directoryPath))
             {
-                messenger.Send(string.Format(Errors.DirecoryDoesNotExist, path), MessengerTokens.UserWarningToken);
+                messenger.Send(string.Format(Errors.DirectoryDoesNotExist, directoryPath), MessengerTokens.UserWarningToken);
                 return;
             }
             var context = SynchronizationContext.Current;
             currentTask = Task.Run(() =>
             {
-                var files = GetFilesFromDirectory(path);
+                var files = GetFilesFromDirectory(directoryPath);
                 var totalCount = files.Count();
                 logger.Debug($"There are {totalCount} files in this directory");
-                var i = 0;
-                var maxBlockSize = 10;
-                files.RunByBlocks(maxBlockSize, (block, blocksCount) =>
+                if (files.Any())
                 {
-                    if (token.IsCancellationRequested)
-                        return false;
-                    logger.Debug($"Processing block {i++} ({block.Length} files)...");
-                    var detailsBlock = block.Select(GetPhotoDetails).ToArray();
-                    context.Send(t =>
+                    var i = 0;
+                    var maxBlockSize = 10;
+                    files.RunByBlocks(maxBlockSize, (block, blocksCount) =>
                     {
-                        foreach (var details in detailsBlock)
+                        if (token.IsCancellationRequested)
+                            return false;
+                        logger.Debug($"Processing block {i++} ({block.Length} files)...");
+                        var detailsBlock = block.Select(GetPhotoDetails).ToArray();
+                        context.Send(t =>
                         {
-                            var photo = new Photo(details.Path, details.Metadata, details.MarkedForDeletion, details.Favorited, this, token);
-                            if (token.IsCancellationRequested)
-                                break;
-                            Add(photo);
-                        }
-                    }, null);
+                            foreach (var details in detailsBlock)
+                            {
+                                var photo = lifetimeScope.Resolve<Photo>(
+                                    new TypedParameter(typeof(PhotoDetails), details),
+                                    new TypedParameter(typeof(PhotoCollection), this),
+                                    new TypedParameter(typeof(CancellationToken), token));
+                                if (token.IsCancellationRequested)
+                                    break;
+                                Add(photo);
+                            }
+                            FavoritedChanged();
+                            MarkedForDeletionChanged();
+                            OnProgress(100 * i / blocksCount);
+                        }, null);
+                        return true;
+                    });
+                }
+                else
+                {
                     FavoritedChanged();
                     MarkedForDeletionChanged();
-                    OnProgress(100 * i / blocksCount);
-                    return true;
-                });
+                    OnProgress(100);
+                }
                 GC.Collect();
+            }, token);
+            await currentTask;
+            //In order to display the Prev photos of Marked ones there is the need to refresh filter after all photos are loaded
+            if (showOnlyMarked)
+                filteredViewSource.Refresh();
+        }
+
+        [NotNull]
+        public async Task RenameToDateAsync([NotNull] Photo[] photos)
+        {
+            if (!photos.Any())
+            {
+                messenger.Send(Errors.NothingToRename, MessengerTokens.UserWarningToken);
+                return;
+            }
+            if (!currentTask.IsCompleted)
+            {
+                messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
+                return;
+            }
+            var token = RecreateCancellationToken();
+            var data = photos.Select(x => new { x.Name, x.FilePath, x.Metadata.DateImageTaken }).ToArray();
+            currentTask = Task.Run(() =>
+            {
+                var i = 0;
+                var count = data.Length;
+                foreach (var item in data)
+                {
+                    RenameFileToDate(item.Name, item.FilePath, item.DateImageTaken);
+                    OnProgress(100 * ++i / count);
+                }
             }, token);
             await currentTask;
         }
 
-        private CancellationToken RecreateCancellationToken()
+        [NotNull]
+        public async Task DeleteMarkedAsync()
         {
-            CancelCurrentTask();
-            cancellationTokenSource.Dispose();
-            cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-            return token;
+            if (!currentTask.IsCompleted)
+            {
+                messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
+                return;
+            }
+            if (!this.Any(x => x.MarkedForDeletion))
+            {
+                messenger.Send(Errors.NothingToDelete, MessengerTokens.UserWarningToken);
+                return;
+            }
+            var token = RecreateCancellationToken();
+
+            currentTask = Task.Run(() =>
+            {
+                var i = 0;
+                var count = Count;
+                Parallel.ForEach(this, photo =>
+                {
+                    photo.DeleteFileIfMarked();
+                    OnProgress(100 * Interlocked.Increment(ref i) / count);
+                });
+            }, token);
+            await currentTask;
         }
 
-        public void FavoritedChanged()
+        [NotNull]
+        public async Task CopyFavoritedAsync()
         {
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(FavoritedCount)));
+            if (!currentTask.IsCompleted)
+            {
+                messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
+                return;
+            }
+            if (!this.Any(x => x.Favorited))
+            {
+                messenger.Send(Errors.NothingToMove, MessengerTokens.UserWarningToken);
+                return;
+            }
+            var token = RecreateCancellationToken();
+            currentTask = Task.Run(() =>
+            {
+                var favoriteDirectories = this.Select(x => PhotoDetails.GetFavoriteDirectory(x.FilePath)).Distinct().ToArray();
+                //Create directories firstly
+                foreach (var favoriteDirectory in favoriteDirectories)
+                    if (!Directory.Exists(favoriteDirectory))
+                        Directory.CreateDirectory(favoriteDirectory);
+                var i = 0;
+                var count = Count;
+                Parallel.ForEach(this, photo =>
+                {
+                    photo.CopyFileIfFavorited();
+                    OnProgress(100 * Interlocked.Increment(ref i) / count);
+                });
+                //open not more than 3 directories
+                foreach (var favoriteDirectory in favoriteDirectories.Take(3))
+                    Process.Start(favoriteDirectory);
+            }, token);
+            await currentTask;
         }
 
-        public void MarkedForDeletionChanged()
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(MarkedForDeletionCount)));
-        }
+        #endregion
+
+        #region Sync operations
 
         public void MarkForDeletion([NotNull] Photo[] photos)
         {
@@ -240,174 +352,73 @@ namespace PhotoReviewer.ViewModel
             }
         }
 
-        [NotNull]
-        public async Task RenameToDateAsync([NotNull] Photo[] photos)
+        #endregion
+
+        #region Event Raisers
+
+        public void FavoritedChanged()
         {
-            if (!photos.Any())
-            {
-                messenger.Send(Errors.NothingToRename, MessengerTokens.UserWarningToken);
-                return;
-            }
-            if (!currentTask.IsCompleted)
-            {
-                messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
-                return;
-            }
-            cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-            var data = photos.Select(x => new { x.Name, Path = x.FilePath, x.Metadata.DateImageTaken }).ToArray();
-            currentTask = Task.Run(() =>
-            {
-                var i = 0;
-                var count = data.Length;
-                foreach (var item in data)
-                {
-                    RenamePathToDate(item.Name, item.Path, item.DateImageTaken);
-                    OnProgress(100 * ++i / count);
-                }
-            }, token);
-            await currentTask;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(FavoritedCount)));
         }
 
-        [NotNull]
-        public async Task DeleteMarkedAsync()
+        public void MarkedForDeletionChanged()
         {
-            if (!currentTask.IsCompleted)
-            {
-                messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
-                return;
-            }
-            cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-            var paths = this.Where(x => x.MarkedForDeletion).Select(x => x.FilePath).ToArray();
-            if (!paths.Any())
-            {
-                messenger.Send(Errors.NothingToDelete, MessengerTokens.UserWarningToken);
-                return;
-            }
-            currentTask = Task.Run(() =>
-            {
-                var i = 0;
-                var count = paths.Length;
-                foreach (var path in paths)
-                {
-                    if (File.Exists(path))
-                        FileSystem.DeleteFile(path,
-                            UIOption.OnlyErrorDialogs,
-                            RecycleOption.SendToRecycleBin);
-                    OnPhotoDeleted(path);
-                    OnProgress(100 * ++i / count);
-                }
-                favoritedPhotoRepository.Delete(paths);
-                markedForDeletionPhotoRepository.Delete(paths);
-            }, token);
-            await currentTask;
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(MarkedForDeletionCount)));
         }
 
-        [NotNull]
-        public async Task MoveFavoritedAsync()
-        {
-            if (!currentTask.IsCompleted)
-            {
-                messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
-                return;
-            }
-
-            cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
-            var paths = this.Where(x => x.Favorited).Select(x => x.FilePath).ToArray();
-            if (!paths.Any())
-            {
-                messenger.Send(Errors.NothingToMove, MessengerTokens.UserWarningToken);
-                return;
-            }
-            currentTask = Task.Run(() =>
-            {
-                var dir = Path.GetDirectoryName(paths.First()) + "\\Favorite\\";
-                if (!Directory.Exists(dir))
-                    Directory.CreateDirectory(dir);
-                var i = 0;
-                var count = paths.Length;
-                foreach (var path in paths)
-                {
-                    if (!File.Exists(path))
-                        continue;
-                    var newName = dir + Path.GetFileName(path);
-                    if (!File.Exists(newName))
-                        File.Copy(path, newName);
-                    OnProgress(100 * ++i / count);
-                }
-                Process.Start(dir);
-            }, token);
-            await currentTask;
-        }
-
-        private sealed class PhotoDetails
-        {
-            public PhotoDetails([NotNull] string path, [NotNull] ExifMetadata metadata, bool markedForDeletion, bool favorited)
-            {
-                if (path == null)
-                    throw new ArgumentNullException(nameof(path));
-                if (metadata == null)
-                    throw new ArgumentNullException(nameof(metadata));
-                Path = path;
-                Metadata = metadata;
-                MarkedForDeletion = markedForDeletion;
-                Favorited = favorited;
-            }
-
-            [NotNull]
-            public string Path { get; }
-
-            [NotNull]
-            public ExifMetadata Metadata { get; }
-
-            public bool MarkedForDeletion { get; }
-            public bool Favorited { get; }
-        }
+        #endregion
 
         #region WatcherHandlers
 
-        //TODO: what to do if currently loading? Await current task, then do this one.
-
-        public async void GetDetailsAndAddPhotoAsync([NotNull] string path)
+        private async void GetDetailsAndAddPhotoAsync([NotNull] string filePath)
         {
             await currentTask;
-            var details = GetPhotoDetails(path);
-            var photo = new Photo(details.Path, details.Metadata, details.MarkedForDeletion, details.Favorited, this, CancellationToken.None);
+            var details = GetPhotoDetails(filePath);
+            var photo = lifetimeScope.Resolve<Photo>(
+                new TypedParameter(typeof(PhotoDetails), details),
+                new TypedParameter(typeof(PhotoCollection), this),
+                new TypedParameter(typeof(CancellationToken), CancellationToken.None));
             InsertAtProperIndex(photo);
         }
 
-        public async void DeletePhotoAsync([NotNull] string path)
+        private async void DeletePhotoAsync([NotNull] string filePath)
         {
             await currentTask;
-            favoritedPhotoRepository.Delete(path);
-            markedForDeletionPhotoRepository.Delete(path);
-            var photo = this.SingleOrDefault(x => x.FilePath == path);
+            favoritedPhotoRepository.Delete(filePath);
+            markedForDeletionPhotoRepository.Delete(filePath);
+            var photo = this.SingleOrDefault(x => x.FilePath == filePath);
             if (photo == null)
                 return;
             Remove(photo);
             MarkedForDeletionChanged();
             FavoritedChanged();
-            OnPhotoDeleted(path);
         }
 
-        public async void RenamePhotoAsync([NotNull] string oldPath, [NotNull] string newPath)
+        private async void RenamePhotoAsync([NotNull] string oldFilePath, [NotNull] string newFilePath)
         {
             await currentTask;
-            favoritedPhotoRepository.Rename(oldPath, newPath);
-            markedForDeletionPhotoRepository.Rename(oldPath, newPath);
-            var photo = this.SingleOrDefault(x => x.FilePath == oldPath);
+            favoritedPhotoRepository.Rename(oldFilePath, newFilePath);
+            markedForDeletionPhotoRepository.Rename(oldFilePath, newFilePath);
+            var photo = this.SingleOrDefault(x => x.FilePath == oldFilePath);
             if (photo == null)
                 return;
             Remove(photo);
-            photo.ChangePath(newPath);
+            photo.FilePath = newFilePath;
             InsertAtProperIndex(photo);
         }
 
         #endregion
 
         #region Private
+
+        private CancellationToken RecreateCancellationToken()
+        {
+            CancelCurrentTask();
+            cancellationTokenSource.Dispose();
+            cancellationTokenSource = new CancellationTokenSource();
+            var token = cancellationTokenSource.Token;
+            return token;
+        }
 
         private IOrderedEnumerable<string> GetFilesFromDirectory(string directory)
         {
@@ -416,19 +427,19 @@ namespace PhotoReviewer.ViewModel
             return files;
         }
 
-        private void RenamePathToDate([NotNull] string name, [NotNull] string path, [CanBeNull] DateTime? dateImageTaken)
+        private void RenameFileToDate([NotNull] string name, [NotNull] string filePath, [CanBeNull] DateTime? dateImageTaken)
         {
-            var oldPath = path;
-            if (!File.Exists(path) || !dateImageTaken.HasValue)
+            var oldFilePath = filePath;
+            if (!File.Exists(filePath) || !dateImageTaken.HasValue)
                 return;
             var newName = dateImageTaken.Value.ToString("yyyy-MM-dd HH-mm-ss");
             if (newName == name)
                 return;
-            var dir = Path.GetDirectoryName(path);
-            var extension = Path.GetExtension(path);
-            var newPath = DirectoryUtility.GetFreeFileName($"{dir}\\{newName}{extension}");
-            if (!File.Exists(newPath))
-                File.Move(oldPath, newPath);
+            var directoryName = Path.GetDirectoryName(filePath);
+            var extension = Path.GetExtension(filePath);
+            var newFilePath = DirectoryUtility.GetFreeFileName($"{directoryName}\\{newName}{extension}");
+            if (!File.Exists(newFilePath))
+                File.Move(oldFilePath, newFilePath);
             //FileSystemWatcher will do the rest
         }
 
@@ -437,29 +448,25 @@ namespace PhotoReviewer.ViewModel
             Progress?.Invoke(this, new ProgressEventArgs(percent));
         }
 
-        private void OnPhotoDeleted([NotNull] string path)
-        {
-            PhotoDeleted?.Invoke(this, new PhotoDeletedEventArgs(path));
-        }
-
         private void PhotoCollection_CollectionChanged([NotNull] object sender, [NotNull] NotifyCollectionChangedEventArgs e)
         {
             foreach (var photo in this)
                 photo.OnCollectionChanged();
         }
 
-        private static void OnFilteredViewSourceOnFilter(object s, FilterEventArgs e)
+        private PhotoDetails GetPhotoDetails([NotNull] string filePath)
         {
-            var photo = e.Item as Photo;
-            e.Accepted = photo != null && photo.IsValuableOrNearby;
-        }
-
-        private PhotoDetails GetPhotoDetails([NotNull] string path)
-        {
-            var metadata = metadataExtractor.Extract(path);
-            var markedForDeletion = markedForDeletionPhotoRepository.Check(path);
-            var favorited = favoritedPhotoRepository.Check(path);
-            return new PhotoDetails(path, metadata, markedForDeletion, favorited);
+            var metadata = metadataExtractor.Extract(filePath);
+            var markedForDeletion = markedForDeletionPhotoRepository.Check(filePath);
+            var favorited = favoritedPhotoRepository.Check(filePath);
+            var details = new PhotoDetails(filePath, metadata, markedForDeletion, favorited);
+            if (!favorited && details.Favorited)
+            {
+                //TODO: new abstraction over both repos (everytime we favorite photo we must unmark it from deleted)
+                favoritedPhotoRepository.Save(filePath);
+                markedForDeletionPhotoRepository.Delete(filePath);
+            }
+            return details;
         }
 
         private void InsertAtProperIndex([NotNull] Photo photo)
@@ -471,11 +478,47 @@ namespace PhotoReviewer.ViewModel
             Insert(insertIndex, photo);
         }
 
+        private static bool IsImage(string filePath)
+        {
+            var extenstion = Path.GetExtension(filePath);
+            return extenstion != null && Constants.FileExtensions.Contains(extenstion, StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        private void ImagesDirectoryWatcher_Changed([NotNull] object sender, [NotNull] FileSystemEventArgs fileSystemEventArgs)
+        {
+            var filePath = fileSystemEventArgs.FullPath;
+            if (!IsImage(filePath))
+                return;
+
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
+                switch (fileSystemEventArgs.ChangeType)
+                {
+                    case WatcherChangeTypes.Deleted:
+                        DeletePhotoAsync(filePath);
+                        break;
+                    case WatcherChangeTypes.Created:
+                        GetDetailsAndAddPhotoAsync(filePath);
+                        break;
+                }
+            });
+        }
+
+        private void ImagesDirectoryWatcher_Renamed([NotNull] object sender, [NotNull] RenamedEventArgs renamedEventArgs)
+        {
+            if (!IsImage(renamedEventArgs.FullPath))
+                return;
+            DispatcherHelper.CheckBeginInvokeOnUI(() => { RenamePhotoAsync(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath); });
+        }
+
         public void Dispose()
         {
             CancelCurrentTask();
-            currentTask.Dispose();
             cancellationTokenSource.Dispose();
+            imagesDirectoryWatcher.Dispose();
+            imagesDirectoryWatcher.Created -= ImagesDirectoryWatcher_Changed;
+            imagesDirectoryWatcher.Deleted -= ImagesDirectoryWatcher_Changed;
+            imagesDirectoryWatcher.Renamed -= ImagesDirectoryWatcher_Renamed;
         }
 
         #endregion

@@ -5,14 +5,14 @@ namespace PhotoReviewer.ViewModel
 {
     public class PhotoDeletedEventArgs
     {
-        public PhotoDeletedEventArgs([NotNull] string path)
+        public PhotoDeletedEventArgs([NotNull] string filePath)
         {
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
-            Path = path;
+            if (filePath == null)
+                throw new ArgumentNullException(nameof(filePath));
+            FilePath = filePath;
         }
 
         [NotNull]
-        public string Path { get; private set; }
+        public string FilePath { get; private set; }
     }
 }

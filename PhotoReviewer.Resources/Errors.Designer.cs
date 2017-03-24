@@ -72,9 +72,9 @@ namespace PhotoReviewer.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Directory {0} doesn&apos;t exist.
         /// </summary>
-        public static string DirecoryDoesNotExist {
+        public static string DirectoryDoesNotExist {
             get {
-                return ResourceManager.GetString("DirecoryDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("DirectoryDoesNotExist", resourceCulture);
             }
         }
         
@@ -106,7 +106,7 @@ namespace PhotoReviewer.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nothing to move.
+        ///   Looks up a localized string similar to Nothing to copy.
         /// </summary>
         public static string NothingToMove {
             get {
@@ -120,6 +120,15 @@ namespace PhotoReviewer.Resources {
         public static string NothingToRename {
             get {
                 return ResourceManager.GetString("NothingToRename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please, select a directory.
+        /// </summary>
+        public static string SelectDirectory {
+            get {
+                return ResourceManager.GetString("SelectDirectory", resourceCulture);
             }
         }
         

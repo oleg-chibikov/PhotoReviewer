@@ -8,7 +8,7 @@ namespace PhotoReviewer.DAL.Contracts.Model
         {
         }
 
-        public MarkedForDeletionPhoto([NotNull] string path) : base(path)
+        public MarkedForDeletionPhoto([NotNull] string filePath) : base(filePath)
         {
         }
     }

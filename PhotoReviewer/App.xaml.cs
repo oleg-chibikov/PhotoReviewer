@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Threading;
 using JetBrains.Annotations;
 using PhotoReviewer.Core;
 using PhotoReviewer.DAL;
@@ -34,7 +34,7 @@ namespace PhotoReviewer
         {
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
-
+            DispatcherHelper.Initialize();
             RegisterDependencies();
 
             //CultureUtilities.ChangeCulture(container.Resolve<ISettingsRepository>().Get().UiLanguage);
@@ -46,6 +46,7 @@ namespace PhotoReviewer
             if (VerifyNotLaunched())
                 return;
 
+            container.Resolve<NonExistingItemsCleaner>();
             container.Resolve<WindowFactory<IMainWindow>>().GetOrCreateWindow().ShowDialog();
         }
 
@@ -78,8 +79,7 @@ namespace PhotoReviewer
             builder.RegisterType<MetadataExtractor>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<Messenger>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterAssemblyTypes(typeof(SettingsRepository).Assembly).AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<TaskFactory>().AsSelf().SingleInstance().WithParameter(new TypedParameter(typeof(TaskScheduler), TaskScheduler.FromCurrentSynchronizationContext()));
-            builder.RegisterType<WindowsArranger>().AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(typeof(WindowsArranger).Assembly).AsSelf().SingleInstance();
             builder.RegisterModule<LoggingModule>();
 
             builder.RegisterAssemblyTypes(typeof(MainWindow).Assembly).AsImplementedInterfaces().InstancePerDependency();

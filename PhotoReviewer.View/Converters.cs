@@ -12,21 +12,12 @@ namespace PhotoReviewer.View
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            try
-            {
-                var exposure = Math.Round(1 / (double)value);
-                return $"1/{exposure}";
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return value == null ? null : $"1/{Math.Round(1 / (double)value)}";
         }
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
         {
-            var exposure = ((string)value).Substring(2);
-            return 1 / decimal.Parse(exposure);
+            return value == null ? (object)null : 1 / decimal.Parse(((string)value).Substring(2));
         }
     }
 
@@ -37,16 +28,12 @@ namespace PhotoReviewer.View
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value != null)
-                return $"F{value:##.0}";
-            return string.Empty;
+            return value != null ? $"F{value:##.0}" : null;
         }
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
         {
-            if (!string.IsNullOrEmpty((string)value))
-                return decimal.Parse(((string)value).Substring(1));
-            return null;
+            return !string.IsNullOrEmpty((string)value) ? (object)decimal.Parse(((string)value).Substring(1)) : null;
         }
     }
 
@@ -57,7 +44,7 @@ namespace PhotoReviewer.View
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value != null ? $"{value}mm" : string.Empty;
+            return value != null ? $"{value}mm" : null;
         }
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
