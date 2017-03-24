@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows.Media;
-using GalaSoft.MvvmLight;
 using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
+using PropertyChanged;
 using Scar.Common.Drawing;
 using Scar.Common.Drawing.Data;
 
@@ -14,7 +14,8 @@ namespace PhotoReviewer.ViewModel
     /// This class describes a single photo - its location, the image and
     /// the metadata extracted from the image.
     /// </summary>
-    public class Photo : ViewModelBase
+    [ImplementPropertyChanged]
+    public class Photo
     {
         [NotNull]
         private readonly PhotoCollection collection;
@@ -27,9 +28,9 @@ namespace PhotoReviewer.ViewModel
                 throw new ArgumentNullException(nameof(collection));
             this.collection = collection;
             filePath = photoDetails.FilePath;
-            name = photoDetails.Name;
-            markedForDeletion = photoDetails.MarkedForDeletion;
-            favorited = photoDetails.Favorited;
+            Name = photoDetails.Name;
+            MarkedForDeletion = photoDetails.MarkedForDeletion;
+            Favorited = photoDetails.Favorited;
             Metadata = photoDetails.Metadata;
             SetThumbnailAsync(cancellationToken);
         }
@@ -129,8 +130,8 @@ namespace PhotoReviewer.ViewModel
         {
             //TODO: May simplify? investigate
             // ReSharper disable ExplicitCallerInfoArgument
-            RaisePropertyChanged(nameof(DisplayedInfo));
-            RaisePropertyChanged(nameof(PositionInCollection));
+            //RaisePropertyChanged(nameof(DisplayedInfo));
+            //RaisePropertyChanged(nameof(PositionInCollection));
             // ReSharper restore ExplicitCallerInfoArgument
         }
 
@@ -159,17 +160,18 @@ namespace PhotoReviewer.ViewModel
 
         private bool markedForDeletion;
         private bool favorited;
-        private string name;
         private string filePath;
-        private ImageSource thumbnail;
 
         public bool MarkedForDeletion
         {
             get { return markedForDeletion; }
             set
             {
-                Set(() => MarkedForDeletion, ref markedForDeletion, value);
-                collection.MarkedForDeletionChanged();
+                markedForDeletion = value;
+                if (value)
+                    collection.MarkedForDeletionCount++;
+                else
+                    collection.MarkedForDeletionCount--;
             }
         }
 
@@ -178,17 +180,16 @@ namespace PhotoReviewer.ViewModel
             get { return favorited; }
             set
             {
-                Set(() => Favorited, ref favorited, value);
-                collection.FavoritedChanged();
+                favorited = value;
+                if (value)
+                    collection.FavoritedCount++;
+                else
+                    collection.FavoritedCount--;
             }
         }
 
         [NotNull]
-        public string Name
-        {
-            get { return name; }
-            private set { Set(() => Name, ref name, value); }
-        }
+        public string Name { get; set; }
 
         [NotNull]
         public string FilePath
@@ -196,17 +197,13 @@ namespace PhotoReviewer.ViewModel
             get { return filePath; }
             set
             {
-                Set(() => FilePath, ref filePath, value);
+                filePath = value;
                 Name = PhotoDetails.GetName(value);
             }
         }
 
         [CanBeNull]
-        public ImageSource Thumbnail
-        {
-            get { return thumbnail; }
-            set { Set(() => Thumbnail, ref thumbnail, value); }
-        }
+        public ImageSource Thumbnail { get; set; }
 
         #endregion
     }

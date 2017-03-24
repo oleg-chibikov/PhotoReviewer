@@ -11,7 +11,6 @@ using System.Windows.Input;
 using System.Windows.Shell;
 using Autofac;
 using Common.Logging;
-using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
 using GalaSoft.MvvmLight.Threading;
@@ -21,6 +20,7 @@ using PhotoReviewer.DAL.Contracts;
 using PhotoReviewer.DAL.Contracts.Model;
 using PhotoReviewer.Resources;
 using PhotoReviewer.View.Contracts;
+using PropertyChanged;
 using Scar.Common.IO;
 using Scar.Common.WPF;
 
@@ -30,7 +30,8 @@ namespace PhotoReviewer.ViewModel
     //TODO: Localization
     //TODO: CorrelationId for all actions
 
-    public class MainViewModel : ViewModelBase, IDisposable
+    [ImplementPropertyChanged]
+    public class MainViewModel: IDisposable
     {
         [NotNull]
         private readonly ILifetimeScope lifetimeScope;
@@ -47,7 +48,10 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         private IEnumerable<Photo> selectedPhotos = new Photo[0];
 
-        public MainViewModel([NotNull] IMessenger messenger, [NotNull] PhotoCollection photoCollection, [NotNull] ISettingsRepository settingsRepository, [NotNull] ILifetimeScope lifetimeScope, [NotNull] WindowsArranger windowsArranger, [NotNull] ILog logger) : base(messenger)
+        [NotNull]
+        private readonly IMessenger messenger;
+
+        public MainViewModel([NotNull] IMessenger messenger, [NotNull] PhotoCollection photoCollection, [NotNull] ISettingsRepository settingsRepository, [NotNull] ILifetimeScope lifetimeScope, [NotNull] WindowsArranger windowsArranger, [NotNull] ILog logger)
         {
             if (messenger == null)
                 throw new ArgumentNullException(nameof(messenger));
@@ -60,6 +64,7 @@ namespace PhotoReviewer.ViewModel
             if (logger == null)
                 throw new ArgumentNullException(nameof(logger));
             PhotoCollection = photoCollection;
+            this.messenger = messenger;
             this.settingsRepository = settingsRepository;
             this.lifetimeScope = lifetimeScope;
             this.windowsArranger = windowsArranger;
@@ -150,64 +155,24 @@ namespace PhotoReviewer.ViewModel
 
         private void RestoreCurrentPath([NotNull] Settings settings, [NotNull] string message)
         {
-            MessengerInstance.Send(message, MessengerTokens.UserWarningToken);
-            if (CurrentPath == settings.LastUsedDirectoryPath)
-                // ReSharper disable once ExplicitCallerInfoArgument
-                //Need to clear input box anyway
-                RaisePropertyChanged(nameof(CurrentPath));
-            else
-                CurrentPath = settings.LastUsedDirectoryPath;
+            messenger.Send(message, MessengerTokens.UserWarningToken);
+            CurrentPath = null;
+            CurrentPath = settings.LastUsedDirectoryPath;
         }
 
         #region Dependency Properties
+        
+        public int Progress { get; set; }
 
-        private int progress;
-
-        public int Progress
-        {
-            get { return progress; }
-            set { Set(() => Progress, ref progress, value); }
-        }
-
-        private TaskbarItemProgressState progressState;
-
-        public TaskbarItemProgressState ProgressState
-        {
-            get { return progressState; }
-            set { Set(() => ProgressState, ref progressState, value); }
-        }
+        public TaskbarItemProgressState ProgressState { get; set; }
 
         [CanBeNull]
-        private string currentPath;
+        public string CurrentPath { get; set; }
 
         [CanBeNull]
-        public string CurrentPath
-        {
-            get { return currentPath; }
-            set { Set(() => CurrentPath, ref currentPath, value); }
-        }
+        public Photo SelectedPhoto { get; set; }
 
-        [CanBeNull]
-        private Photo selectedPhoto;
-
-        [CanBeNull]
-        public Photo SelectedPhoto
-        {
-            get { return selectedPhoto; }
-            set
-            {
-                Set(() => SelectedPhoto, ref selectedPhoto, value);
-                SelectedCount = 1;
-            }
-        }
-
-        private int selectedCount;
-
-        public int SelectedCount
-        {
-            get { return selectedCount; }
-            set { Set(() => SelectedCount, ref selectedCount, value); }
-        }
+        public int SelectedCount { get; set; }
 
         #endregion
 

@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Windows;
 using JetBrains.Annotations;
 using PhotoReviewer.View.Contracts;
@@ -21,24 +20,10 @@ namespace PhotoReviewer.View
             if (photoViewModel == null)
                 throw new ArgumentNullException(nameof(photoViewModel));
             this.photoViewModel = photoViewModel;
-            photoViewModel.PropertyChanged += PhotoViewModel_PropertyChanged;
-            Closed += PhotoWindow_Closed;
             DataContext = photoViewModel;
             InitializeComponent();
             Show();
             FocusWindow();
-        }
-
-        private void PhotoWindow_Closed(object sender, EventArgs e)
-        {
-            photoViewModel.PropertyChanged -= PhotoViewModel_PropertyChanged;
-        }
-
-        //TODO: Xaml only?
-        private void PhotoViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(photoViewModel.Photo))
-                ZoomBorder.Reset();
         }
 
         #region Private

@@ -113,9 +113,9 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         public ICollectionView FilteredView => filteredViewSource;
 
-        public int FavoritedCount => this.Count(x => x.Favorited);
+        public int FavoritedCount { get; set; }
 
-        public int MarkedForDeletionCount => this.Count(x => x.MarkedForDeletion);
+        public int MarkedForDeletionCount { get; set; }
 
         public bool ShowOnlyMarked
         {
@@ -182,19 +182,13 @@ namespace PhotoReviewer.ViewModel
                                     break;
                                 Add(photo);
                             }
-                            FavoritedChanged();
-                            MarkedForDeletionChanged();
                             OnProgress(100 * i / blocksCount);
                         }, null);
                         return true;
                     });
                 }
                 else
-                {
-                    FavoritedChanged();
-                    MarkedForDeletionChanged();
                     OnProgress(100);
-                }
                 GC.Collect();
             }, token);
             await currentTask;
@@ -354,20 +348,6 @@ namespace PhotoReviewer.ViewModel
 
         #endregion
 
-        #region Event Raisers
-
-        public void FavoritedChanged()
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(FavoritedCount)));
-        }
-
-        public void MarkedForDeletionChanged()
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(MarkedForDeletionCount)));
-        }
-
-        #endregion
-
         #region WatcherHandlers
 
         private async void GetDetailsAndAddPhotoAsync([NotNull] string filePath)
@@ -390,8 +370,8 @@ namespace PhotoReviewer.ViewModel
             if (photo == null)
                 return;
             Remove(photo);
-            MarkedForDeletionChanged();
-            FavoritedChanged();
+            MarkedForDeletionCount--;
+            FavoritedCount--;
         }
 
         private async void RenamePhotoAsync([NotNull] string oldFilePath, [NotNull] string newFilePath)

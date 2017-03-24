@@ -2,19 +2,19 @@
 using System.Threading;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
 using PhotoReviewer.Core;
 using PhotoReviewer.View.Contracts;
+using PropertyChanged;
 using Scar.Common.Drawing;
 using Scar.Common.IO;
 using Scar.Common.WPF;
 
 namespace PhotoReviewer.ViewModel
 {
-    public class PhotoViewModel : ViewModelBase, IRequestCloseViewModel, IDisposable
+    [ImplementPropertyChanged]
+    public class PhotoViewModel : IRequestCloseViewModel, IDisposable
     {
         [NotNull]
         private readonly MainViewModel mainViewModel;
@@ -22,10 +22,8 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-        public PhotoViewModel([NotNull] IMessenger messenger, [NotNull] Photo photo, [NotNull] MainViewModel mainViewModel, [NotNull] WindowsArranger windowsArranger) : base(messenger)
+        public PhotoViewModel([NotNull] Photo photo, [NotNull] MainViewModel mainViewModel, [NotNull] WindowsArranger windowsArranger)
         {
-            if (messenger == null)
-                throw new ArgumentNullException(nameof(messenger));
             if (photo == null)
                 throw new ArgumentNullException(nameof(photo));
             if (mainViewModel == null)
@@ -90,22 +88,11 @@ namespace PhotoReviewer.ViewModel
 
         #region Dependency Properties
 
-        private BitmapSource bitmapSource;
-
-        public BitmapSource BitmapSource
-        {
-            get { return bitmapSource; }
-            set { Set(() => BitmapSource, ref bitmapSource, value); }
-        }
-
-        private Photo photo;
-
+        [CanBeNull]
+        public BitmapSource BitmapSource { get; set; }
+        
         [NotNull]
-        public Photo Photo
-        {
-            get { return photo; }
-            set { Set(() => Photo, ref photo, value); }
-        }
+        public Photo Photo { get; set; }
 
         #endregion
 
