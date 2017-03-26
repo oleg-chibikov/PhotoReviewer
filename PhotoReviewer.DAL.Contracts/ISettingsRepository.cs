@@ -1,12 +1,13 @@
 ﻿using JetBrains.Annotations;
-using PhotoReviewer.DAL.Contracts.Model;
-using Scar.Common.DAL;
+using PhotoReviewer.DAL.Contracts.Data;
 
 namespace PhotoReviewer.DAL.Contracts
 {
-    public interface ISettingsRepository : IRepository<Settings>
+    public interface ISettingsRepository
     {
         [NotNull]
-        Settings Get();
+        ISettings Get();
+
+        void Save([NotNull] ISettings settings);
     }
 }

@@ -138,7 +138,7 @@
 
         <!-- Photo Management Canvas -->
         <DockPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,10">
-            <Button DockPanel.Dock="Right" Width="80" Command="{Binding BrowseDirectoryCommand}" Content="Browse..."/>
+            <Button DockPanel.Dock="Right" Width="80" Command="{Binding BrowseDirectoryCommand}" Content="Browse..." />
             <Label DockPanel.Dock="Left" Margin="0,0,10,0">Path:</Label>
             <TextBox Text="{Binding CurrentPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0"
                      VerticalAlignment="Center">
@@ -274,20 +274,22 @@
             <!-- Visibility CheckBox -->
             <DockPanel DockPanel.Dock="Bottom" Margin="5">
                 <CheckBox VerticalAlignment="Center" Command="{Binding ShowOnlyMarkedChangedCommand}"
-                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}">Show only marked</CheckBox>
+                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}">
+                    Show only marked
+                </CheckBox>
                 <!-- Image Buttons -->
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right"  Margin="5">
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
                     <controls:ImageButton
-            ToolTip="Show Logs"
-            Source="pack://application:,,/PhotoReviewer.Resources;component/Images/document-32.png"
-            Command="{Binding ViewLogsCommand}" />
+                        ToolTip="Show Logs"
+                        Source="pack://application:,,/PhotoReviewer.Resources;component/Images/document-32.png"
+                        Command="{Binding ViewLogsCommand}" />
                     <controls:ImageButton
-            ToolTip="Open settings directory"
-            Source="pack://application:,,/PhotoReviewer.Resources;component/Images/settings-32.png"
-            Command="{Binding OpenSettingsFolderCommand}" />
+                        ToolTip="Open settings directory"
+                        Source="pack://application:,,/PhotoReviewer.Resources;component/Images/settings-32.png"
+                        Command="{Binding OpenSettingsFolderCommand}" />
                 </StackPanel>
             </DockPanel>
-            
+
             <!-- Progress Bar -->
             <DockPanel Opacity="0" DockPanel.Dock="Bottom" Margin="5">
                 <DockPanel.Style>

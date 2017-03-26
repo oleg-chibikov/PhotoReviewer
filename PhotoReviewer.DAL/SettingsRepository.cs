@@ -1,9 +1,10 @@
 ﻿using Common.Logging;
 using JetBrains.Annotations;
 using PhotoReviewer.DAL.Contracts;
-using PhotoReviewer.DAL.Contracts.Model;
+using PhotoReviewer.DAL.Contracts.Data;
 using PhotoReviewer.Resources;
 using Scar.Common.DAL.LiteDB;
+using Settings = PhotoReviewer.DAL.Model.Settings;
 
 namespace PhotoReviewer.DAL
 {
@@ -16,9 +17,14 @@ namespace PhotoReviewer.DAL
 
         protected override string DbPath => Paths.SettingsPath;
 
-        public Settings Get()
+        public ISettings Get()
         {
             return Collection.FindById(1) ?? new Settings();
+        }
+
+        public void Save(ISettings settings)
+        {
+            base.Save((Settings)settings);
         }
     }
 }

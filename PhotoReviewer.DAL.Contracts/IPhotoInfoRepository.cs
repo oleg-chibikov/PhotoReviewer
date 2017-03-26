@@ -1,12 +1,11 @@
 ﻿using JetBrains.Annotations;
-using PhotoReviewer.DAL.Contracts.Model;
-using Scar.Common.DAL;
+using PhotoReviewer.DAL.Contracts.Data;
 
 namespace PhotoReviewer.DAL.Contracts
 {
     // ReSharper disable once UnusedTypeParameter
-    public interface IPhotoInfoRepository<TPhotoInfo> : IRepository<TPhotoInfo>
-        where TPhotoInfo : PhotoInfo
+    public interface IPhotoInfoRepository<TPhotoInfo>
+        where TPhotoInfo : IPhotoInfo
     {
         bool Check([NotNull] string filePath);
         void Delete([NotNull] string filePath);

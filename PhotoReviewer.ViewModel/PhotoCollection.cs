@@ -15,7 +15,6 @@ using GalaSoft.MvvmLight.Messaging;
 using GalaSoft.MvvmLight.Threading;
 using JetBrains.Annotations;
 using PhotoReviewer.DAL.Contracts;
-using PhotoReviewer.DAL.Contracts.Model;
 using PhotoReviewer.Resources;
 using Scar.Common;
 using Scar.Common.Drawing;
@@ -35,11 +34,6 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         private readonly IComparer<string> comparer;
 
-        [NotNull]
-        private readonly IPhotoInfoRepository<FavoritedPhoto> favoritedPhotoRepository;
-
-        [NotNull]
-        private readonly ICollectionView filteredViewSource;
 
         [NotNull]
         private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
@@ -55,13 +49,16 @@ namespace PhotoReviewer.ViewModel
         private readonly ILog logger;
 
         [NotNull]
-        private readonly IPhotoInfoRepository<MarkedForDeletionPhoto> markedForDeletionPhotoRepository;
+        private readonly IPhotoUserInfoRepository repository;
 
         [NotNull]
         private readonly IMessenger messenger;
 
         [NotNull]
         private readonly IMetadataExtractor metadataExtractor;
+
+        [NotNull]
+        private readonly Predicate<object> showOnlyMarkedFilter = x => ((Photo)x).IsValuableOrNearby;
 
         [NotNull]
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -71,23 +68,15 @@ namespace PhotoReviewer.ViewModel
 
         private bool showOnlyMarked;
 
-        [NotNull]
-        private readonly Predicate<object> showOnlyMarkedFilter = x => ((Photo)x).IsValuableOrNearby;
-
         public PhotoCollection([NotNull] IComparer<string> comparer,
-            [NotNull] IPhotoInfoRepository<MarkedForDeletionPhoto> markedForDeletionPhotoRepository,
-            [NotNull] IPhotoInfoRepository<FavoritedPhoto> favoritedPhotoRepository,
             [NotNull] IMessenger messenger,
             [NotNull] ILog logger,
             [NotNull] IMetadataExtractor metadataExtractor,
-            [NotNull] ILifetimeScope lifetimeScope)
+            [NotNull] ILifetimeScope lifetimeScope,
+            [NotNull] IPhotoUserInfoRepository repository)
         {
             if (comparer == null)
                 throw new ArgumentNullException(nameof(comparer));
-            if (markedForDeletionPhotoRepository == null)
-                throw new ArgumentNullException(nameof(markedForDeletionPhotoRepository));
-            if (favoritedPhotoRepository == null)
-                throw new ArgumentNullException(nameof(favoritedPhotoRepository));
             if (messenger == null)
                 throw new ArgumentNullException(nameof(messenger));
             if (logger == null)
@@ -96,22 +85,23 @@ namespace PhotoReviewer.ViewModel
                 throw new ArgumentNullException(nameof(metadataExtractor));
             if (lifetimeScope == null)
                 throw new ArgumentNullException(nameof(lifetimeScope));
+            if (repository == null)
+                throw new ArgumentNullException(nameof(repository));
             this.comparer = comparer;
-            this.markedForDeletionPhotoRepository = markedForDeletionPhotoRepository;
-            this.favoritedPhotoRepository = favoritedPhotoRepository;
             this.messenger = messenger;
             this.logger = logger;
             this.metadataExtractor = metadataExtractor;
             this.lifetimeScope = lifetimeScope;
+            this.repository = repository;
             CollectionChanged += PhotoCollection_CollectionChanged;
-            filteredViewSource = CollectionViewSource.GetDefaultView(this);
+            FilteredView = CollectionViewSource.GetDefaultView(this);
             imagesDirectoryWatcher.Created += ImagesDirectoryWatcher_Changed;
             imagesDirectoryWatcher.Deleted += ImagesDirectoryWatcher_Changed;
             imagesDirectoryWatcher.Renamed += ImagesDirectoryWatcher_Renamed;
         }
 
         [NotNull]
-        public ICollectionView FilteredView => filteredViewSource;
+        public ICollectionView FilteredView { get; }
 
         public int FavoritedCount { get; set; }
 
@@ -123,7 +113,7 @@ namespace PhotoReviewer.ViewModel
             set
             {
                 showOnlyMarked = value;
-                filteredViewSource.Filter = !value ? null : showOnlyMarkedFilter;
+                FilteredView.Filter = !value ? null : showOnlyMarkedFilter;
             }
         }
 
@@ -148,13 +138,17 @@ namespace PhotoReviewer.ViewModel
             var token = RecreateCancellationToken();
             Clear();
             if (string.IsNullOrWhiteSpace(directoryPath))
+            {
+                messenger.Send(Errors.SelectDirectory, MessengerTokens.UserWarningToken);
                 return;
+            }
             if (!Directory.Exists(directoryPath))
             {
                 messenger.Send(string.Format(Errors.DirectoryDoesNotExist, directoryPath), MessengerTokens.UserWarningToken);
                 return;
             }
             var context = SynchronizationContext.Current;
+            FavoritedCount = MarkedForDeletionCount = 0;
             currentTask = Task.Run(() =>
             {
                 var files = GetFilesFromDirectory(directoryPath);
@@ -188,13 +182,15 @@ namespace PhotoReviewer.ViewModel
                     });
                 }
                 else
+                {
                     OnProgress(100);
+                }
                 GC.Collect();
             }, token);
             await currentTask;
             //In order to display the Prev photos of Marked ones there is the need to refresh filter after all photos are loaded
             if (showOnlyMarked)
-                filteredViewSource.Refresh();
+                FilteredView.Refresh();
         }
 
         [NotNull]
@@ -308,14 +304,13 @@ namespace PhotoReviewer.ViewModel
                     photo.Favorited = false;
                 }
                 var paths = notMarked.Select(x => x.FilePath).ToArray();
-                markedForDeletionPhotoRepository.Save(paths);
-                favoritedPhotoRepository.Delete(paths);
+                repository.MarkForDeletion(paths);
             }
             else
             {
                 foreach (var photo in photos)
                     photo.MarkedForDeletion = false;
-                markedForDeletionPhotoRepository.Delete(photos.Select(x => x.FilePath).ToArray());
+                repository.UnMarkForDeletion(photos.Select(x => x.FilePath).ToArray());
             }
         }
 
@@ -335,14 +330,13 @@ namespace PhotoReviewer.ViewModel
                     photo.MarkedForDeletion = false;
                 }
                 var paths = notFavorited.Select(x => x.FilePath).ToArray();
-                favoritedPhotoRepository.Save(paths);
-                markedForDeletionPhotoRepository.Delete(paths);
+                repository.Favorite(paths);
             }
             else
             {
                 foreach (var photo in photos)
                     photo.Favorited = false;
-                favoritedPhotoRepository.Delete(photos.Select(x => x.FilePath).ToArray());
+                repository.UnFavorite(photos.Select(x => x.FilePath).ToArray());
             }
         }
 
@@ -364,21 +358,21 @@ namespace PhotoReviewer.ViewModel
         private async void DeletePhotoAsync([NotNull] string filePath)
         {
             await currentTask;
-            favoritedPhotoRepository.Delete(filePath);
-            markedForDeletionPhotoRepository.Delete(filePath);
+            repository.Delete(filePath);
             var photo = this.SingleOrDefault(x => x.FilePath == filePath);
             if (photo == null)
                 return;
             Remove(photo);
-            MarkedForDeletionCount--;
-            FavoritedCount--;
+            if (photo.MarkedForDeletion)
+                MarkedForDeletionCount--;
+            if (photo.Favorited)
+                FavoritedCount--;
         }
 
         private async void RenamePhotoAsync([NotNull] string oldFilePath, [NotNull] string newFilePath)
         {
             await currentTask;
-            favoritedPhotoRepository.Rename(oldFilePath, newFilePath);
-            markedForDeletionPhotoRepository.Rename(oldFilePath, newFilePath);
+            repository.Rename(oldFilePath, newFilePath);
             var photo = this.SingleOrDefault(x => x.FilePath == oldFilePath);
             if (photo == null)
                 return;
@@ -437,15 +431,10 @@ namespace PhotoReviewer.ViewModel
         private PhotoDetails GetPhotoDetails([NotNull] string filePath)
         {
             var metadata = metadataExtractor.Extract(filePath);
-            var markedForDeletion = markedForDeletionPhotoRepository.Check(filePath);
-            var favorited = favoritedPhotoRepository.Check(filePath);
-            var details = new PhotoDetails(filePath, metadata, markedForDeletion, favorited);
-            if (!favorited && details.Favorited)
-            {
-                //TODO: new abstraction over both repos (everytime we favorite photo we must unmark it from deleted)
-                favoritedPhotoRepository.Save(filePath);
-                markedForDeletionPhotoRepository.Delete(filePath);
-            }
+            var photoUserInfo = repository.Check(filePath);
+            var details = new PhotoDetails(filePath, metadata, photoUserInfo.MarkedForDeletion, photoUserInfo.Favorited);
+            if (!photoUserInfo.Favorited && details.Favorited)
+                repository.Favorite(filePath);
             return details;
         }
 

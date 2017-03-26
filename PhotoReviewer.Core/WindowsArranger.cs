@@ -12,10 +12,10 @@ namespace PhotoReviewer.Core
     [UsedImplicitly]
     public class WindowsArranger
     {
+        private const double WindowBorderWidth = 8;
+
         [NotNull]
         private readonly ILog logger;
-
-        private const double WindowBorderWidth = 8;
 
         [NotNull]
         private readonly WindowFactory<IMainWindow> mainWindowFactory;

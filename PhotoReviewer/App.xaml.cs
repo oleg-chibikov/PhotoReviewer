@@ -45,8 +45,7 @@ namespace PhotoReviewer
             messenger.Register<string>(this, MessengerTokens.UserWarningToken, message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK, MessageBoxImage.Warning));
             if (VerifyNotLaunched())
                 return;
-
-            container.Resolve<NonExistingItemsCleaner>();
+            
             container.Resolve<WindowFactory<IMainWindow>>().GetOrCreateWindow().ShowDialog();
         }
 

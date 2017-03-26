@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using GalaSoft.MvvmLight.Command;
 using JetBrains.Annotations;
 using PhotoReviewer.Core;
 using PhotoReviewer.View.Contracts;
 using PropertyChanged;
 using Scar.Common.Drawing;
 using Scar.Common.IO;
+using Scar.Common.WPF.Commands;
 
 namespace PhotoReviewer.ViewModel
 {
@@ -32,12 +32,17 @@ namespace PhotoReviewer.ViewModel
             this.mainViewModel = mainViewModel;
             Photo = photo;
             ChangePhoto(photo);
-            ToggleFullHeightCommand = new RelayCommand<IPhotoWindow>(windowsArranger.ToggleFullHeight);
-            FavoriteCommand = new RelayCommand(Favorite);
-            MarkForDeletionCommand = new RelayCommand(MarkForDeletion);
-            RenameToDateCommand = new RelayCommand(RenameToDate);
-            OpenPhotoInExplorerCommand = new RelayCommand(OpenPhotoInExplorer);
-            ChangePhotoCommand = new RelayCommand<Photo>(ChangePhoto);
+            ToggleFullHeightCommand = new CorrelationCommand<IPhotoWindow>(windowsArranger.ToggleFullHeight);
+            FavoriteCommand = new CorrelationCommand(Favorite);
+            MarkForDeletionCommand = new CorrelationCommand(MarkForDeletion);
+            RenameToDateCommand = new CorrelationCommand(RenameToDate);
+            OpenPhotoInExplorerCommand = new CorrelationCommand(OpenPhotoInExplorer);
+            ChangePhotoCommand = new CorrelationCommand<Photo>(ChangePhoto);
+        }
+
+        public void Dispose()
+        {
+            cancellationTokenSource.Dispose();
         }
 
         private CancellationToken RecreateCancellationToken()
@@ -59,7 +64,7 @@ namespace PhotoReviewer.ViewModel
 
         [CanBeNull]
         public BitmapSource BitmapSource { get; set; }
-        
+
         [NotNull]
         public Photo Photo { get; set; }
 
@@ -126,10 +131,5 @@ namespace PhotoReviewer.ViewModel
         }
 
         #endregion
-
-        public void Dispose()
-        {
-            cancellationTokenSource.Dispose();
-        }
     }
 }

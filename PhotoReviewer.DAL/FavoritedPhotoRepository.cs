@@ -1,6 +1,6 @@
 ﻿using Common.Logging;
 using JetBrains.Annotations;
-using PhotoReviewer.DAL.Contracts.Model;
+using PhotoReviewer.DAL.Model;
 
 namespace PhotoReviewer.DAL
 {

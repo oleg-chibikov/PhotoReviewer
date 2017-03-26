@@ -1,8 +1,8 @@
 ﻿using JetBrains.Annotations;
 
-namespace PhotoReviewer.DAL.Contracts.Model
+namespace PhotoReviewer.DAL.Model
 {
-    public class FavoritedPhoto : PhotoInfo
+    internal class FavoritedPhoto : PhotoInfo
     {
         public FavoritedPhoto()
         {

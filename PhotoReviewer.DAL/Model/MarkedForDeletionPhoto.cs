@@ -1,8 +1,8 @@
 using JetBrains.Annotations;
 
-namespace PhotoReviewer.DAL.Contracts.Model
+namespace PhotoReviewer.DAL.Model
 {
-    public class MarkedForDeletionPhoto : PhotoInfo
+    internal class MarkedForDeletionPhoto : PhotoInfo
     {
         public MarkedForDeletionPhoto()
         {

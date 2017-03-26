@@ -48,7 +48,12 @@
     </Compile>
     <Compile Include="FavoritedPhotoRepository.cs" />
     <Compile Include="MarkedForDeletionPhotoRepository.cs" />
+    <Compile Include="Model\FavoritedPhoto.cs" />
+    <Compile Include="Model\MarkedForDeletionPhoto.cs" />
+    <Compile Include="Model\PhotoInfo.cs" />
+    <Compile Include="Model\Settings.cs" />
     <Compile Include="PhotoInfoRepository.cs" />
+    <Compile Include="PhotoUserInfoRepository.cs" />
     <Compile Include="SettingsRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

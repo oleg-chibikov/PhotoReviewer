@@ -1,20 +1,37 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Common.Logging;
 using JetBrains.Annotations;
 using LiteDB;
 using PhotoReviewer.DAL.Contracts;
-using PhotoReviewer.DAL.Contracts.Model;
+using PhotoReviewer.DAL.Model;
 using PhotoReviewer.Resources;
 using Scar.Common.DAL.LiteDB;
 
 namespace PhotoReviewer.DAL
 {
     [UsedImplicitly]
-    public abstract class PhotoInfoRepository<TPhotoInfo> : LiteDbRepository<TPhotoInfo>, IPhotoInfoRepository<TPhotoInfo>
+    internal abstract class PhotoInfoRepository<TPhotoInfo> : LiteDbRepository<TPhotoInfo>, IPhotoInfoRepository<TPhotoInfo>
         where TPhotoInfo : PhotoInfo, new()
     {
         protected PhotoInfoRepository([NotNull] ILog logger) : base(logger)
         {
+            Task.Run(() => {
+                CleanNonExisting();
+            });
+        }
+
+        private void CleanNonExisting()
+        {
+            var notExisting = GetAll().Select(x => x.FilePath).Where(filePath => !File.Exists(filePath)).ToArray();
+            if (!notExisting.Any())
+            {
+                Logger.Debug($"All records in {typeof(TPhotoInfo)} repository are up to date");
+                return;
+            }
+            Logger.Debug($"Deleting {notExisting.Length} non existing photos from {typeof(TPhotoInfo)} repository...");
+            Delete(notExisting);
         }
 
         protected override string DbPath => Paths.SettingsPath;
