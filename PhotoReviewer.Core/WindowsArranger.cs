@@ -136,7 +136,16 @@ namespace PhotoReviewer.Core
 
         private void ToggleFullScreen(IWindow window)
         {
-            if (window.WindowState != WindowState.Maximized)
+            if (window.IsFullHeight)
+            {
+                logger.Debug("Normalizing window view...");
+                window.WindowState = WindowState.Normal;
+                window.Topmost = false;
+                window.WindowStyle = WindowStyle.SingleBorderWindow;
+                window.ResizeMode = ResizeMode.CanResize;
+                ArrangeWindows(true);
+            }
+            else
             {
                 logger.Debug("Maximizing window...");
                 window.WindowState = WindowState.Maximized;
@@ -147,15 +156,6 @@ namespace PhotoReviewer.Core
                 window.ResizeMode = ResizeMode.NoResize;
                 // re-show the window after changing style
                 window.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                logger.Debug("Normalizing window view...");
-                window.WindowState = WindowState.Normal;
-                window.Topmost = false;
-                window.WindowStyle = WindowStyle.SingleBorderWindow;
-                window.ResizeMode = ResizeMode.CanResize;
-                ArrangeWindows(true);
             }
         }
 
