@@ -7,6 +7,7 @@ namespace PhotoReviewer.DAL.Contracts
     {
         [NotNull]
         PhotoUserInfo Check([NotNull] string filePath);
+
         void Rename([NotNull] string oldFilePath, [NotNull] string newFilePath);
         void Delete([NotNull] string filePath);
         void Favorite([NotNull] string filePath);

@@ -46,8 +46,6 @@
     <Compile Include="..\PhotoReviewer\Properties\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="FavoritedPhotoRepository.cs" />
-    <Compile Include="MarkedForDeletionPhotoRepository.cs" />
     <Compile Include="Model\FavoritedPhoto.cs" />
     <Compile Include="Model\MarkedForDeletionPhoto.cs" />
     <Compile Include="Model\PhotoInfo.cs" />

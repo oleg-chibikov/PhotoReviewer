@@ -103,7 +103,6 @@
       <HintPath>..\..\..\..\..\ThirdParty\NLog.4.4.4\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\ThirdParty\MvvmLightLibs.5.3.0.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -147,6 +146,14 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Scar.Common.DAL.LiteDB\Scar.Common.DAL.LiteDB.csproj">
+      <Project>{ab0bd04c-9a70-4913-899c-e8c07792f76a}</Project>
+      <Name>Scar.Common.DAL.LiteDB</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Common\Scar.Common.DAL\Scar.Common.DAL.csproj">
+      <Project>{17b01758-0cf5-4a3e-b2ce-77213efc1e92}</Project>
+      <Name>Scar.Common.DAL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Common\Scar.Common.Drawing\Scar.Common.Drawing.csproj">
       <Project>{9FDEC5F5-4996-45BD-9EFC-CAE6AAD74FB5}</Project>
       <Name>Scar.Common.Drawing</Name>
@@ -170,6 +177,10 @@
     <ProjectReference Include="..\PhotoReviewer.Core\PhotoReviewer.Core.csproj">
       <Project>{8645331C-324F-4265-A593-13725FE33A0D}</Project>
       <Name>PhotoReviewer.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PhotoReviewer.DAL.Contracts\PhotoReviewer.DAL.Contracts.csproj">
+      <Project>{f0fb4354-77b0-4132-9593-c7a2493ab319}</Project>
+      <Name>PhotoReviewer.DAL.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.DAL\PhotoReviewer.DAL.csproj">
       <Project>{FD3B66EE-FDE7-41D1-9933-5421454E6EB7}</Project>
@@ -211,8 +222,7 @@
       <Using xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Namespace="System" />
       <Using xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Namespace="System.IO" />
       <Using xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Namespace="System.Xml.Linq" />
-      <Code xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Type="Fragment" Language="cs">
-<![CDATA[
+      <Code xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Type="Fragment" Language="cs"><![CDATA[
 var config = XElement.Load(Config.ItemSpec).Elements("Costura").FirstOrDefault();
 
 if (config == null) return true;
@@ -231,8 +241,8 @@ var filesToCleanup = Files.Select(f => f.ItemSpec).Where(f => !excludedAssemblie
 
 foreach (var item in filesToCleanup)
   File.Delete(item);
-]]>
-      </Code></Task>
+]]></Code>
+    </Task>
   </UsingTask>
   <Target Name="CleanReferenceCopyLocalPaths" AfterTargets="AfterBuild;NonWinFodyTarget">
     <CosturaCleanup Config="FodyWeavers.xml" Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />

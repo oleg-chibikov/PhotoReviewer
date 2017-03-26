@@ -2,14 +2,14 @@
 using JetBrains.Annotations;
 using PhotoReviewer.DAL.Contracts;
 using PhotoReviewer.DAL.Contracts.Data;
+using PhotoReviewer.DAL.Model;
 using PhotoReviewer.Resources;
 using Scar.Common.DAL.LiteDB;
-using Settings = PhotoReviewer.DAL.Model.Settings;
 
 namespace PhotoReviewer.DAL
 {
     [UsedImplicitly]
-    internal sealed class SettingsRepository : LiteDbRepository<Settings>, ISettingsRepository
+    internal sealed class SettingsRepository : LiteDbRepository<Settings, int>, ISettingsRepository
     {
         public SettingsRepository([NotNull] ILog logger) : base(logger)
         {

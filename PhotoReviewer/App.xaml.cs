@@ -10,6 +10,7 @@ using GalaSoft.MvvmLight.Threading;
 using JetBrains.Annotations;
 using PhotoReviewer.Core;
 using PhotoReviewer.DAL;
+using PhotoReviewer.DAL.Model;
 using PhotoReviewer.Resources;
 using PhotoReviewer.View;
 using PhotoReviewer.View.Contracts;
@@ -45,7 +46,7 @@ namespace PhotoReviewer
             messenger.Register<string>(this, MessengerTokens.UserWarningToken, message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK, MessageBoxImage.Warning));
             if (VerifyNotLaunched())
                 return;
-            
+
             container.Resolve<WindowFactory<IMainWindow>>().GetOrCreateWindow().ShowDialog();
         }
 
@@ -77,7 +78,12 @@ namespace PhotoReviewer
             builder.RegisterType<WinComparer>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MetadataExtractor>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<Messenger>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterAssemblyTypes(typeof(SettingsRepository).Assembly).AsImplementedInterfaces().SingleInstance();
+
+            builder.RegisterType<PhotoInfoRepository<FavoritedPhoto>>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<PhotoInfoRepository<MarkedForDeletionPhoto>>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<SettingsRepository>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<PhotoUserInfoRepository>().AsImplementedInterfaces().SingleInstance();
+
             builder.RegisterAssemblyTypes(typeof(WindowsArranger).Assembly).AsSelf().SingleInstance();
             builder.RegisterModule<LoggingModule>();
 

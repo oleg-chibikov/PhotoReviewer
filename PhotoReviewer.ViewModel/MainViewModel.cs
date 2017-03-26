@@ -148,6 +148,7 @@ namespace PhotoReviewer.ViewModel
             settings.LastUsedDirectoryPath = CurrentPath = directoryPath;
             settingsRepository.Save(settings);
         }
+
         /// <summary>
         /// Selects and scrolls to the first photo of current selection
         /// </summary>

@@ -20,7 +20,6 @@ using Scar.Common;
 using Scar.Common.Drawing;
 using Scar.Common.IO;
 
-//TODO: Transactions, UoW for repositories
 //TODO: BlockingCollection for photos commands
 
 namespace PhotoReviewer.ViewModel
@@ -49,13 +48,13 @@ namespace PhotoReviewer.ViewModel
         private readonly ILog logger;
 
         [NotNull]
-        private readonly IPhotoUserInfoRepository repository;
-
-        [NotNull]
         private readonly IMessenger messenger;
 
         [NotNull]
         private readonly IMetadataExtractor metadataExtractor;
+
+        [NotNull]
+        private readonly IPhotoUserInfoRepository repository;
 
         [NotNull]
         private readonly Predicate<object> showOnlyMarkedFilter = x => ((Photo)x).IsValuableOrNearby;

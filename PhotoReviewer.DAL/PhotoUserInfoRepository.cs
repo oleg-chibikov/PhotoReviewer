@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Common.Logging;
 using JetBrains.Annotations;
 using PhotoReviewer.DAL.Contracts;
@@ -11,9 +12,11 @@ namespace PhotoReviewer.DAL
     internal class PhotoUserInfoRepository : IPhotoUserInfoRepository
     {
         [NotNull]
-        private readonly ILog logger;
-        [NotNull]
         private readonly IPhotoInfoRepository<FavoritedPhoto> favoritedPhotoRepository;
+
+        [NotNull]
+        private readonly ILog logger;
+
         [NotNull]
         private readonly IPhotoInfoRepository<MarkedForDeletionPhoto> markedForDeletionPhotoRepository;
 
@@ -40,7 +43,7 @@ namespace PhotoReviewer.DAL
                 throw new ArgumentNullException(nameof(filePath));
             var favorited = favoritedPhotoRepository.Check(filePath);
             var markedForDeletion = markedForDeletionPhotoRepository.Check(filePath);
-            return new PhotoUserInfo(favorited,markedForDeletion);
+            return new PhotoUserInfo(favorited, markedForDeletion);
         }
 
         public void Rename(string oldFilePath, string newFilePath)
@@ -68,7 +71,7 @@ namespace PhotoReviewer.DAL
             logger.Debug($"Favoriting {filePath}...");
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
-            favoritedPhotoRepository.Save(filePath);
+            favoritedPhotoRepository.Save(new FavoritedPhoto { Id = filePath });
             markedForDeletionPhotoRepository.Delete(filePath);
         }
 
@@ -77,7 +80,7 @@ namespace PhotoReviewer.DAL
             logger.Debug($"Favoriting {filePaths.Length} photos...");
             if (filePaths == null)
                 throw new ArgumentNullException(nameof(filePaths));
-            favoritedPhotoRepository.Save(filePaths);
+            favoritedPhotoRepository.Save(filePaths.Select(filePath => new FavoritedPhoto { Id = filePath }));
             markedForDeletionPhotoRepository.Delete(filePaths);
         }
 
@@ -86,7 +89,7 @@ namespace PhotoReviewer.DAL
             logger.Debug($"Marking {filePath} for deletion...");
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
-            markedForDeletionPhotoRepository.Save(filePath);
+            markedForDeletionPhotoRepository.Save(new MarkedForDeletionPhoto { Id = filePath });
             favoritedPhotoRepository.Delete(filePath);
         }
 
@@ -95,7 +98,7 @@ namespace PhotoReviewer.DAL
             logger.Debug($"Marking {filePaths.Length} photos for deletion...");
             if (filePaths == null)
                 throw new ArgumentNullException(nameof(filePaths));
-            markedForDeletionPhotoRepository.Save(filePaths);
+            markedForDeletionPhotoRepository.Save(filePaths.Select(filePath => new MarkedForDeletionPhoto { Id = filePath }));
             favoritedPhotoRepository.Delete(filePaths);
         }
 
