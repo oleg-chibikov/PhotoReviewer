@@ -17,14 +17,10 @@ namespace PhotoReviewer.DAL
 
         protected override string DbPath => Paths.SettingsPath;
 
-        public ISettings Get()
+        public ISettings Settings
         {
-            return Collection.FindById(1) ?? new Settings();
-        }
-
-        public void Save(ISettings settings)
-        {
-            base.Save((Settings)settings);
+            get { return Collection.FindById(1) ?? new Settings(); }
+            set { Save((Settings)value); }
         }
     }
 }

@@ -6,8 +6,6 @@ namespace PhotoReviewer.DAL.Contracts
     public interface ISettingsRepository
     {
         [NotNull]
-        ISettings Get();
-
-        void Save([NotNull] ISettings settings);
+        ISettings Settings { get; set; }
     }
 }

@@ -91,7 +91,7 @@ namespace PhotoReviewer.ViewModel
 
             var token = RecreateCancellationToken();
             Photo = newPhoto;
-            const int width = 200;
+            const int previewWidth = 800;
             var filePath = newPhoto.FilePath;
             var orientation = newPhoto.Metadata.Orientation;
             SelectAndAct(async () =>
@@ -100,7 +100,7 @@ namespace PhotoReviewer.ViewModel
                 {
                     var bytes = await filePath.ReadAllFileAsync(token);
                     //Firstly load and display low quality image
-                    BitmapSource = await bytes.LoadImageAsync(token, orientation, width);
+                    BitmapSource = await bytes.LoadImageAsync(token, orientation, previewWidth);
                     //Then load full image
                     BitmapSource = await bytes.LoadImageAsync(token, orientation);
                 }

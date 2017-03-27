@@ -144,4 +144,7 @@
   <data name="TaskInProgress" xml:space="preserve">
     <value>There is an operation running. Please wait while it's finished</value>
   </data>
+  <data name="Error" xml:space="preserve">
+    <value>Application error</value>
+  </data>
 </root>

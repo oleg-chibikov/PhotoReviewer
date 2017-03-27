@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -64,12 +65,6 @@ namespace PhotoReviewer.ViewModel
             this.lifetimeScope = lifetimeScope;
             this.windowsArranger = windowsArranger;
             this.logger = logger;
-            PhotoCollection.Progress += PhotosCollection_Progress;
-            PhotoCollection.CollectionChanged += PhotoCollection_CollectionChanged;
-
-            var directoryPath = settingsRepository.Get().LastUsedDirectoryPath;
-            if (!string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath))
-                SetDirectoryPath(directoryPath);
             BrowseDirectoryCommand = new CorrelationCommand(BrowseDirectory);
             ChangeDirectoryPathCommand = new CorrelationCommand<string>(ChangeDirectoryPath);
             ShowOnlyMarkedChangedCommand = new CorrelationCommand<bool>(ShowOnlyMarkedChanged);
@@ -85,6 +80,12 @@ namespace PhotoReviewer.ViewModel
             WindowClosingCommand = new CorrelationCommand(WindowClosing);
             OpenSettingsFolderCommand = new CorrelationCommand(OpenSettingsFolder);
             ViewLogsCommand = new CorrelationCommand(ViewLogs);
+            PhotoCollection.Progress += PhotosCollection_Progress;
+            PhotoCollection.CollectionChanged += PhotoCollection_CollectionChanged;
+
+            var directoryPath = settingsRepository.Settings.LastUsedDirectoryPath;
+            if (!string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath))
+                SetDirectoryPath(directoryPath);
         }
 
         [NotNull]
@@ -103,6 +104,8 @@ namespace PhotoReviewer.ViewModel
                 case NotifyCollectionChangedAction.Add:
                     if (SelectedPhoto == null)
                         SelectedPhoto = e.NewItems.Cast<Photo>().First();
+                    //SelectionChanged is not hit sometimes
+                    SelectionChanged(e.NewItems);
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (var filePath in e.OldItems.Cast<Photo>().Select(x => x.FilePath).Distinct())
@@ -134,10 +137,11 @@ namespace PhotoReviewer.ViewModel
 
         private void SetDirectoryPath([NotNull] string directoryPath)
         {
-            var settings = settingsRepository.Get();
+            var settings = settingsRepository.Settings;
             var task = PhotoCollection.SetDirectoryPathAsync(directoryPath);
             if (task.IsCompleted)
             {
+                LogTaskException(task);
                 //Restore previous path since current is corrupted
                 CurrentPath = null;
                 CurrentPath = settings.LastUsedDirectoryPath;
@@ -146,7 +150,13 @@ namespace PhotoReviewer.ViewModel
             BeginProgress();
             windowsArranger.ClosePhotos();
             settings.LastUsedDirectoryPath = CurrentPath = directoryPath;
-            settingsRepository.Save(settings);
+            settingsRepository.Settings = settings;
+        }
+
+        private void LogTaskException(Task task)
+        {
+            if (task.Exception != null)
+                throw task.Exception;
         }
 
         /// <summary>
@@ -231,7 +241,7 @@ namespace PhotoReviewer.ViewModel
             logger.Debug("Browsing directory...");
             //TODO: Another dialog third party? Use OpenFileService and DI
             var dialog = new FolderBrowserDialog();
-            var lastUsedPath = settingsRepository.Get().LastUsedDirectoryPath;
+            var lastUsedPath = settingsRepository.Settings.LastUsedDirectoryPath;
 
             if (!string.IsNullOrEmpty(lastUsedPath))
                 dialog.SelectedPath = lastUsedPath;
@@ -261,6 +271,8 @@ namespace PhotoReviewer.ViewModel
             var task = PhotoCollection.CopyFavoritedAsync();
             if (!task.IsCompleted)
                 BeginProgress();
+            else
+                LogTaskException(task);
         }
 
         private void DeleteMarked()
@@ -269,11 +281,13 @@ namespace PhotoReviewer.ViewModel
             var task = PhotoCollection.DeleteMarkedAsync();
             if (!task.IsCompleted)
                 BeginProgress();
+            else
+                LogTaskException(task);
         }
 
         public void Favorite()
         {
-            logger.Info("Favoriting selected photos...");
+            logger.Info("(Un)Favoriting selected photos...");
             if (!selectedPhotos.Any())
                 throw new InvalidOperationException("No photo selected");
             PhotoCollection.Favorite(selectedPhotos.ToArray());
@@ -281,7 +295,7 @@ namespace PhotoReviewer.ViewModel
 
         public void MarkForDeletion()
         {
-            logger.Info("Marking selected photos for deletion...");
+            logger.Info("(Un)Marking selected photos for deletion...");
             if (!selectedPhotos.Any())
                 throw new InvalidOperationException("No photo selected");
             PhotoCollection.MarkForDeletion(selectedPhotos.ToArray());
@@ -295,6 +309,8 @@ namespace PhotoReviewer.ViewModel
             var task = PhotoCollection.RenameToDateAsync(selectedPhotos.ToArray());
             if (!task.IsCompleted)
                 BeginProgress();
+            else
+                LogTaskException(task);
         }
 
         private void OpenPhotoInExplorer()

@@ -79,6 +79,15 @@ namespace PhotoReviewer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Application error.
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nothing to delete.
         /// </summary>
         public static string NothingToDelete {

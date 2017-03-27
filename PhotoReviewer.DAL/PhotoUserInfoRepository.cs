@@ -38,7 +38,6 @@ namespace PhotoReviewer.DAL
 
         public PhotoUserInfo Check(string filePath)
         {
-            logger.Debug($"Checking {filePath}...");
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
             var favorited = favoritedPhotoRepository.Check(filePath);
