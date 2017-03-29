@@ -84,5 +84,9 @@
     <Resource Include="Images\document-32.png" />
     <Resource Include="Images\settings-32.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\RotateClockwise.png" />
+    <Resource Include="Images\RotateCounterClockwise.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

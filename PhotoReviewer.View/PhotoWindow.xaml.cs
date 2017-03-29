@@ -23,18 +23,10 @@ namespace PhotoReviewer.View
             DataContext = photoViewModel;
             InitializeComponent();
             Show();
-            FocusWindow();
+            Restore();
         }
 
         #region Private
-
-        private void FocusWindow()
-        {
-            Activate();
-            Topmost = true; // important
-            Topmost = false; // important
-            Focus(); // important
-        }
 
         public string PhotoPath => photoViewModel.Photo.FilePath;
 

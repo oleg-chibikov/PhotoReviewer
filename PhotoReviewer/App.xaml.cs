@@ -107,6 +107,8 @@ namespace PhotoReviewer
             builder.RegisterGeneric(typeof(WindowFactory<>)).SingleInstance();
             builder.RegisterType<WinComparer>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MetadataExtractor>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<ProcessUtility>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<ExifTool>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<Messenger>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<PhotoInfoRepository<FavoritedPhoto>>().AsImplementedInterfaces().SingleInstance();

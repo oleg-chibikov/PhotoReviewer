@@ -6,7 +6,10 @@
                 xmlns:wpf="clr-namespace:Scar.Common.WPF;assembly=Scar.Common.WPF"
                 xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
                 xmlns:contracts="clr-namespace:PhotoReviewer.View.Contracts;assembly=PhotoReviewer.View.Contracts"
-                xmlns:controls="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF.Controls.ZoomBorder"
+                xmlns:zoomBorder="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF.Controls.ZoomBorder"
+                xmlns:controls="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF"
+                xmlns:system="clr-namespace:System;assembly=mscorlib"
+                xmlns:data="clr-namespace:Scar.Common.Drawing.Data;assembly=Scar.Common.Drawing"
                 Title="{Binding Path=Photo.DisplayedInfo,StringFormat=Photo Reviewer - {0}}"
                 Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
                 WindowStartupLocation="Manual"
@@ -24,6 +27,11 @@
         <!--TODO: XButtons EventToCommand-->
     </wpf:BaseWindow.InputBindings>
     <wpf:BaseWindow.Resources>
+        <system:Double x:Key="ImageSize">38</system:Double>
+        <Style TargetType="controls:ImageButton">
+            <Setter Property="Width" Value="{StaticResource ImageSize}" />
+            <Setter Property="Height" Value="{StaticResource ImageSize}" />
+        </Style>
         <Style TargetType="Border" x:Key="ColorByDeleted">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=Photo.MarkedForDeletion}" Value="True">
@@ -59,14 +67,27 @@
     <Grid Margin="0">
         <!-- Nav -->
         <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Center">
-            <Button Canvas.Top="-19" Canvas.Left="0" Background="Transparent" Focusable="False"
-                    Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Prev}">
-                <Image Source="pack://application:,,/PhotoReviewer.Resources;component/Images/LeftArrow.png" />
-            </Button>
-            <Button Canvas.Top="-19" Canvas.Right="0" Background="Transparent" Focusable="False"
-                    Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Next}">
-                <Image Source="pack://application:,,/PhotoReviewer.Resources;component/Images/RightArrow.png" />
-            </Button>
+            <!--Change photo buttons-->
+            <controls:ImageButton ToolTip="Previous photo"
+                                  Canvas.Top="-19" Canvas.Left="0"
+                                  Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Prev}"
+                                  Source="pack://application:,,/PhotoReviewer.Resources;component/Images/LeftArrow.png" />
+            <controls:ImageButton ToolTip="Next photo"
+                                  Canvas.Top="-19" Canvas.Right="0"
+                                  Command="{Binding ChangePhotoCommand}" CommandParameter="{Binding Photo.Next}"
+                                  Source="pack://application:,,/PhotoReviewer.Resources;component/Images/RightArrow.png" />
+            <!--Rotate buttons-->
+
+            <controls:ImageButton ToolTip="Rotate clockwise"
+                                  Canvas.Top="-19" Canvas.Left="37"
+                                  Command="{Binding RotateCommand}"
+                                  CommandParameter="{x:Static data:RotationType.Clockwise}"
+                                  Source="pack://application:,,/PhotoReviewer.Resources;component/Images/RotateClockwise.png" />
+            <controls:ImageButton ToolTip="Rotate counter clockwise"
+                                  Canvas.Top="-19" Canvas.Right="37"
+                                  Command="{Binding RotateCommand}"
+                                  CommandParameter="{x:Static data:RotationType.CounterClockwise}"
+                                  Source="pack://application:,,/PhotoReviewer.Resources;component/Images/RotateCounterClockwise.png" />
         </Canvas>
 
         <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Top">
@@ -91,35 +112,34 @@
                     </Style>
                 </StackPanel.Style>
             </StackPanel>
-            <Button Canvas.Top="0" Canvas.Right="0" Background="Transparent" Focusable="False"
-                    Command="{Binding ToggleFullHeightCommand}"
-                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}">
-                <Image>
-                    <Image.Style>
-                        <Style TargetType="{x:Type Image}">
-                            <Style.Triggers>
-                                <DataTrigger
-                                    Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}"
-                                    Value="False">
-                                    <Setter Property="Source"
-                                            Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreen.png" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                            <Style.Setters>
+            <controls:ImageButton Canvas.Top="0" Canvas.Right="0"
+                                  Command="{Binding ToggleFullHeightCommand}"
+                                  CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}">
+                <controls:ImageButton.Style>
+                    <Style BasedOn="{StaticResource {x:Type controls:ImageButton}}"
+                           TargetType="{x:Type controls:ImageButton}">
+                        <Style.Triggers>
+                            <DataTrigger
+                                Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type contracts:IPhotoWindow}}}"
+                                Value="False">
                                 <Setter Property="Source"
-                                        Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreenExit.png" />
-                            </Style.Setters>
-                        </Style>
-                    </Image.Style>
-                </Image>
-            </Button>
+                                        Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreen.png" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                        <Style.Setters>
+                            <Setter Property="Source"
+                                    Value="pack://application:,,/PhotoReviewer.Resources;component/Images/FullScreenExit.png" />
+                        </Style.Setters>
+                    </Style>
+                </controls:ImageButton.Style>
+            </controls:ImageButton>
         </Canvas>
 
         <!-- Photo -->
         <Border Panel.ZIndex="0" Padding="4" Margin="4" Style="{StaticResource ColorByDeleted}"
                 HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
-            <controls:ZoomBorder Name="ZoomBorder" ClipToBounds="True" HorizontalAlignment="Center"
-                                 VerticalAlignment="Center">
+            <zoomBorder:ZoomBorder Name="ZoomBorder" ClipToBounds="True" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center">
                 <Image Tag="{Binding Photo, NotifyOnTargetUpdated=True}" Source="{Binding BitmapSource}">
                     <Image.Style>
                         <Style>
@@ -144,7 +164,7 @@
                         </ContextMenu>
                     </Image.ContextMenu>
                 </Image>
-            </controls:ZoomBorder>
+            </zoomBorder:ZoomBorder>
         </Border>
     </Grid>
 </wpf:BaseWindow>

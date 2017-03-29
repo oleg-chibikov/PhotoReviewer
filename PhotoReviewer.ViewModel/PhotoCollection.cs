@@ -33,7 +33,6 @@ namespace PhotoReviewer.ViewModel
         [NotNull]
         private readonly IComparer<string> comparer;
 
-
         [NotNull]
         private readonly FileSystemWatcher imagesDirectoryWatcher = new FileSystemWatcher
         {
@@ -58,9 +57,6 @@ namespace PhotoReviewer.ViewModel
 
         [NotNull]
         private readonly Predicate<object> showOnlyMarkedFilter = x => ((Photo)x).IsValuableOrNearby;
-
-        [NotNull]
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         [NotNull]
         private Task currentTask = Task.CompletedTask;
@@ -100,6 +96,9 @@ namespace PhotoReviewer.ViewModel
         }
 
         [NotNull]
+        public CancellationTokenSource CancellationTokenSource { get; private set; } = new CancellationTokenSource();
+
+        [NotNull]
         public ICollectionView FilteredView { get; }
 
         public int FavoritedCount { get; set; }
@@ -120,7 +119,7 @@ namespace PhotoReviewer.ViewModel
 
         public void CancelCurrentTask()
         {
-            cancellationTokenSource.Cancel();
+            CancellationTokenSource.Cancel();
         }
 
         #region Async operations
@@ -387,9 +386,9 @@ namespace PhotoReviewer.ViewModel
         private CancellationToken RecreateCancellationToken()
         {
             CancelCurrentTask();
-            cancellationTokenSource.Dispose();
-            cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
+            CancellationTokenSource.Dispose();
+            CancellationTokenSource = new CancellationTokenSource();
+            var token = CancellationTokenSource.Token;
             return token;
         }
 
@@ -482,7 +481,7 @@ namespace PhotoReviewer.ViewModel
         public void Dispose()
         {
             CancelCurrentTask();
-            cancellationTokenSource.Dispose();
+            CancellationTokenSource.Dispose();
             imagesDirectoryWatcher.Dispose();
             imagesDirectoryWatcher.Created -= ImagesDirectoryWatcher_Changed;
             imagesDirectoryWatcher.Deleted -= ImagesDirectoryWatcher_Changed;

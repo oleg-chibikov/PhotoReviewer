@@ -9,6 +9,7 @@
                 xmlns:converters="clr-namespace:Scar.Common.WPF.Converters;assembly=Scar.Common.WPF"
                 xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                 xmlns:controls="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF"
+                xmlns:system="clr-namespace:System;assembly=mscorlib"
                 Title="Photo Reviewer"
                 Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
                 MinWidth="800"
@@ -25,6 +26,11 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <wpf:BaseWindow.Resources>
+        <system:Double x:Key="ImageSize">25</system:Double>
+        <Style TargetType="controls:ImageButton">
+            <Setter Property="Width" Value="{StaticResource ImageSize}" />
+            <Setter Property="Height" Value="{StaticResource ImageSize}" />
+        </Style>
         <converters:PercentageIntToDoubleConverter x:Key="PercentageIntToDoubleConverter" />
         <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
         <!-- Photo Template -->

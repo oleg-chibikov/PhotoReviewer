@@ -36,7 +36,7 @@ namespace PhotoReviewer.ViewModel
         }
 
         [NotNull]
-        public ExifMetadata Metadata { get; }
+        public ExifMetadata Metadata { get; set; }
 
         public bool IsValuableOrNearby => IsValuable || RealNext?.IsValuable == true || RealPrev?.IsValuable == true;
 
@@ -108,7 +108,7 @@ namespace PhotoReviewer.ViewModel
             }
         }
 
-        private async void SetThumbnailAsync(CancellationToken cancellationToken)
+        public async void SetThumbnailAsync(CancellationToken cancellationToken)
         {
             var thumbnailBytes = Metadata.ThumbnailBytes ?? await FilePath.GetThumbnailAsync(cancellationToken);
             try

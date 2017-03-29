@@ -2,11 +2,15 @@
 using System.Threading;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Common.Logging;
+using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
 using PhotoReviewer.Core;
+using PhotoReviewer.Resources;
 using PhotoReviewer.View.Contracts;
 using PropertyChanged;
 using Scar.Common.Drawing;
+using Scar.Common.Drawing.Data;
 using Scar.Common.IO;
 using Scar.Common.WPF.Commands;
 
@@ -16,12 +20,21 @@ namespace PhotoReviewer.ViewModel
     public class PhotoViewModel : IDisposable
     {
         [NotNull]
+        private readonly IExifTool exifTool;
+
+        [NotNull]
+        private readonly ILog logger;
+
+        [NotNull]
         private readonly MainViewModel mainViewModel;
+
+        [NotNull]
+        private readonly IMessenger messenger;
 
         [NotNull]
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-        public PhotoViewModel([NotNull] Photo photo, [NotNull] MainViewModel mainViewModel, [NotNull] WindowsArranger windowsArranger)
+        public PhotoViewModel([NotNull] Photo photo, [NotNull] MainViewModel mainViewModel, [NotNull] WindowsArranger windowsArranger, [NotNull] ILog logger, [NotNull] IExifTool exifTool, [NotNull] IMessenger messenger)
         {
             if (photo == null)
                 throw new ArgumentNullException(nameof(photo));
@@ -29,7 +42,16 @@ namespace PhotoReviewer.ViewModel
                 throw new ArgumentNullException(nameof(mainViewModel));
             if (windowsArranger == null)
                 throw new ArgumentNullException(nameof(windowsArranger));
+            if (logger == null)
+                throw new ArgumentNullException(nameof(logger));
+            if (exifTool == null)
+                throw new ArgumentNullException(nameof(exifTool));
+            if (messenger == null)
+                throw new ArgumentNullException(nameof(messenger));
             this.mainViewModel = mainViewModel;
+            this.logger = logger;
+            this.exifTool = exifTool;
+            this.messenger = messenger;
             Photo = photo;
             ChangePhoto(photo);
             ToggleFullHeightCommand = new CorrelationCommand<IPhotoWindow>(windowsArranger.ToggleFullHeight);
@@ -38,6 +60,7 @@ namespace PhotoReviewer.ViewModel
             RenameToDateCommand = new CorrelationCommand(RenameToDate);
             OpenPhotoInExplorerCommand = new CorrelationCommand(OpenPhotoInExplorer);
             ChangePhotoCommand = new CorrelationCommand<Photo>(ChangePhoto);
+            RotateCommand = new CorrelationCommand<RotationType>(Rotate);
         }
 
         public void Dispose()
@@ -78,6 +101,7 @@ namespace PhotoReviewer.ViewModel
         public ICommand OpenPhotoInExplorerCommand { get; }
         public ICommand RenameToDateCommand { get; }
         public ICommand ChangePhotoCommand { get; }
+        public ICommand RotateCommand { get; }
 
         #endregion
 
@@ -108,6 +132,26 @@ namespace PhotoReviewer.ViewModel
                 {
                 }
             });
+        }
+
+        private async void Rotate(RotationType rotationType)
+        {
+            //TODO: Perform  physical rotation when no metadata
+            logger.Info($"Rotating {Photo} {rotationType}...");
+            //Pass photoCollection cancellation token instead of photo's one (need to cancel these operations only if switching collection path)
+            Photo.Metadata.Orientation = Photo.Metadata.Orientation.GetNextOrientation(rotationType);
+            Photo.SetThumbnailAsync(mainViewModel.PhotoCollection.CancellationTokenSource.Token);
+            ChangePhoto(Photo);
+            var errorText = await exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FilePath, false, mainViewModel.PhotoCollection.CancellationTokenSource.Token);
+            if (errorText != null)
+            {
+                messenger.Send(errorText, MessengerTokens.UserWarningToken);
+                logger.Warn($"{Photo} is not rotated {rotationType}");
+            }
+            else
+            {
+                logger.Info($"{Photo} is rotated {rotationType}");
+            }
         }
 
         private void Favorite()
