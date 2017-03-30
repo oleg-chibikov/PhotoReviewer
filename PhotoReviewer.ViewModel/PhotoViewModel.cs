@@ -9,10 +9,11 @@ using PhotoReviewer.Core;
 using PhotoReviewer.Resources;
 using PhotoReviewer.View.Contracts;
 using PropertyChanged;
-using Scar.Common.Drawing;
-using Scar.Common.Drawing.Data;
+using Scar.Common.Drawing.ExifTool;
+using Scar.Common.Drawing.Metadata;
 using Scar.Common.IO;
 using Scar.Common.WPF.Commands;
+using Scar.Common.WPF.Drawing;
 
 namespace PhotoReviewer.ViewModel
 {

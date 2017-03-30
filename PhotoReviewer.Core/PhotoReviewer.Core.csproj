@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\ThirdParty\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
     </Reference>
@@ -38,6 +41,12 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Scar.Common.WPF.View.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.View.Contracts.1.0.0\lib\net462\Scar.Common.WPF.View.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.WPF.View.WindowFactory, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.View.WindowFactory.1.0.0\lib\net462\Scar.Common.WPF.View.WindowFactory.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -53,14 +62,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\Scar.Common.DAL\Scar.Common.DAL.csproj">
-      <Project>{17B01758-0CF5-4A3E-B2CE-77213EFC1E92}</Project>
-      <Name>Scar.Common.DAL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Common\Scar.Common.WPF\Scar.Common.WPF.csproj">
-      <Project>{B6EB82BA-2A0E-4855-9A17-F5FAB9616355}</Project>
-      <Name>Scar.Common.WPF</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.DAL.Contracts\PhotoReviewer.DAL.Contracts.csproj">
       <Project>{F0FB4354-77B0-4132-9593-C7A2493AB319}</Project>
       <Name>PhotoReviewer.DAL.Contracts</Name>

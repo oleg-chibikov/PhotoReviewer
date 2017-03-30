@@ -17,7 +17,7 @@ using JetBrains.Annotations;
 using PhotoReviewer.DAL.Contracts;
 using PhotoReviewer.Resources;
 using Scar.Common;
-using Scar.Common.Drawing;
+using Scar.Common.Drawing.MetadataExtractor;
 using Scar.Common.IO;
 
 //TODO: BlockingCollection for photos commands

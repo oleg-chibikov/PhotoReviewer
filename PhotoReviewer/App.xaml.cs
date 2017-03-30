@@ -20,16 +20,18 @@ using PhotoReviewer.View.Contracts;
 using PhotoReviewer.ViewModel;
 using Scar.Common;
 using Scar.Common.Comparers;
-using Scar.Common.Drawing;
+using Scar.Common.Drawing.ExifTool;
+using Scar.Common.Drawing.MetadataExtractor;
 using Scar.Common.Logging;
-using Scar.Common.WPF;
+using Scar.Common.Processes;
 using Scar.Common.WPF.Localization;
+using Scar.Common.WPF.View;
 
 namespace PhotoReviewer
 {
     public partial class App
     {
-        private static readonly Guid AppGuid = AssemblyUtility.GetAssemblyGuid();
+        private static readonly Guid AppGuid = new Guid("9fdf0bfb-637c-4054-b0e1-0249defe1d91");
 
         [NotNull]
         private readonly ILifetimeScope container;

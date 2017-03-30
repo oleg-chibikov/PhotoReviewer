@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using JetBrains.Annotations;
-using Scar.Common.Drawing.Data;
+using Scar.Common.Drawing.Metadata;
 
 namespace PhotoReviewer.ViewModel
 {

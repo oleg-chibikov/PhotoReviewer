@@ -5,7 +5,8 @@ using System.Windows;
 using Common.Logging;
 using JetBrains.Annotations;
 using PhotoReviewer.View.Contracts;
-using Scar.Common.WPF;
+using Scar.Common.WPF.View;
+using Scar.Common.WPF.View.Contracts;
 
 namespace PhotoReviewer.Core
 {

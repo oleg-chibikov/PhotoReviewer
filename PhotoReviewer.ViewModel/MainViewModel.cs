@@ -19,8 +19,8 @@ using PhotoReviewer.Resources;
 using PhotoReviewer.View.Contracts;
 using PropertyChanged;
 using Scar.Common.IO;
-using Scar.Common.WPF;
 using Scar.Common.WPF.Commands;
+using Scar.Common.WPF.View;
 
 namespace PhotoReviewer.ViewModel
 {

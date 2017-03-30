@@ -5,8 +5,8 @@ using System.Windows.Media;
 using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
 using PropertyChanged;
-using Scar.Common.Drawing;
-using Scar.Common.Drawing.Data;
+using Scar.Common.Drawing.Metadata;
+using Scar.Common.WPF.Drawing;
 
 namespace PhotoReviewer.ViewModel
 {
