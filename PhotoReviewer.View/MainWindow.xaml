@@ -28,6 +28,13 @@
     </i:Interaction.Triggers>
     <view1:BaseWindow.Resources>
         <system:Double x:Key="ImageSize">25</system:Double>
+        <system:Double x:Key="ControlsHeight">20</system:Double>
+        <Style TargetType="Button">
+            <Setter Property="Height" Value="{StaticResource ControlsHeight}" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="{StaticResource ControlsHeight}" />
+        </Style>
         <Style TargetType="controls:ImageButton">
             <Setter Property="Width" Value="{StaticResource ImageSize}" />
             <Setter Property="Height" Value="{StaticResource ImageSize}" />
@@ -222,7 +229,7 @@
                 <Button Content="{Binding Path=PhotoCollection.FavoritedCount}"
                         ContentStringFormat="Copy favorited (0)" Command="{Binding CopyFavoritedCommand}">
                     <Button.Style>
-                        <Style TargetType="Button">
+                        <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
                             <Setter Property="IsEnabled" Value="True" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ProgressState}" Value="Normal">
@@ -242,7 +249,7 @@
                 <Button Content="{Binding Path=PhotoCollection.MarkedForDeletionCount}"
                         ContentStringFormat="Delete marked (0)" Command="{Binding DeleteMarkedCommand}">
                     <Button.Style>
-                        <Style TargetType="Button">
+                        <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
                             <Setter Property="IsEnabled" Value="True" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ProgressState}" Value="Normal">
