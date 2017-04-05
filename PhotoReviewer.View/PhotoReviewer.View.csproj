@@ -47,35 +47,35 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Scar.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.1.0.0\lib\net45\Scar.Common.dll</HintPath>
+    <Reference Include="Scar.Common, Version=1.0.15.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.1.0.15\lib\net462\Scar.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Drawing.Metadata, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.Drawing.Metadata.1.0.0\lib\net45\Scar.Common.Drawing.Metadata.dll</HintPath>
+    <Reference Include="Scar.Common.Drawing.Metadata, Version=1.0.15.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.Drawing.Metadata.1.0.15\lib\net462\Scar.Common.Drawing.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Notification, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.Notification.1.0.0\lib\net45\Scar.Common.Notification.dll</HintPath>
+    <Reference Include="Scar.Common.Notification, Version=1.0.15.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.Notification.1.0.15\lib\net462\Scar.Common.Notification.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.1.0.0\lib\net462\Scar.Common.WPF.dll</HintPath>
+    <Reference Include="Scar.Common.WPF, Version=1.0.124.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.1.0.124\lib\net462\Scar.Common.WPF.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Controls, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.Controls.1.0.0\lib\net462\Scar.Common.WPF.Controls.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Controls, Version=1.0.124.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.Controls.1.0.124\lib\net462\Scar.Common.WPF.Controls.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Controls.ZoomBorder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.Controls.ZoomBorder.1.0.0\lib\net462\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Controls.ZoomBorder, Version=1.0.124.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.Controls.ZoomBorder.1.0.124\lib\net462\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Converters, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.Converters.1.0.0\lib\net462\Scar.Common.WPF.Converters.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Converters, Version=1.0.124.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.Converters.1.0.124\lib\net462\Scar.Common.WPF.Converters.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.View, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.View.1.0.0\lib\net462\Scar.Common.WPF.View.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.View, Version=1.0.124.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.View.1.0.124\lib\net462\Scar.Common.WPF.View.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.View.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.View.Contracts.1.0.0\lib\net462\Scar.Common.WPF.View.Contracts.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.View.Contracts, Version=1.0.124.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.View.Contracts.1.0.124\lib\net462\Scar.Common.WPF.View.Contracts.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.ViewModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.ViewModel.1.0.0\lib\net462\Scar.Common.WPF.ViewModel.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.ViewModel, Version=1.0.124.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\ThirdParty\Scar.Common.WPF.ViewModel.1.0.124\lib\net462\Scar.Common.WPF.ViewModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
