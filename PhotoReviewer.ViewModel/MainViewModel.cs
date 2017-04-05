@@ -103,9 +103,11 @@ namespace PhotoReviewer.ViewModel
             {
                 case NotifyCollectionChangedAction.Add:
                     if (SelectedPhoto == null)
+                    {
                         SelectedPhoto = e.NewItems.Cast<Photo>().First();
-                    //SelectionChanged is not hit sometimes
-                    SelectionChanged(e.NewItems);
+                        //SelectionChanged is not hit sometimes
+                        SelectionChanged(e.NewItems);
+                    }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (var filePath in e.OldItems.Cast<Photo>().Select(x => x.FilePath).Distinct())
