@@ -153,8 +153,8 @@
     <Reference Include="Scar.Common.WPF.Controls, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.Controls.1.0.1\lib\net462\Scar.Common.WPF.Controls.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Controls.ZoomBorder, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.Controls.ZoomBorder.1.0.1\lib\net462\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Controls.ZoomBorder, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Controls.ZoomBorder.1.0.4\lib\net462\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.Converters, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.Converters.1.0.2\lib\net462\Scar.Common.WPF.Converters.dll</HintPath>
