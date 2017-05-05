@@ -302,7 +302,7 @@ namespace PhotoReviewer.ViewModel
 
         private void RenameFile([NotNull] Photo photo, [NotNull] string newFilePath, [CanBeNull] string differentName = null)
         {
-            photo.FilePath.RenameFile(newFilePath);
+            newFilePath = photo.FilePath.RenameFile(newFilePath);
             _repository.Rename(photo.FilePath, newFilePath);
             if (differentName == null)
             {
