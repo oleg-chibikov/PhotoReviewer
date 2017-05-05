@@ -7,10 +7,11 @@ namespace PhotoReviewer.Resources
 {
     public static class Paths
     {
-        [NotNull]
-        private static readonly string ProgramName = $"{((AssemblyCompanyAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyCompanyAttribute), false)).Company}\\{nameof(PhotoReviewer)}";
+        [NotNull] private static readonly string ProgramName =
+                $"{((AssemblyCompanyAttribute) Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyCompanyAttribute), false)).Company}\\{nameof(PhotoReviewer)}"
+            ;
 
-        [NotNull]
-        public static readonly string SettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProgramName);
+        [NotNull] public static readonly string SettingsPath =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProgramName);
     }
 }

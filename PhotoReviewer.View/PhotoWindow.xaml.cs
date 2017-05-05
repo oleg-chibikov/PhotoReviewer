@@ -1,25 +1,24 @@
 using System;
 using System.Windows;
 using JetBrains.Annotations;
-using PhotoReviewer.View.Contracts;
+using PhotoReviewer.Contracts.View;
+using PhotoReviewer.Contracts.ViewModel;
 using PhotoReviewer.ViewModel;
 
 namespace PhotoReviewer.View
 {
     [UsedImplicitly]
-    public partial class PhotoWindow : IPhotoWindow
+    internal sealed partial class PhotoWindow : IPhotoWindow
     {
-        [NotNull]
-        private readonly PhotoViewModel photoViewModel;
+        [NotNull] private readonly PhotoViewModel _photoViewModel;
 
         public PhotoWindow([NotNull] Window mainWindow, [NotNull] PhotoViewModel photoViewModel)
         {
             Owner = mainWindow;
             if (mainWindow == null)
                 throw new ArgumentNullException(nameof(mainWindow));
-            if (photoViewModel == null)
-                throw new ArgumentNullException(nameof(photoViewModel));
-            this.photoViewModel = photoViewModel;
+
+            _photoViewModel = photoViewModel ?? throw new ArgumentNullException(nameof(photoViewModel));
             DataContext = photoViewModel;
             InitializeComponent();
             Show();
@@ -28,7 +27,8 @@ namespace PhotoReviewer.View
 
         #region Private
 
-        public string PhotoPath => photoViewModel.Photo.FilePath;
+        [NotNull]
+        public IPhoto Photo => _photoViewModel.Photo;
 
         #endregion
 

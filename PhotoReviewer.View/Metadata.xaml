@@ -3,20 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:photoReviewer="clr-namespace:PhotoReviewer"
              xmlns:view="clr-namespace:PhotoReviewer.View"
+             xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=photoReviewer:Photo, IsDesignTimeCreatable=False}"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DataContext="{d:DesignInstance Type=viewModel:Photo, IsDesignTimeCreatable=False}"
+             d:DesignHeight="300" d:DesignWidth="300" x:ClassModifier="internal">
     <UserControl.Resources>
-
-        <!-- Default label style -->
-        <Style TargetType="{x:Type Label}">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Height" Value="25" />
-        </Style>
-
         <!-- For metadata properties pane -->
         <Style TargetType="{x:Type GroupBox}">
             <Setter Property="Template">
@@ -45,8 +37,12 @@
             </Setter>
         </Style>
 
+        <Style TargetType="TextBlock">
+            <Setter Property="Padding" Value="3" />
+        </Style>
+
         <!-- Headers for metadata properties -->
-        <Style x:Key="MetadataHeader" TargetType="{x:Type Label}">
+        <Style x:Key="MetadataHeader" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="Background">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
@@ -70,36 +66,36 @@
     <GroupBox>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
-                <Label Style="{StaticResource MetadataHeader}">Name:</Label>
-                <Label Content="{Binding Path=Name}" />
-                <Label Style="{StaticResource MetadataHeader}">Index:</Label>
-                <Label Content="{Binding Path=PositionInCollection}" />
-                <Label Style="{StaticResource MetadataHeader}">Size:</Label>
-                <Label>
-                    <Label.Content>
+                <TextBlock Style="{StaticResource MetadataHeader}">Name:</TextBlock>
+                <TextBlock Text="{Binding Path=Name}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">Index:</TextBlock>
+                <TextBlock Text="{Binding Path=PositionInCollection}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">Size:</TextBlock>
+                <TextBlock>
+                    <TextBlock.Text>
                         <MultiBinding Converter="{StaticResource PhotoSizeConverterReference}">
                             <Binding Path="Metadata.Width" />
                             <Binding Path="Metadata.Height" />
                         </MultiBinding>
-                    </Label.Content>
-                </Label>
-                <Label Style="{StaticResource MetadataHeader}">Date Image Taken:</Label>
-                <Label Content="{Binding Path=Metadata.DateImageTaken}" ContentStringFormat="yyyy-MM-dd HH:mm:ss" />
-                <Label Style="{StaticResource MetadataHeader}">Camera Model:</Label>
-                <Label Content="{Binding Path=Metadata.CameraModel}" />
-                <Label Style="{StaticResource MetadataHeader}">Lens Aperture:</Label>
-                <Label
-                    Content="{Binding Path=Metadata.LensAperture, Converter={StaticResource LensApertureConverterReference}}" />
-                <Label Style="{StaticResource MetadataHeader}">Focal Length:</Label>
-                <Label
-                    Content="{Binding Path=Metadata.FocalLength, Converter={StaticResource FocalLengthConverterReference}}" />
-                <Label Style="{StaticResource MetadataHeader}">ISO Speed:</Label>
-                <Label Content="{Binding Path=Metadata.IsoSpeed}" />
-                <Label Style="{StaticResource MetadataHeader}">Exposure Time:</Label>
-                <Label
-                    Content="{Binding Path=Metadata.ExposureTime, Converter={StaticResource ExposureTimeConverterReference}}" />
-                <Label Style="{StaticResource MetadataHeader}">Orientation:</Label>
-                <Label Content="{Binding Path=Metadata.Orientation}" />
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock Style="{StaticResource MetadataHeader}">Date Image Taken:</TextBlock>
+                <TextBlock Text="{Binding Path=Metadata.DateImageTaken, StringFormat=yyyy-MM-dd HH:mm:ss}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">Camera Model:</TextBlock>
+                <TextBlock Text="{Binding Path=Metadata.CameraModel}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">Lens Aperture:</TextBlock>
+                <TextBlock
+                    Text="{Binding Path=Metadata.LensAperture, Converter={StaticResource LensApertureConverterReference}}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">Focal Length:</TextBlock>
+                <TextBlock
+                    Text="{Binding Path=Metadata.FocalLength, Converter={StaticResource FocalLengthConverterReference}}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">ISO Speed:</TextBlock>
+                <TextBlock Text="{Binding Path=Metadata.IsoSpeed}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">Exposure Time:</TextBlock>
+                <TextBlock
+                    Text="{Binding Path=Metadata.ExposureTime, Converter={StaticResource ExposureTimeConverterReference}}" />
+                <TextBlock Style="{StaticResource MetadataHeader}">Orientation:</TextBlock>
+                <TextBlock Text="{Binding Path=Metadata.Orientation}" />
             </StackPanel>
         </ScrollViewer>
     </GroupBox>

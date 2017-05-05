@@ -3,32 +3,38 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common.Logging;
 using JetBrains.Annotations;
-using PhotoReviewer.DAL.Contracts;
-using PhotoReviewer.DAL.Contracts.Data;
+using PhotoReviewer.Contracts.DAL;
+using PhotoReviewer.Contracts.DAL.Data;
 using PhotoReviewer.Resources;
 using Scar.Common.DAL.LiteDB;
 
 namespace PhotoReviewer.DAL
 {
     [UsedImplicitly]
-    internal class PhotoInfoRepository<TPhotoInfo> : LiteDbRepository<TPhotoInfo, string>, IPhotoInfoRepository<TPhotoInfo>
+    internal sealed class PhotoInfoRepository<TPhotoInfo> : LiteDbRepository<TPhotoInfo, string>,
+        IPhotoInfoRepository<TPhotoInfo>
         where TPhotoInfo : IPhotoInfo, new()
     {
         public PhotoInfoRepository([NotNull] ILog logger) : base(logger)
         {
-            Task.Run(() => { CleanNonExisting(); });
+            Task.Run(() => CleanNonExisting());
         }
 
+        [NotNull]
         protected override string DbPath => Paths.SettingsPath;
 
         public void Rename(string oldFilePath, string newFilePath)
         {
-            Logger.Debug($"Renaming {oldFilePath} to {newFilePath} in database...");
+            Logger.Debug($"Renaming {oldFilePath} to {newFilePath} in the database...");
             if (!Check(oldFilePath))
+            {
+                Logger.Warn($"There is no {oldFilePath} in the database...");
                 return;
+            }
+
             {
                 Collection.Delete(oldFilePath);
-                Collection.Insert(new TPhotoInfo { Id = newFilePath });
+                Collection.Insert(new TPhotoInfo {Id = newFilePath});
             }
         }
 
@@ -40,7 +46,8 @@ namespace PhotoReviewer.DAL
                 Logger.Debug("All records are up to date");
                 return;
             }
-            Logger.Debug($"Deleting {notExisting.Length} non existing photos from database...");
+
+            Logger.Debug($"Deleting {notExisting.Length} non existing photos from the database...");
             Delete(notExisting);
         }
     }

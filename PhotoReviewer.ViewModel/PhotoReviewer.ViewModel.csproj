@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=4.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.5.0\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
@@ -67,29 +67,32 @@
       <HintPath>..\packages\PropertyChanged.Fody.1.52.1\Lib\netstandard10\PropertyChanged.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Scar.Common, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.1.0.4\lib\net462\Scar.Common.dll</HintPath>
+    <Reference Include="Scar.Common, Version=1.0.21.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.1.0.21\lib\net462\Scar.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Drawing.ExifTool, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Drawing.ExifTool.1.0.16\lib\net462\Scar.Common.Drawing.ExifTool.dll</HintPath>
+    <Reference Include="Scar.Common.Drawing.ExifTool, Version=1.0.34.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Drawing.ExifTool.1.0.34\lib\net462\Scar.Common.Drawing.ExifTool.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.Drawing.ImageRetriever, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Drawing.ImageRetriever.1.0.12\lib\net462\Scar.Common.Drawing.ImageRetriever.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.Drawing.Metadata, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Drawing.Metadata.1.0.3\lib\net462\Scar.Common.Drawing.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Drawing.MetadataExtractor, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Drawing.MetadataExtractor.1.0.26\lib\net462\Scar.Common.Drawing.MetadataExtractor.dll</HintPath>
+    <Reference Include="Scar.Common.Drawing.MetadataExtractor, Version=1.0.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Drawing.MetadataExtractor.1.0.30\lib\net462\Scar.Common.Drawing.MetadataExtractor.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.IO, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.IO.1.0.16\lib\net462\Scar.Common.IO.dll</HintPath>
+    <Reference Include="Scar.Common.IO, Version=1.0.20.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.IO.1.0.20\lib\net462\Scar.Common.IO.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Processes, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Processes.1.0.2\lib\net462\Scar.Common.Processes.dll</HintPath>
+    <Reference Include="Scar.Common.Notification, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Notification.1.0.3\lib\net462\Scar.Common.Notification.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.Processes, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Processes.1.0.6\lib\net462\Scar.Common.Processes.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.Commands, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.Commands.1.0.1\lib\net462\Scar.Common.WPF.Commands.dll</HintPath>
-    </Reference>
-    <Reference Include="Scar.Common.WPF.Drawing, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.Drawing.1.0.3\lib\net462\Scar.Common.WPF.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.View.Contracts, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.View.Contracts.1.0.1\lib\net462\Scar.Common.WPF.View.Contracts.dll</HintPath>
@@ -114,35 +117,30 @@
     <Compile Include="MainViewModel.cs" />
     <Compile Include="Photo.cs" />
     <Compile Include="PhotoCollection.cs" />
-    <Compile Include="PhotoDeletedEventArgs.cs" />
     <Compile Include="PhotoDetails.cs" />
     <Compile Include="PhotoViewModel.cs" />
-    <Compile Include="ProgressEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShiftDateViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PhotoReviewer.Contracts\PhotoReviewer.Contracts.csproj">
+      <Project>{37F1D8BD-AE67-4E81-9F6B-D2AABB81AB8D}</Project>
+      <Name>PhotoReviewer.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.Core\PhotoReviewer.Core.csproj">
       <Project>{8645331C-324F-4265-A593-13725FE33A0D}</Project>
       <Name>PhotoReviewer.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PhotoReviewer.DAL.Contracts\PhotoReviewer.DAL.Contracts.csproj">
-      <Project>{F0FB4354-77B0-4132-9593-C7A2493AB319}</Project>
-      <Name>PhotoReviewer.DAL.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.Resources\PhotoReviewer.Resources.csproj">
       <Project>{53C22BB7-E54D-49B8-A748-11A795E9DE63}</Project>
       <Name>PhotoReviewer.Resources</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PhotoReviewer.View.Contracts\PhotoReviewer.View.Contracts.csproj">
-      <Project>{37F1D8BD-AE67-4E81-9F6B-D2AABB81AB8D}</Project>
-      <Name>PhotoReviewer.View.Contracts</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="exiftool.exe" />
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

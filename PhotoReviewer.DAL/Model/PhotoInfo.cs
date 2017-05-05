@@ -1,4 +1,4 @@
-﻿using PhotoReviewer.DAL.Contracts.Data;
+﻿using PhotoReviewer.Contracts.DAL.Data;
 using Scar.Common.DAL.Model;
 
 namespace PhotoReviewer.DAL.Model

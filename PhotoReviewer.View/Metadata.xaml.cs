@@ -1,9 +1,6 @@
 ﻿namespace PhotoReviewer.View
 {
-    /// <summary>
-    /// Interaction logic for Metadata.xaml
-    /// </summary>
-    public partial class Metadata
+    internal sealed partial class Metadata
     {
         public Metadata()
         {

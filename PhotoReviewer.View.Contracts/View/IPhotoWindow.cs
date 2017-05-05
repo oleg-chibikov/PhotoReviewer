@@ -4,6 +4,7 @@ namespace PhotoReviewer.View.Contracts
 {
     public interface IPhotoWindow : IWindow
     {
-        string PhotoPath { get; }
+        //TODO: pass IPhoto instead of Photo
+        object Photo { get; }
     }
 }

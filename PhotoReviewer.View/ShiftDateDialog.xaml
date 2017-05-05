@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="PhotoReviewer.View.ShiftDateDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:commonView="clr-namespace:Scar.Common.WPF.View;assembly=Scar.Common.WPF.View"
+             xmlns:view="clr-namespace:PhotoReviewer.View"
+             xmlns:converters="clr-namespace:Scar.Common.WPF.Converters;assembly=Scar.Common.WPF.Converters"
+             xmlns:timePicker="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF.Controls.TimePicker"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModel:ShiftDateViewModel, IsDesignTimeCreatable=False}"
+             x:ClassModifier="internal">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+                <ResourceDictionary>
+                    <converters:ReverseBooleanConverter x:Key="ReverseBooleanConverter" />
+                    <view:TimeSpanNotDefaultConverter x:Key="TimeSpanNotNullConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <StackPanel commonView:MarginSetter.Margin="5" Margin="5">
+        <TextBlock Text="{Binding PhotosCount, Mode=OneWay, StringFormat='Shift date for {0} photos by:'}" />
+
+        <StackPanel commonView:MarginSetter.Margin="10" Orientation="Horizontal">
+            <ToggleButton IsTabStop="False" IsChecked="{Binding Plus, Mode=TwoWay, Converter={StaticResource ReverseBooleanConverter}}"
+                          Style="{StaticResource MaterialDesignActionToggleButton}">
+                <ToggleButton.Content>
+                    <materialDesign:PackIcon Kind="Plus" />
+                </ToggleButton.Content>
+                <materialDesign:ToggleButtonAssist.OnContent>
+                    <materialDesign:PackIcon Kind="Minus" />
+                </materialDesign:ToggleButtonAssist.OnContent>
+            </ToggleButton>
+            <timePicker:TimePicker>
+                <timePicker:TimePicker.Time>
+                    <Binding Mode="TwoWay" Path="ShiftBy" />
+                </timePicker:TimePicker.Time>
+            </timePicker:TimePicker>
+        </StackPanel>
+
+        <CheckBox IsChecked="{Binding RenameToDate, Mode=TwoWay}">Rename files to date</CheckBox>
+
+        <StackPanel Orientation="Horizontal" commonView:MarginSetter.Margin="10">
+            <Button IsDefault="True" IsEnabled="{Binding ShiftBy, Converter={StaticResource TimeSpanNotNullConverter}}" Content="OK"
+                    Command="{Binding ShiftDateCommand}" />
+            <Button IsCancel="True" Command="{Binding CancelShiftDateCommand}" Content="Cancel" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

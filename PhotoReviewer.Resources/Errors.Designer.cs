@@ -88,47 +88,11 @@ namespace PhotoReviewer.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nothing to delete.
+        ///   Looks up a localized string similar to Nothing to process.
         /// </summary>
-        public static string NothingToDelete {
+        public static string NothingToProcess {
             get {
-                return ResourceManager.GetString("NothingToDelete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Nothing to favorite.
-        /// </summary>
-        public static string NothingToFavorite {
-            get {
-                return ResourceManager.GetString("NothingToFavorite", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Nothing to mark.
-        /// </summary>
-        public static string NothingToMark {
-            get {
-                return ResourceManager.GetString("NothingToMark", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Nothing to copy.
-        /// </summary>
-        public static string NothingToMove {
-            get {
-                return ResourceManager.GetString("NothingToMove", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Nothing to rename.
-        /// </summary>
-        public static string NothingToRename {
-            get {
-                return ResourceManager.GetString("NothingToRename", resourceCulture);
+                return ResourceManager.GetString("NothingToProcess", resourceCulture);
             }
         }
         

@@ -72,9 +72,8 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Autofac, Version=4.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.5.0\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
@@ -112,16 +111,21 @@
       <HintPath>..\packages\LiteDB.3.1.0\lib\net35\LiteDB.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="MaterialDesignColors, Version=1.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaterialDesignColors.1.1.3\lib\net45\MaterialDesignColors.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignThemes.Wpf, Version=2.3.0.823, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaterialDesignThemes.2.3.0.823\lib\net45\MaterialDesignThemes.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.5\lib\net45\NLog.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\NLog.4.4.6\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.1.0.4\lib\net462\Scar.Common.dll</HintPath>
+    <Reference Include="Scar.Common, Version=1.0.21.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.1.0.21\lib\net462\Scar.Common.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.DAL, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.DAL.1.0.2\lib\net462\Scar.Common.DAL.dll</HintPath>
@@ -129,14 +133,20 @@
     <Reference Include="Scar.Common.DAL.LiteDB, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.DAL.LiteDB.1.0.7\lib\net462\Scar.Common.DAL.LiteDB.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Drawing.ExifTool, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Drawing.ExifTool.1.0.16\lib\net462\Scar.Common.Drawing.ExifTool.dll</HintPath>
+    <Reference Include="Scar.Common.Drawing.ExifTool, Version=1.0.34.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Drawing.ExifTool.1.0.34\lib\net462\Scar.Common.Drawing.ExifTool.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.Drawing.ImageRetriever, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Drawing.ImageRetriever.1.0.12\lib\net462\Scar.Common.Drawing.ImageRetriever.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.Drawing.Metadata, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Drawing.Metadata.1.0.3\lib\net462\Scar.Common.Drawing.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Drawing.MetadataExtractor, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Drawing.MetadataExtractor.1.0.26\lib\net462\Scar.Common.Drawing.MetadataExtractor.dll</HintPath>
+    <Reference Include="Scar.Common.Drawing.MetadataExtractor, Version=1.0.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Drawing.MetadataExtractor.1.0.30\lib\net462\Scar.Common.Drawing.MetadataExtractor.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.IO, Version=1.0.20.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.IO.1.0.20\lib\net462\Scar.Common.IO.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.Logging, Version=1.0.23.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Logging.1.0.23\lib\net462\Scar.Common.Logging.dll</HintPath>
@@ -144,23 +154,29 @@
     <Reference Include="Scar.Common.Notification, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Notification.1.0.3\lib\net462\Scar.Common.Notification.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Processes, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Processes.1.0.2\lib\net462\Scar.Common.Processes.dll</HintPath>
+    <Reference Include="Scar.Common.Processes, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Processes.1.0.6\lib\net462\Scar.Common.Processes.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.1.0.3\lib\net462\Scar.Common.WPF.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Controls.Behaviors, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Controls.Behaviors.1.0.2\lib\net462\Scar.Common.WPF.Controls.Behaviors.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Controls, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.Controls.1.0.1\lib\net462\Scar.Common.WPF.Controls.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Controls.NumericUpDown, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Controls.NumericUpDown.1.0.1\lib\net462\Scar.Common.WPF.Controls.NumericUpDown.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.WPF.Controls.TimePicker, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Controls.TimePicker.1.0.14\lib\net462\Scar.Common.WPF.Controls.TimePicker.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.Controls.ZoomBorder, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.Controls.ZoomBorder.1.0.4\lib\net462\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Converters, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.Converters.1.0.2\lib\net462\Scar.Common.WPF.Converters.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Converters, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Converters.1.0.3\lib\net462\Scar.Common.WPF.Converters.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.Localization, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.Localization.1.0.1\lib\net462\Scar.Common.WPF.Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.WPF.View, Version=1.0.13.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.View.1.0.13\lib\net462\Scar.Common.WPF.View.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.View.Contracts, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.View.Contracts.1.0.1\lib\net462\Scar.Common.WPF.View.Contracts.dll</HintPath>
@@ -177,7 +193,6 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -213,7 +228,9 @@
       <SubType>Designer</SubType>
     </None>
     <Resource Include="icon.ico" />
-    <Resource Include="FodyWeavers.xml" />
+    <Resource Include="FodyWeavers.xml">
+      <SubType>Designer</SubType>
+    </Resource>
     <Content Include="exiftool.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -229,13 +246,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PhotoReviewer.Contracts\PhotoReviewer.Contracts.csproj">
+      <Project>{37F1D8BD-AE67-4E81-9F6B-D2AABB81AB8D}</Project>
+      <Name>PhotoReviewer.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.Core\PhotoReviewer.Core.csproj">
       <Project>{8645331C-324F-4265-A593-13725FE33A0D}</Project>
       <Name>PhotoReviewer.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PhotoReviewer.DAL.Contracts\PhotoReviewer.DAL.Contracts.csproj">
-      <Project>{f0fb4354-77b0-4132-9593-c7a2493ab319}</Project>
-      <Name>PhotoReviewer.DAL.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.DAL\PhotoReviewer.DAL.csproj">
       <Project>{FD3B66EE-FDE7-41D1-9933-5421454E6EB7}</Project>
@@ -244,10 +261,6 @@
     <ProjectReference Include="..\PhotoReviewer.Resources\PhotoReviewer.Resources.csproj">
       <Project>{53C22BB7-E54D-49B8-A748-11A795E9DE63}</Project>
       <Name>PhotoReviewer.Resources</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PhotoReviewer.View.Contracts\PhotoReviewer.View.Contracts.csproj">
-      <Project>{37F1D8BD-AE67-4E81-9F6B-D2AABB81AB8D}</Project>
-      <Name>PhotoReviewer.View.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.ViewModel\PhotoReviewer.ViewModel.csproj">
       <Project>{FC17F4F2-0577-4054-98DB-44BB9E4B9E3B}</Project>
@@ -299,8 +312,41 @@ foreach (var item in filesToCleanup)
 ]]></Code>
     </Task>
   </UsingTask>
+  <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
+  <UsingTask TaskName="CosturaCleanup" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" TaskFactory="CodeTaskFactory">
+    <ParameterGroup>
+      <Config Output="false" Required="true" ParameterType="Microsoft.Build.Framework.ITaskItem" />
+      <Files Output="false" Required="true" ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+    </ParameterGroup>
+    <Task Evaluate="true">
+      <Reference xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Include="System.Xml" />
+      <Reference xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Include="System.Xml.Linq" />
+      <Using xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Namespace="System" />
+      <Using xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Namespace="System.IO" />
+      <Using xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Namespace="System.Xml.Linq" />
+      <Code xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Type="Fragment" Language="cs"><![CDATA[
+var config = XElement.Load(Config.ItemSpec).Elements("Costura").FirstOrDefault();
+
+if (config == null) return true;
+
+var excludedAssemblies = new List<string>();
+var attribute = config.Attribute("ExcludeAssemblies");
+if (attribute != null)
+    foreach (var item in attribute.Value.Split('|').Select(x => x.Trim()).Where(x => x != string.Empty))
+        excludedAssemblies.Add(item);
+var element = config.Element("ExcludeAssemblies");
+if (element != null)
+    foreach (var item in element.Value.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).Where(x => x != string.Empty))
+        excludedAssemblies.Add(item);
+
+var filesToCleanup = Files.Select(f => f.ItemSpec).Where(f => !excludedAssemblies.Contains(Path.GetFileNameWithoutExtension(f), StringComparer.InvariantCultureIgnoreCase));
+
+foreach (var item in filesToCleanup)
+  File.Delete(item);
+]]></Code>
+    </Task>
+  </UsingTask>
   <Target Name="CleanReferenceCopyLocalPaths" AfterTargets="AfterBuild;NonWinFodyTarget">
     <CosturaCleanup Config="FodyWeavers.xml" Files="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')" />
   </Target>
-  <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
 </Project>

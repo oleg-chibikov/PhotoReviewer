@@ -43,12 +43,6 @@
     <Compile Include="..\PhotoReviewer\Properties\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Data\IPhotoInfo.cs" />
-    <Compile Include="Data\ISettings.cs" />
-    <Compile Include="IPhotoInfoRepository.cs" />
-    <Compile Include="IPhotoUserInfoRepository.cs" />
-    <Compile Include="ISettingsRepository.cs" />
-    <Compile Include="Data\PhotoUserInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

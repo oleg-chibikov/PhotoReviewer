@@ -126,20 +126,8 @@
   <data name="SelectDirectory" xml:space="preserve">
     <value>Please, select a directory</value>
   </data>
-  <data name="NothingToDelete" xml:space="preserve">
-    <value>Nothing to delete</value>
-  </data>
-  <data name="NothingToFavorite" xml:space="preserve">
-    <value>Nothing to favorite</value>
-  </data>
-  <data name="NothingToMark" xml:space="preserve">
-    <value>Nothing to mark</value>
-  </data>
-  <data name="NothingToMove" xml:space="preserve">
-    <value>Nothing to copy</value>
-  </data>
-  <data name="NothingToRename" xml:space="preserve">
-    <value>Nothing to rename</value>
+  <data name="NothingToProcess" xml:space="preserve">
+    <value>Nothing to process</value>
   </data>
   <data name="TaskInProgress" xml:space="preserve">
     <value>There is an operation running. Please wait while it's finished</value>

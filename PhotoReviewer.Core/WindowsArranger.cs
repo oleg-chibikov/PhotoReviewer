@@ -4,40 +4,38 @@ using System.Linq;
 using System.Windows;
 using Common.Logging;
 using JetBrains.Annotations;
-using PhotoReviewer.View.Contracts;
+using PhotoReviewer.Contracts.View;
+using PhotoReviewer.Contracts.ViewModel;
 using Scar.Common.WPF.View;
 using Scar.Common.WPF.View.Contracts;
 
 namespace PhotoReviewer.Core
 {
     [UsedImplicitly]
-    public class WindowsArranger
+    public sealed class WindowsArranger
     {
         private const double WindowBorderWidth = 8;
 
-        [NotNull]
-        private readonly ILog logger;
+        [NotNull] private readonly ILog _logger;
 
-        [NotNull]
-        private readonly WindowFactory<IMainWindow> mainWindowFactory;
+        [NotNull] private readonly WindowFactory<IMainWindow> _mainWindowFactory;
 
         public WindowsArranger([NotNull] WindowFactory<IMainWindow> mainWindowFactory, [NotNull] ILog logger)
         {
-            if (mainWindowFactory == null)
-                throw new ArgumentNullException(nameof(mainWindowFactory));
-            if (logger == null)
-                throw new ArgumentNullException(nameof(logger));
-            this.mainWindowFactory = mainWindowFactory;
-            this.logger = logger;
+            _mainWindowFactory = mainWindowFactory ?? throw new ArgumentNullException(nameof(mainWindowFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [NotNull]
         private IList<IPhotoWindow> PhotoWindows { get; } = new List<IPhotoWindow>();
 
+        [NotNull]
+        public IEnumerable<IPhoto> Photos => PhotoWindows.Select(x => x.Photo);
+
         private void ArrangeWindows(bool defaultHeight = false)
         {
-            logger.Debug("Arranging windows...");
-            var mainWindow = mainWindowFactory.GetWindow();
+            _logger.Debug("Arranging windows...");
+            var mainWindow = _mainWindowFactory.GetWindow();
             //TODO: lock (only one arrangement at a time)
             if (PhotoWindows.Any())
             {
@@ -61,7 +59,7 @@ namespace PhotoReviewer.Core
                     firstPhotoHeight = firstPhoto.Height;
                     mainWindowHeight = activeScreenArea.Height - firstPhotoHeight + 2 * WindowBorderWidth;
                 }
-                logger.Debug($"Arranging as {mainWindowHeight:##.#}:{firstPhotoHeight:##.#}...");
+                _logger.Debug($"Arranging as {mainWindowHeight:##.#}:{firstPhotoHeight:##.#}...");
 
                 mainWindow.WindowState = WindowState.Normal;
                 mainWindow.Top = activeScreenArea.Top;
@@ -93,6 +91,7 @@ namespace PhotoReviewer.Core
         {
             if (currentWindow == null)
                 throw new ArgumentNullException(nameof(currentWindow));
+
             if (PhotoWindows.Count > 1)
             {
                 var activeScreenArea = currentWindow.ActiveScreenArea;
@@ -116,15 +115,17 @@ namespace PhotoReviewer.Core
         {
             if (window == null)
                 throw new ArgumentNullException(nameof(window));
+
             window.Closed += Window_Closed;
             var isFirst = !PhotoWindows.Any();
             PhotoWindows.Add(window);
+            window.Photo.ReloadCollectionInfoIfNeeded();
             ArrangeWindows(isFirst);
         }
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            var window = (IPhotoWindow)sender;
+            var window = (IPhotoWindow) sender;
             window.Closed -= Window_Closed;
 
             PhotoWindows.Remove(window);
@@ -135,11 +136,11 @@ namespace PhotoReviewer.Core
             GC.Collect();
         }
 
-        private void ToggleFullScreen(IWindow window)
+        private void ToggleFullScreen([NotNull] IWindow window)
         {
             if (window.IsFullHeight)
             {
-                logger.Debug("Normalizing window view...");
+                _logger.Debug("Normalizing window view...");
                 window.WindowState = WindowState.Normal;
                 window.Topmost = false;
                 window.WindowStyle = WindowStyle.SingleBorderWindow;
@@ -148,7 +149,7 @@ namespace PhotoReviewer.Core
             }
             else
             {
-                logger.Debug("Maximizing window...");
+                _logger.Debug("Maximizing window...");
                 window.WindowState = WindowState.Maximized;
                 // hide the window before changing window style
                 window.Visibility = Visibility.Collapsed;
@@ -160,19 +161,18 @@ namespace PhotoReviewer.Core
             }
         }
 
-        public void ClosePhotos([CanBeNull] string filePath = null)
+        public void ClosePhotos([CanBeNull] IPhoto photo = null)
         {
-            if (filePath == null)
-                logger.Debug("Closing all views...");
+            if (photo == null)
+                _logger.Debug("Closing all views...");
+            //TODO: pass All photos at once
             for (var i = 0; i < PhotoWindows.Count; i++)
             {
                 var photoViewModel = PhotoWindows[i];
-                if (filePath == null || photoViewModel.PhotoPath == filePath)
-                {
-                    logger.Debug($"Closing view for {photoViewModel.PhotoPath}...");
-                    photoViewModel.Close();
-                    i--;
-                }
+                if (photo != null && photoViewModel.Photo != photo) continue;
+                _logger.Debug($"Closing view for {photoViewModel.Photo}...");
+                photoViewModel.Close();
+                i--;
             }
         }
     }

@@ -62,9 +62,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PhotoReviewer.DAL.Contracts\PhotoReviewer.DAL.Contracts.csproj">
-      <Project>{F0FB4354-77B0-4132-9593-C7A2493AB319}</Project>
-      <Name>PhotoReviewer.DAL.Contracts</Name>
+    <ProjectReference Include="..\PhotoReviewer.Contracts\PhotoReviewer.Contracts.csproj">
+      <Project>{37F1D8BD-AE67-4E81-9F6B-D2AABB81AB8D}</Project>
+      <Name>PhotoReviewer.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\PhotoReviewer.Resources\PhotoReviewer.Resources.csproj">
       <Project>{53C22BB7-E54D-49B8-A748-11A795E9DE63}</Project>
