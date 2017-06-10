@@ -70,6 +70,15 @@ namespace PhotoReviewer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Date shift failed. Please see logs for details.
+        /// </summary>
+        public static string DateShiftFailed {
+            get {
+                return ResourceManager.GetString("DateShiftFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Directory {0} doesn&apos;t exist.
         /// </summary>
         public static string DirectoryDoesNotExist {
@@ -88,11 +97,29 @@ namespace PhotoReviewer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Metadata is not specified. Cannot perform operation.
+        /// </summary>
+        public static string NoMetadata {
+            get {
+                return ResourceManager.GetString("NoMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nothing to process.
         /// </summary>
         public static string NothingToProcess {
             get {
                 return ResourceManager.GetString("NothingToProcess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rotation failed. Please see logs for details.
+        /// </summary>
+        public static string RotationFailed {
+            get {
+                return ResourceManager.GetString("RotationFailed", resourceCulture);
             }
         }
         

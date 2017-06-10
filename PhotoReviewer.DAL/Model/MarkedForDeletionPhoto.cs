@@ -1,6 +1,6 @@
 namespace PhotoReviewer.DAL.Model
 {
-    internal class MarkedForDeletionPhoto : PhotoInfo
+    internal sealed class MarkedForDeletionPhoto : PhotoInfo
     {
     }
 }

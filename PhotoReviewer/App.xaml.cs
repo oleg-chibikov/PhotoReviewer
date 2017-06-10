@@ -34,15 +34,19 @@ namespace PhotoReviewer
     {
         private static readonly Guid AppGuid = new Guid("9fdf0bfb-637c-4054-b0e1-0249defe1d91");
 
-        [NotNull] private readonly ILifetimeScope _container;
+        [NotNull]
+        private readonly ILifetimeScope _container;
 
-        [NotNull] private readonly ILog _logger;
+        [NotNull]
+        private readonly ILog _logger;
 
-        [NotNull] private readonly IMessenger _messenger;
+        [NotNull]
+        private readonly IMessenger _messenger;
 
-        [NotNull] private readonly Mutex _mutex;
+        [NotNull]
+        private readonly Mutex _mutex;
 
-        internal App()
+        public App()
         {
             DispatcherHelper.Initialize();
             _container = RegisterDependencies();
@@ -51,28 +55,15 @@ namespace PhotoReviewer
 
             _messenger = _container.Resolve<IMessenger>();
             _messenger.Register<string>(this, MessengerTokens.UiLanguageToken, CultureUtilities.ChangeCulture);
-            _messenger.Register<string>(this, MessengerTokens.UserMessageToken,
-                message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK,
-                    MessageBoxImage.Information));
-            _messenger.Register<string>(this, MessengerTokens.UserWarningToken,
-                message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK,
-                    MessageBoxImage.Warning));
-            _messenger.Register<string>(this, MessengerTokens.UserErrorToken,
-                message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK, MessageBoxImage.Error));
+            _messenger.Register<string>(this, MessengerTokens.UserMessageToken, message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK, MessageBoxImage.Information));
+            _messenger.Register<string>(this, MessengerTokens.UserWarningToken, message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK, MessageBoxImage.Warning));
+            _messenger.Register<string>(this, MessengerTokens.UserErrorToken, message => MessageBox.Show(message, nameof(PhotoReviewer), MessageBoxButton.OK, MessageBoxImage.Error));
             _logger = _container.Resolve<ILog>();
             _mutex = CreateMutex();
 
             // ReSharper disable once AssignNullToNotNullAttribute
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-        }
-
-        private void TaskScheduler_UnobservedTaskException(object sender, [NotNull] UnobservedTaskExceptionEventArgs e)
-        {
-            _logger.Fatal("Unhandled exception", e.Exception);
-            NotifyError(e.Exception);
-            e.SetObserved();
-            e.Exception.Handle(ex => true);
         }
 
         private void App_DispatcherUnhandledException(object sender, [NotNull] DispatcherUnhandledExceptionEventArgs e)
@@ -84,22 +75,38 @@ namespace PhotoReviewer
             e.Handled = true;
         }
 
-        private void NotifyError(Exception e)
-        {
-            _messenger.Send($"{Errors.Error}: {e.GetMostInnerException()}", MessengerTokens.UserErrorToken);
-        }
-
         [NotNull]
         private Mutex CreateMutex()
         {
             var sid = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
             var mutexSecurity = new MutexSecurity();
             mutexSecurity.AddAccessRule(new MutexAccessRule(sid, MutexRights.FullControl, AccessControlType.Allow));
-            mutexSecurity.AddAccessRule(new MutexAccessRule(sid, MutexRights.ChangePermissions,
-                AccessControlType.Deny));
+            mutexSecurity.AddAccessRule(new MutexAccessRule(sid, MutexRights.ChangePermissions, AccessControlType.Deny));
             mutexSecurity.AddAccessRule(new MutexAccessRule(sid, MutexRights.Delete, AccessControlType.Deny));
             bool createdNew;
             return new Mutex(false, $"Global\\{nameof(PhotoReviewer)}-{AppGuid}", out createdNew, mutexSecurity);
+        }
+
+        private void NotifyError(Exception e)
+        {
+            _messenger.Send($"{Errors.Error}: {e.GetMostInnerException()}", MessengerTokens.UserErrorToken);
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            _container.Dispose();
+            _mutex.Dispose();
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            if (!_mutex.WaitOne(0, false))
+            {
+                _messenger.Send(Errors.AlreadyRunning, MessengerTokens.UserWarningToken);
+                return;
+            }
+
+            _container.Resolve<WindowFactory<IMainWindow>>().GetOrCreateWindow().ShowDialog();
         }
 
         [NotNull]
@@ -118,9 +125,7 @@ namespace PhotoReviewer
             builder.RegisterType<Messenger>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<PhotoInfoRepository<FavoritedPhoto>>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<PhotoInfoRepository<MarkedForDeletionPhoto>>()
-                .AsImplementedInterfaces()
-                .SingleInstance();
+            builder.RegisterType<PhotoInfoRepository<MarkedForDeletionPhoto>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SettingsRepository>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<PhotoUserInfoRepository>().AsImplementedInterfaces().SingleInstance();
 
@@ -128,30 +133,18 @@ namespace PhotoReviewer
             builder.RegisterType<CancellationTokenSourceProvider>().AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterModule<LoggingModule>();
 
-            builder.RegisterAssemblyTypes(typeof(MainWindow).Assembly)
-                .AsImplementedInterfaces()
-                .InstancePerDependency();
-            //TODO: register resolving mainwindow with factory
+            builder.RegisterAssemblyTypes(typeof(MainWindow).Assembly).AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterAssemblyTypes(typeof(MainViewModel).Assembly).AsSelf().InstancePerDependency();
 
             return builder.Build();
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        private void TaskScheduler_UnobservedTaskException(object sender, [NotNull] UnobservedTaskExceptionEventArgs e)
         {
-            if (!_mutex.WaitOne(0, false))
-            {
-                _messenger.Send(Errors.AlreadyRunning, MessengerTokens.UserWarningToken);
-                return;
-            }
-
-            _container.Resolve<WindowFactory<IMainWindow>>().GetOrCreateWindow().ShowDialog();
-        }
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-            _container.Dispose();
-            _mutex.Dispose();
+            _logger.Fatal("Unhandled exception", e.Exception);
+            NotifyError(e.Exception);
+            e.SetObserved();
+            e.Exception.Handle(ex => true);
         }
     }
 }

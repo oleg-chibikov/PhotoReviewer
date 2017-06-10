@@ -9,8 +9,7 @@ namespace PhotoReviewer.ViewModel
     {
         private const string FavoriteDirectoryName = "Favorite";
 
-        internal PhotoDetails([NotNull] string filePath, [NotNull] ExifMetadata metadata, bool markedForDeletion,
-            bool favorited)
+        public PhotoDetails([NotNull] string filePath, [NotNull] ExifMetadata metadata, bool markedForDeletion, bool favorited)
         {
             FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
             Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
@@ -19,31 +18,31 @@ namespace PhotoReviewer.ViewModel
         }
 
         [NotNull]
-        internal string FilePath { get; }
+        public string FilePath { get; }
 
         [NotNull]
-        internal ExifMetadata Metadata { get; }
+        public ExifMetadata Metadata { get; }
 
-        internal bool MarkedForDeletion { get; }
+        public bool MarkedForDeletion { get; }
 
-        internal bool Favorited { get; }
-
-        [NotNull]
-        internal static string GetFavoriteDirectory([NotNull] string filePath)
-        {
-            var originalDirectory = Path.GetDirectoryName(filePath);
-            // ReSharper disable once AssignNullToNotNullAttribute
-            var favoriteDirectory = Path.Combine(originalDirectory, FavoriteDirectoryName);
-            return favoriteDirectory;
-        }
+        public bool Favorited { get; }
 
         [NotNull]
-        internal static string GetFavoritedFilePath([NotNull] string filePath)
+        public static string GetFavoritedFilePath([NotNull] string filePath)
         {
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
             return Path.Combine(GetFavoriteDirectory(filePath), Path.GetFileName(filePath));
+        }
+
+        [NotNull]
+        public static string GetFavoriteDirectory([NotNull] string filePath)
+        {
+            var originalDirectory = Path.GetDirectoryName(filePath);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var favoriteDirectory = Path.Combine(originalDirectory, FavoriteDirectoryName);
+            return favoriteDirectory;
         }
     }
 }

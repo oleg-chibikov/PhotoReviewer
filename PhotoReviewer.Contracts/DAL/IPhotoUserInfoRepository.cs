@@ -8,15 +8,16 @@ namespace PhotoReviewer.Contracts.DAL
         [NotNull]
         PhotoUserInfo Check([NotNull] string filePath);
 
-        void Rename([NotNull] string oldFilePath, [NotNull] string newFilePath);
         void Delete([NotNull] string filePath);
         void Favorite([NotNull] string filePath);
-        void MarkForDeletion([NotNull] string filePath);
-        void UnFavorite([NotNull] string filePath);
-        void UnMarkForDeletion([NotNull] string filePath);
-        void MarkForDeletion([NotNull] string[] filePaths);
         void Favorite([NotNull] string[] filePaths);
-        void UnMarkForDeletion([NotNull] string[] filePaths);
+        void MarkForDeletion([NotNull] string filePath);
+        void MarkForDeletion([NotNull] string[] filePaths);
+
+        void Rename([NotNull] string oldFilePath, [NotNull] string newFilePath);
+        void UnFavorite([NotNull] string filePath);
         void UnFavorite([NotNull] string[] filePaths);
+        void UnMarkForDeletion([NotNull] string filePath);
+        void UnMarkForDeletion([NotNull] string[] filePaths);
     }
 }

@@ -1,123 +1,253 @@
-﻿<commonView:BaseWindow x:Class="PhotoReviewer.View.PhotoWindow"
-                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                       xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
-                       xmlns:zoomBorder="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF.Controls.ZoomBorder"
-                       xmlns:commonView="clr-namespace:Scar.Common.WPF.View;assembly=Scar.Common.WPF.View"
-                       xmlns:data="clr-namespace:Scar.Common.Drawing.Metadata;assembly=Scar.Common.Drawing.Metadata"
-                       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-                       xmlns:view="clr-namespace:PhotoReviewer.Contracts.View;assembly=PhotoReviewer.Contracts"
-                       Title="{Binding Path=Photo.DisplayedInfo,StringFormat=Photo Reviewer - {0}}"
-                       Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
-                       WindowStartupLocation="Manual"
-                       Background="#222"
-                       SizeToContent="Manual"
-                       mc:Ignorable="d"
-                       d:DataContext="{d:DesignInstance viewModel:PhotoViewModel}" x:ClassModifier="internal">
-    <commonView:BaseWindow.InputBindings>
-        <KeyBinding Key="R" Modifiers="Control" Command="{Binding RenameToDateCommand}" />
-        <KeyBinding Key="F" Command="{Binding FavoriteCommand}" />
-        <KeyBinding Key="Back" Command="{Binding MarkForDeletionCommand}" />
-        <KeyBinding Key="Delete" Command="{Binding MarkForDeletionCommand}" />
-        <KeyBinding Key="Right" Command="{Binding ChangePhotoCommand}" CommandParameter="{x:Static viewModel:ChangeType.Next}" />
-        <KeyBinding Key="Left" Command="{Binding ChangePhotoCommand}" CommandParameter="{x:Static viewModel:ChangeType.Prev}" />
-        <!--TODO: XButtons EventToCommand-->
-    </commonView:BaseWindow.InputBindings>
+﻿<commonView:BaseWindow
+    x:Class="PhotoReviewer.View.PhotoWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
+    xmlns:zoomBorder="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF.Controls.ZoomBorder"
+    xmlns:commonView="clr-namespace:Scar.Common.WPF.View;assembly=Scar.Common.WPF.View"
+    xmlns:data="clr-namespace:Scar.Common.Drawing.Metadata;assembly=Scar.Common.Drawing.Metadata"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:viewContracts="clr-namespace:PhotoReviewer.Contracts.View;assembly=PhotoReviewer.Contracts"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:command="http://www.galasoft.ch/mvvmlight"
+    xmlns:view="clr-namespace:PhotoReviewer.View"
+    Title="{Binding Path=Photo.DisplayedInfo,StringFormat=Photo Reviewer - {0}}"
+    Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
+    WindowStartupLocation="Manual"
+    Background="#222"
+    SizeToContent="Manual"
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance viewModel:PhotoViewModel}"
+    x:ClassModifier="internal">
     <commonView:BaseWindow.Resources>
         <ResourceDictionary>
-            <Style TargetType="Button">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderThickness" Value="0" />
+            <Style
+                TargetType="Button">
+                <Setter
+                    Property="Background"
+                    Value="Transparent" />
+                <Setter
+                    Property="BorderThickness"
+                    Value="0" />
             </Style>
-            <Style TargetType="materialDesign:PackIcon">
-                <Setter Property="Width" Value="70" />
-                <Setter Property="Height" Value="70" />
-                <Setter Property="Foreground" Value="LightGray" />
+            <Style
+                TargetType="materialDesign:PackIcon">
+                <Setter
+                    Property="Width"
+                    Value="70" />
+                <Setter
+                    Property="Height"
+                    Value="70" />
+                <Setter
+                    Property="Foreground"
+                    Value="LightGray" />
             </Style>
-            <Style TargetType="Border" x:Key="ColorByDeleted">
+            <Style
+                TargetType="Border"
+                x:Key="ColorByDeleted">
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding Path=Photo.MarkedForDeletion}" Value="True">
-                        <Setter Property="Background" Value="Red" />
+                    <DataTrigger
+                        Binding="{Binding Path=Photo.MarkedForDeletion}"
+                        Value="True">
+                        <Setter
+                            Property="Background"
+                            Value="OrangeRed" />
                     </DataTrigger>
-                    <DataTrigger Binding="{Binding Path=Photo.Favorited}" Value="True">
-                        <Setter Property="Background" Value="LimeGreen" />
+                    <DataTrigger
+                        Binding="{Binding Path=Photo.Favorited}"
+                        Value="True">
+                        <Setter
+                            Property="Background"
+                            Value="LimeGreen" />
                     </DataTrigger>
                 </Style.Triggers>
                 <Style.Setters>
-                    <Setter Property="Background" Value="White" />
+                    <Setter
+                        Property="Background"
+                        Value="White" />
                 </Style.Setters>
             </Style>
-            <Style TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="White" />
+            <Style
+                TargetType="{x:Type TextBlock}">
+                <Setter
+                    Property="Foreground"
+                    Value="White" />
                 <Style.Triggers>
-                    <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                    <EventTrigger
+                        RoutedEvent="Binding.TargetUpdated">
                         <BeginStoryboard>
                             <Storyboard>
-                                <DoubleAnimation Storyboard.TargetProperty="Opacity" Duration="0:0:0.3" From="0" To="1" />
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="Opacity"
+                                    Duration="0:0:0.3"
+                                    From="0"
+                                    To="1" />
                             </Storyboard>
                         </BeginStoryboard>
                     </EventTrigger>
                 </Style.Triggers>
             </Style>
+            <view:MouseButtonEventArgsToChangeTypeConverter
+                x:Key="MouseButtonEventArgsToPhotoActionConverter" />
+            <BooleanToVisibilityConverter
+                x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>
     </commonView:BaseWindow.Resources>
-    <Grid Margin="0">
+    <commonView:BaseWindow.InputBindings>
+        <KeyBinding
+            Key="R"
+            Modifiers="Control"
+            Command="{Binding RenameToDateCommand}" />
+        <KeyBinding
+            Key="F"
+            Command="{Binding FavoriteCommand}" />
+        <KeyBinding
+            Key="Back"
+            Command="{Binding MarkForDeletionCommand}" />
+        <KeyBinding
+            Key="Delete"
+            Command="{Binding MarkForDeletionCommand}" />
+        <KeyBinding
+            Key="Right"
+            Command="{Binding ChangePhotoCommand}"
+            CommandParameter="{x:Static viewModel:ChangeType.Next}" />
+        <KeyBinding
+            Key="Left"
+            Command="{Binding ChangePhotoCommand}"
+            CommandParameter="{x:Static viewModel:ChangeType.Prev}" />
+    </commonView:BaseWindow.InputBindings>
+    <i:Interaction.Triggers>
+        <i:EventTrigger
+            EventName="MouseUp">
+            <command:EventToCommand
+                Command="{Binding ChangePhotoCommand}"
+                EventArgsConverter="{StaticResource MouseButtonEventArgsToPhotoActionConverter}"
+                PassEventArgsToCommand="True" />
+        </i:EventTrigger>
+        <i:EventTrigger
+            EventName="Closing">
+            <command:EventToCommand
+                Command="{Binding WindowClosingCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <commonView:BaseWindow.ContextMenu>
+        <ContextMenu>
+            <MenuItem
+                Header="Favorite (F)"
+                Command="{Binding FavoriteCommand}" />
+            <MenuItem
+                Header="Mark as deleted (Delete|Backspace)"
+                Command="{Binding MarkForDeletionCommand}" />
+            <MenuItem
+                IsEnabled="{Binding Photo.DateImageTakenIsSpecified}"
+                Header="Rename to date (Ctrl+R)"
+                Command="{Binding RenameToDateCommand}" />
+            <MenuItem
+                Header="Open in Explorer"
+                Command="{Binding OpenPhotoInExplorerCommand}" />
+            <MenuItem
+                IsEnabled="{Binding Photo.OrientationIsSpecified}"
+                Header="Rotate clockwise"
+                Command="{Binding RotateCommand}"
+                CommandParameter="{x:Static data:RotationType.Clockwise}" />
+            <MenuItem
+                IsEnabled="{Binding Photo.OrientationIsSpecified}"
+                Header="Rotate counter clockwise"
+                Command="{Binding RotateCommand}"
+                CommandParameter="{x:Static data:RotationType.CounterClockwise}" />
+        </ContextMenu>
+    </commonView:BaseWindow.ContextMenu>
+    <Grid
+        Margin="0">
         <!-- Nav -->
-        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Center">
+        <Canvas
+            Panel.ZIndex="1"
+            HorizontalAlignment="Stretch"
+            Margin="5"
+            VerticalAlignment="Center">
             <!--Change photo buttons-->
-            <Button ToolTip="Previous photo"
-                    Canvas.Top="-19" Canvas.Left="0"
-                    Command="{Binding ChangePhotoCommand}" CommandParameter="{x:Static viewModel:ChangeType.Prev}">
-                <materialDesign:PackIcon Kind="ChevronLeft" />
+            <Button
+                ToolTip="Previous photo"
+                Canvas.Top="-19"
+                Canvas.Left="0"
+                Command="{Binding ChangePhotoCommand}"
+                CommandParameter="{x:Static viewModel:ChangeType.Prev}">
+                <materialDesign:PackIcon
+                    Kind="ChevronLeft" />
             </Button>
-            <Button ToolTip="Next photo"
-                    Canvas.Top="-19" Canvas.Right="0"
-                    Command="{Binding ChangePhotoCommand}" CommandParameter="{x:Static viewModel:ChangeType.Next}">
-                <materialDesign:PackIcon Kind="ChevronRight" />
+            <Button
+                ToolTip="Next photo"
+                Canvas.Top="-19"
+                Canvas.Right="0"
+                Command="{Binding ChangePhotoCommand}"
+                CommandParameter="{x:Static viewModel:ChangeType.Next}">
+                <materialDesign:PackIcon
+                    Kind="ChevronRight" />
             </Button>
         </Canvas>
 
-        <Canvas Panel.ZIndex="1" HorizontalAlignment="Stretch" Margin="5" VerticalAlignment="Top">
-            <StackPanel Canvas.Top="0" Canvas.Left="0">
-                <TextBlock Text="{Binding Path=Photo.Name}" />
-                <TextBlock Text="{Binding Path=Photo.Metadata.CameraModel}" />
-                <TextBlock Text="{Binding Path=Photo.PositionInCollection}" />
+        <Canvas
+            Panel.ZIndex="1"
+            HorizontalAlignment="Stretch"
+            Margin="5"
+            VerticalAlignment="Top">
+            <StackPanel
+                Canvas.Top="0"
+                Canvas.Left="0">
+                <TextBlock
+                    Text="{Binding Path=Photo.Name}" />
+                <TextBlock
+                    Text="{Binding Path=Photo.Metadata.CameraModel}" />
+                <TextBlock
+                    Text="{Binding Path=Photo.PositionInCollection}" />
                 <StackPanel.Style>
-                    <Style TargetType="{x:Type StackPanel}">
+                    <Style
+                        TargetType="{x:Type StackPanel}">
                         <Style.Triggers>
                             <DataTrigger
                                 Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                 Value="Normal">
-                                <Setter Property="Visibility" Value="Hidden" />
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Hidden" />
                             </DataTrigger>
                             <DataTrigger
                                 Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                 Value="Maximized">
-                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
             </StackPanel>
-            <Button Canvas.Top="0" Canvas.Right="0"
-                    ToolTip="Toggle full height"
-                    Command="{Binding ToggleFullHeightCommand}"
-                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type view:IPhotoWindow}}}">
+            <Button
+                Canvas.Top="0"
+                Canvas.Right="0"
+                ToolTip="Toggle full height"
+                Command="{Binding ToggleFullHeightCommand}"
+                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type viewContracts:IPhotoWindow}}}">
                 <materialDesign:PackIcon>
                     <materialDesign:PackIcon.Style>
-                        <Style TargetType="materialDesign:PackIcon"
-                               BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}">
+                        <Style
+                            TargetType="materialDesign:PackIcon"
+                            BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}">
                             <Style.Triggers>
                                 <DataTrigger
-                                    Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type view:IPhotoWindow}}}"
+                                    Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type viewContracts:IPhotoWindow}}}"
                                     Value="False">
-                                    <Setter Property="Kind" Value="Fullscreen" />
+                                    <Setter
+                                        Property="Kind"
+                                        Value="Fullscreen" />
                                 </DataTrigger>
                             </Style.Triggers>
                             <Style.Setters>
-                                <Setter Property="Kind" Value="FullscreenExit" />
+                                <Setter
+                                    Property="Kind"
+                                    Value="FullscreenExit" />
                             </Style.Setters>
                         </Style>
                     </materialDesign:PackIcon.Style>
@@ -126,59 +256,74 @@
         </Canvas>
 
         <Canvas>
-            <StackPanel Canvas.Bottom="0" Canvas.Left="0" Orientation="Horizontal">
+            <StackPanel
+                Canvas.Bottom="0"
+                Canvas.Left="0"
+                Orientation="Horizontal">
                 <StackPanel.Resources>
-                    <Style TargetType="materialDesign:PackIcon"
-                           BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}">
-                        <Setter Property="Width" Value="20" />
-                        <Setter Property="Height" Value="20" />
+                    <Style
+                        TargetType="materialDesign:PackIcon"
+                        BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}">
+                        <Setter
+                            Property="Width"
+                            Value="20" />
+                        <Setter
+                            Property="Height"
+                            Value="20" />
                     </Style>
                 </StackPanel.Resources>
-                <Button ToolTip="Rotate clockwise"
-                        Command="{Binding RotateCommand}"
-                        CommandParameter="{x:Static data:RotationType.Clockwise}">
-                    <materialDesign:PackIcon Kind="RotateRight" />
+                <Button
+                    Visibility="{Binding Photo.OrientationIsSpecified, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    ToolTip="Rotate clockwise"
+                    Command="{Binding RotateCommand}"
+                    CommandParameter="{x:Static data:RotationType.Clockwise}">
+                    <materialDesign:PackIcon
+                        Kind="RotateRight" />
                 </Button>
-                <Button ToolTip="Rotate counter clockwise"
-                        Command="{Binding RotateCommand}"
-                        CommandParameter="{x:Static data:RotationType.CounterClockwise}">
-                    <materialDesign:PackIcon Kind="RotateLeft" />
+                <Button
+                    Visibility="{Binding Photo.OrientationIsSpecified, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    ToolTip="Rotate counter clockwise"
+                    Command="{Binding RotateCommand}"
+                    CommandParameter="{x:Static data:RotationType.CounterClockwise}">
+                    <materialDesign:PackIcon
+                        Kind="RotateLeft" />
                 </Button>
             </StackPanel>
         </Canvas>
 
         <!-- Photo -->
-        <Border Panel.ZIndex="0" Padding="4" Margin="4" Style="{StaticResource ColorByDeleted}"
-                HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="#22000000" BorderThickness="1">
-            <zoomBorder:ZoomBorder ClipToBounds="True" HorizontalAlignment="Center"
-                                   VerticalAlignment="Center">
-                <Image Tag="{Binding Photo, NotifyOnTargetUpdated=True}" Source="{Binding BitmapSource}">
-                    <Image.Style>
-                        <Style>
-                            <Style.Triggers>
-                                <EventTrigger RoutedEvent="Binding.TargetUpdated">
-                                    <BeginStoryboard>
-                                        <Storyboard Storyboard.TargetProperty="Opacity">
-                                            <DoubleAnimation From="0.5" To="1" Duration="0:0:0:0.3" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Image.Style>
-                    <Image.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Favorite (F)" Command="{Binding FavoriteCommand}" />
-                            <MenuItem Header="Mark as deleted (Delete|Backspace)"
-                                      Command="{Binding MarkForDeletionCommand}" />
-                            <MenuItem Header="Rename to date (Ctrl+R)" Command="{Binding RenameToDateCommand}" />
-                            <MenuItem Header="Open in Explorer" Command="{Binding OpenPhotoInExplorerCommand}" />
-                            <MenuItem Header="Rotate clockwise" Command="{Binding RotateCommand}"
-                                      CommandParameter="{x:Static data:RotationType.Clockwise}" />
-                            <MenuItem Header="Rotate counter clockwise" Command="{Binding RotateCommand}"
-                                      CommandParameter="{x:Static data:RotationType.CounterClockwise}" />
-                        </ContextMenu>
-                    </Image.ContextMenu>
+        <Border
+            Panel.ZIndex="0"
+            Padding="4"
+            Margin="4"
+            Style="{StaticResource ColorByDeleted}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            BorderBrush="#22000000"
+            BorderThickness="1">
+            <zoomBorder:ZoomBorder
+                x:Name="ZoomBorder"
+                ClipToBounds="True"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <Image
+                    Tag="{Binding Photo, NotifyOnTargetUpdated=True}"
+                    Source="{Binding BitmapSource}"
+                    TargetUpdated="Image_TargetUpdated">
+                    <Image.Triggers>
+                        <EventTrigger
+                            RoutedEvent="Binding.TargetUpdated">
+                            <BeginStoryboard>
+                                <Storyboard
+                                    Storyboard.TargetProperty="Opacity">
+                                    <DoubleAnimation
+                                        From="0.5"
+                                        To="1"
+                                        Duration="0:0:0:0.3" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Image.Triggers>
                 </Image>
             </zoomBorder:ZoomBorder>
         </Border>

@@ -70,8 +70,8 @@
     <Reference Include="Scar.Common, Version=1.0.21.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.1.0.21\lib\net462\Scar.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Drawing.ExifTool, Version=1.0.34.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Drawing.ExifTool.1.0.34\lib\net462\Scar.Common.Drawing.ExifTool.dll</HintPath>
+    <Reference Include="Scar.Common.Drawing.ExifTool, Version=1.0.38.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Drawing.ExifTool.1.0.38\lib\net462\Scar.Common.Drawing.ExifTool.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.Drawing.ImageRetriever, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Drawing.ImageRetriever.1.0.12\lib\net462\Scar.Common.Drawing.ImageRetriever.dll</HintPath>
@@ -88,8 +88,8 @@
     <Reference Include="Scar.Common.Notification, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Notification.1.0.3\lib\net462\Scar.Common.Notification.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.Processes, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.Processes.1.0.6\lib\net462\Scar.Common.Processes.dll</HintPath>
+    <Reference Include="Scar.Common.Processes, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.Processes.1.0.9\lib\net462\Scar.Common.Processes.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.Commands, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.Commands.1.0.1\lib\net462\Scar.Common.WPF.Commands.dll</HintPath>
@@ -114,6 +114,7 @@
     <Compile Include="..\PhotoReviewer\Properties\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ChangeType.cs" />
     <Compile Include="MainViewModel.cs" />
     <Compile Include="Photo.cs" />
     <Compile Include="PhotoCollection.cs" />

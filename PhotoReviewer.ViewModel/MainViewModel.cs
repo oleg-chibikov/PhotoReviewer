@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -40,16 +39,22 @@ namespace PhotoReviewer.ViewModel
     public sealed class MainViewModel : IDisposable
     {
         [NotNull]
+        private readonly ILifetimeScope _lifetimeScope;
+
+        [NotNull]
+        private readonly ILog _logger;
+
+        [NotNull]
+        private readonly ISettingsRepository _settingsRepository;
+
+        [NotNull]
         private readonly SynchronizationContext _syncContext = SynchronizationContext.Current;
-        [NotNull] private readonly ILifetimeScope _lifetimeScope;
 
-        [NotNull] private readonly ILog _logger;
+        [NotNull]
+        private readonly WindowsArranger _windowsArranger;
 
-        [NotNull] private readonly ISettingsRepository _settingsRepository;
-
-        [NotNull] private readonly WindowsArranger _windowsArranger;
-
-        public MainViewModel([NotNull] PhotoCollection photoCollection,
+        public MainViewModel(
+            [NotNull] PhotoCollection photoCollection,
             [NotNull] ISettingsRepository settingsRepository,
             [NotNull] ILifetimeScope lifetimeScope,
             [NotNull] WindowsArranger windowsArranger,
@@ -60,8 +65,8 @@ namespace PhotoReviewer.ViewModel
             _lifetimeScope = lifetimeScope ?? throw new ArgumentNullException(nameof(lifetimeScope));
             _windowsArranger = windowsArranger;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            BrowseDirectoryCommand = new CorrelationCommand(BrowseDirectoryAsync);
-            ChangeDirectoryPathCommand = new CorrelationCommand<string>(ChangeDirectoryPathAsync);
+            BrowseDirectoryCommand = new CorrelationCommand(BrowseDirectory);
+            ChangeDirectoryPathCommand = new CorrelationCommand<string>(ChangeDirectoryPath);
             ShowOnlyMarkedChangedCommand = new CorrelationCommand<bool>(ShowOnlyMarkedChanged);
             CopyFavoritedCommand = new CorrelationCommand(CopyFavoritedAsync);
             DeleteMarkedCommand = new CorrelationCommand(DeleteMarkedAsync);
@@ -78,25 +83,16 @@ namespace PhotoReviewer.ViewModel
             PhotoCollection.Progress += PhotosCollection_Progress;
             PhotoCollection.CollectionChanged += PhotoCollection_CollectionChanged;
             PhotoCollection.PhotoNotification += PhotoCollection_PhotoNotification;
-            ShiftDateViewModel =
-                lifetimeScope.Resolve<ShiftDateViewModel>(new TypedParameter(typeof(MainViewModel), this));
+            ShiftDateViewModel = lifetimeScope.Resolve<ShiftDateViewModel>(new TypedParameter(typeof(MainViewModel), this));
 
             var directoryPath = settingsRepository.Settings.LastUsedDirectoryPath;
             if (!string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath))
-#pragma warning disable 4014
                 SetDirectoryPathAsync(directoryPath);
-#pragma warning restore 4014
-        }
-
-        private void PhotoCollection_PhotoNotification(object sender, EventArgs e)
-        {
-            foreach (var photo in _windowsArranger.Photos)
-                photo.ReloadCollectionInfoIfNeeded();
-            SelectedPhoto?.ReloadCollectionInfoIfNeeded();
         }
 
         [NotNull]
-        internal IEnumerable<Photo> SelectedPhotos { get; private set; } = new Photo[0];
+        [DoNotNotify]
+        public IEnumerable<Photo> SelectedPhotos { get; private set; } = new Photo[0];
 
         [NotNull]
         public PhotoCollection PhotoCollection { get; }
@@ -111,8 +107,19 @@ namespace PhotoReviewer.ViewModel
             PhotoCollection.CollectionChanged -= PhotoCollection_CollectionChanged;
         }
 
-        private void PhotoCollection_CollectionChanged([NotNull] object sender,
-            [NotNull] NotifyCollectionChangedEventArgs e)
+        private void BeginProgress()
+        {
+            ProgressState = TaskbarItemProgressState.Normal;
+            ProgressDescription = "Caclulating...";
+            Progress = 0;
+        }
+
+        private void EndProgress()
+        {
+            ProgressState = TaskbarItemProgressState.None;
+        }
+
+        private void PhotoCollection_CollectionChanged([NotNull] object sender, [NotNull] NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -126,38 +133,44 @@ namespace PhotoReviewer.ViewModel
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (var photo in e.OldItems.Cast<Photo>())
-                        _windowsArranger.ClosePhotos(photo);
+                        _windowsArranger.ClosePhoto(photo);
 
                     break;
             }
         }
 
+        private void PhotoCollection_PhotoNotification(object sender, EventArgs e)
+        {
+            foreach (var photo in _windowsArranger.Photos)
+                photo.ReloadCollectionInfoIfNeeded();
+
+            SelectedPhoto?.ReloadCollectionInfoIfNeeded();
+        }
+
         private void PhotosCollection_Progress([NotNull] object sender, [NotNull] ProgressEventArgs e)
         {
-            _syncContext.Send(x =>
-            {
-                Progress = e.Percentage;
-                ProgressDescription = $"{e.Current} of {e.Total} ({e.Percentage} %)";
-                if (e.Current == 0)
-                    BeginProgress();
-                else if (e.Current == e.Total)
-                    EndProgress();
-            }, null);
+            _syncContext.Send(
+                x =>
+                {
+                    Progress = e.Percentage;
+                    ProgressDescription = $"{e.Current} of {e.Total} ({e.Percentage} %)";
+                    if (e.Current == 0)
+                        BeginProgress();
+                    else if (e.Current == e.Total)
+                        EndProgress();
+                },
+                null);
         }
 
-        private void EndProgress()
+        /// <summary>Selects and scrolls to the first photo of current selection</summary>
+        private void ReselectPhoto()
         {
-            ProgressState = TaskbarItemProgressState.None;
+            var photo = SelectedPhoto;
+            SelectedPhoto = null;
+            SelectedPhoto = photo;
         }
 
-        private void BeginProgress()
-        {
-            ProgressState = TaskbarItemProgressState.Normal;
-            ProgressDescription = "Caclulating...";
-            Progress = 0;
-        }
-
-        private async Task SetDirectoryPathAsync([NotNull] string directoryPath)
+        private async void SetDirectoryPathAsync([NotNull] string directoryPath)
         {
             var settings = _settingsRepository.Settings;
             var task = PhotoCollection.SetDirectoryPathAsync(directoryPath);
@@ -175,16 +188,6 @@ namespace PhotoReviewer.ViewModel
                 _settingsRepository.Settings = settings;
             }
             await task;
-        }
-
-        /// <summary>
-        ///     Selects and scrolls to the first photo of current selection
-        /// </summary>
-        private void ReselectPhoto()
-        {
-            var photo = SelectedPhoto;
-            SelectedPhoto = null;
-            SelectedPhoto = photo;
         }
 
         #region Dependency Properties
@@ -258,7 +261,7 @@ namespace PhotoReviewer.ViewModel
 
         #region Command handlers
 
-        private async void BrowseDirectoryAsync()
+        private void BrowseDirectory()
         {
             _logger.Debug("Browsing directory...");
             //TODO: Another dialog third party? Use OpenFileService and DI
@@ -271,22 +274,22 @@ namespace PhotoReviewer.ViewModel
                 return;
 
             _logger.Info($"Changing directory path to {dialog.SelectedPath}...");
-            await SetDirectoryPathAsync(dialog.SelectedPath);
+            SetDirectoryPathAsync(dialog.SelectedPath);
         }
 
-        private async void ChangeDirectoryPathAsync([NotNull] string directoryPath)
+        private void ChangeDirectoryPath([NotNull] string directoryPath)
         {
             _logger.Info($"Changing directory path to {directoryPath}...");
             if (directoryPath == null)
                 throw new ArgumentNullException(nameof(directoryPath));
 
-            await SetDirectoryPathAsync(directoryPath.AddTrailingBackslash());
+            SetDirectoryPathAsync(directoryPath.AddTrailingBackslash());
         }
 
         private void ShowOnlyMarkedChanged(bool isChecked)
         {
             _logger.Debug($"Setting show only marked to {isChecked}...");
-            PhotoCollection.ShowOnlyMarked = isChecked;
+            PhotoCollection.ChangeFilter(isChecked);
         }
 
         private async void CopyFavoritedAsync()
@@ -301,7 +304,7 @@ namespace PhotoReviewer.ViewModel
             await PhotoCollection.DeleteMarkedAsync();
         }
 
-        internal void Favorite()
+        public void Favorite()
         {
             _logger.Info("(Un)Favoriting selected photos...");
             if (!SelectedPhotos.Any())
@@ -310,7 +313,7 @@ namespace PhotoReviewer.ViewModel
             PhotoCollection.Favorite(SelectedPhotos.ToArray());
         }
 
-        internal void MarkForDeletion()
+        public void MarkForDeletion()
         {
             _logger.Info("(Un)Marking selected photos for deletion...");
             if (!SelectedPhotos.Any())
@@ -319,7 +322,7 @@ namespace PhotoReviewer.ViewModel
             PhotoCollection.MarkForDeletion(SelectedPhotos.ToArray());
         }
 
-        internal async void RenameToDateAsync()
+        public async void RenameToDateAsync()
         {
             _logger.Info("Renaming selected photos to date...");
             if (!SelectedPhotos.Any())
@@ -354,15 +357,9 @@ namespace PhotoReviewer.ViewModel
 
             ReselectPhoto();
             var mainWindow = _lifetimeScope.Resolve<WindowFactory<IMainWindow>>().GetWindow();
-            var photoViewModel = _lifetimeScope.Resolve<PhotoViewModel>(
-                new TypedParameter(typeof(MainViewModel), this),
-                new TypedParameter(typeof(Photo), SelectedPhoto)
-            );
+            var photoViewModel = _lifetimeScope.Resolve<PhotoViewModel>(new TypedParameter(typeof(MainViewModel), this), new TypedParameter(typeof(Photo), SelectedPhoto));
             //Window is shown in its constructor
-            var window = _lifetimeScope.Resolve<IPhotoWindow>(
-                new TypedParameter(typeof(Window), mainWindow),
-                new TypedParameter(typeof(PhotoViewModel), photoViewModel)
-            );
+            var window = _lifetimeScope.Resolve<IPhotoWindow>(new TypedParameter(typeof(Window), mainWindow), new TypedParameter(typeof(PhotoViewModel), photoViewModel));
             _windowsArranger.Add(window);
         }
 
@@ -388,10 +385,7 @@ namespace PhotoReviewer.ViewModel
 
         private void ViewLogs()
         {
-            var logsPath =
-                $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\{nameof(Scar)}\{
-                        nameof(PhotoReviewer)
-                    }\Logs\Full.log";
+            var logsPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\{nameof(Scar)}\{nameof(PhotoReviewer)}\Logs\Full.log";
             _logger.Debug($"Viewing logs file ({logsPath})...");
             logsPath.OpenFile();
         }

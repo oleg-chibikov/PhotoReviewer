@@ -11,7 +11,8 @@ namespace PhotoReviewer.DAL
     [UsedImplicitly]
     internal sealed class SettingsRepository : LiteDbRepository<Settings, int>, ISettingsRepository
     {
-        public SettingsRepository([NotNull] ILog logger) : base(logger)
+        public SettingsRepository([NotNull] ILog logger)
+            : base(logger)
         {
         }
 

@@ -9,12 +9,18 @@ using Scar.Common.WPF.Commands;
 namespace PhotoReviewer.ViewModel
 {
     [ImplementPropertyChanged]
+    [UsedImplicitly]
     public sealed class ShiftDateViewModel
     {
-        [NotNull] private readonly ILog _logger;
+        //TODO: Close only dialog on esc
+        [NotNull]
+        private readonly ILog _logger;
 
-        [NotNull] private readonly MainViewModel _mainViewModel;
-        [CanBeNull] private Photo[] _photos;
+        [NotNull]
+        private readonly MainViewModel _mainViewModel;
+
+        [CanBeNull]
+        private Photo[] _photos;
 
         //TODO: recreate model for every dialog call?
         public ShiftDateViewModel([NotNull] MainViewModel mainViewModel, [NotNull] ILog logger)
@@ -43,14 +49,12 @@ namespace PhotoReviewer.ViewModel
         public bool RenameToDate { get; set; } = true;
         public int PhotosCount { get; private set; }
 
-        private async void ShiftDateAsync()
+        private void CancelShiftDate()
         {
-            _logger.Info("Shifting date for selected photos...");
+            _logger.Debug("Cancelling shifting date...");
+            ShiftBy = default(TimeSpan);
             IsShiftDateDialogOpen = false;
-            if (_photos == null)
-                throw new InvalidOperationException("Photos are not set");
-
-            await _mainViewModel.PhotoCollection.ShiftDateAsync(_photos, ShiftBy, Plus, RenameToDate);
+            Plus = true;
         }
 
         private void OpenShiftDateDialog()
@@ -64,12 +68,14 @@ namespace PhotoReviewer.ViewModel
             _photos = _mainViewModel.SelectedPhotos.ToArray();
         }
 
-        private void CancelShiftDate()
+        private async void ShiftDateAsync()
         {
-            _logger.Debug("Cancelling shifting date...");
-            ShiftBy = default(TimeSpan);
+            _logger.Info("Shifting date for selected photos...");
             IsShiftDateDialogOpen = false;
-            Plus = true;
+            if (_photos == null)
+                throw new InvalidOperationException("Photos are not set");
+
+            await _mainViewModel.PhotoCollection.ShiftDateAsync(_photos, ShiftBy, Plus, RenameToDate);
         }
     }
 }

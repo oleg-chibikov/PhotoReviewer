@@ -9,10 +9,14 @@ namespace PhotoReviewer.Core
     {
         CancellationToken Token { get; }
 
+        Task CurrentTask { get; }
+
         void Cancel();
 
-        Task StartNewTask([NotNull]Action<CancellationToken> action, bool cancelCurrent = true, bool runInTheSameSynchronizationContext = false);
+        [NotNull]
+        Task StartNewTask([NotNull] Action<CancellationToken> action, bool cancelCurrent = true);
 
-        Task CurrentTask { get; }
+        [NotNull]
+        Task ExecuteAsyncOperation([NotNull] Func<CancellationToken,Task> func, bool cancelCurrent = true);
     }
 }

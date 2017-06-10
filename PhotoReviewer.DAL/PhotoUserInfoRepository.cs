@@ -11,22 +11,23 @@ namespace PhotoReviewer.DAL
     [UsedImplicitly]
     internal sealed class PhotoUserInfoRepository : IPhotoUserInfoRepository
     {
-        [NotNull] private readonly IPhotoInfoRepository<FavoritedPhoto> _favoritedPhotoRepository;
+        [NotNull]
+        private readonly IPhotoInfoRepository<FavoritedPhoto> _favoritedPhotoRepository;
 
-        [NotNull] private readonly ILog _logger;
+        [NotNull]
+        private readonly ILog _logger;
 
-        [NotNull] private readonly IPhotoInfoRepository<MarkedForDeletionPhoto> _markedForDeletionPhotoRepository;
+        [NotNull]
+        private readonly IPhotoInfoRepository<MarkedForDeletionPhoto> _markedForDeletionPhotoRepository;
 
-        public PhotoUserInfoRepository([NotNull] ILog logger,
+        public PhotoUserInfoRepository(
+            [NotNull] ILog logger,
             [NotNull] IPhotoInfoRepository<MarkedForDeletionPhoto> markedForDeletionPhotoRepository,
             [NotNull] IPhotoInfoRepository<FavoritedPhoto> favoritedPhotoRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _markedForDeletionPhotoRepository = markedForDeletionPhotoRepository ??
-                                                throw new ArgumentNullException(
-                                                    nameof(markedForDeletionPhotoRepository));
-            _favoritedPhotoRepository = favoritedPhotoRepository ??
-                                        throw new ArgumentNullException(nameof(favoritedPhotoRepository));
+            _markedForDeletionPhotoRepository = markedForDeletionPhotoRepository ?? throw new ArgumentNullException(nameof(markedForDeletionPhotoRepository));
+            _favoritedPhotoRepository = favoritedPhotoRepository ?? throw new ArgumentNullException(nameof(favoritedPhotoRepository));
         }
 
         public PhotoUserInfo Check(string filePath)
@@ -97,8 +98,7 @@ namespace PhotoReviewer.DAL
             if (filePaths == null)
                 throw new ArgumentNullException(nameof(filePaths));
 
-            _markedForDeletionPhotoRepository.Save(
-                filePaths.Select(filePath => new MarkedForDeletionPhoto {Id = filePath}));
+            _markedForDeletionPhotoRepository.Save(filePaths.Select(filePath => new MarkedForDeletionPhoto {Id = filePath}));
             _favoritedPhotoRepository.Delete(filePaths);
         }
 

@@ -135,4 +135,13 @@
   <data name="Error" xml:space="preserve">
     <value>Application error</value>
   </data>
+  <data name="NoMetadata" xml:space="preserve">
+    <value>Metadata is not specified. Cannot perform operation</value>
+  </data>
+  <data name="DateShiftFailed" xml:space="preserve">
+    <value>Date shift failed. Please see logs for details</value>
+  </data>
+  <data name="RotationFailed" xml:space="preserve">
+    <value>Rotation failed. Please see logs for details</value>
+  </data>
 </root>

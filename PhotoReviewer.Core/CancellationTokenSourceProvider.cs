@@ -7,52 +7,58 @@ using PhotoReviewer.Resources;
 
 namespace PhotoReviewer.Core
 {
+    [UsedImplicitly]
     internal sealed class CancellationTokenSourceProvider : IDisposable, ICancellationTokenSourceProvider
     {
         [NotNull]
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        [NotNull] private readonly IMessenger _messenger;
-        public void Dispose()
-        {
-            _cancellationTokenSource.Dispose();
-        }
+        private readonly IMessenger _messenger;
 
-        public Task CurrentTask { get; private set; } = Task.CompletedTask;
+        [NotNull]
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         public CancellationTokenSourceProvider([NotNull] IMessenger messenger)
         {
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
         }
 
+        public Task CurrentTask { get; private set; } = Task.CompletedTask;
+
         public CancellationToken Token => _cancellationTokenSource.Token;
 
-        public async Task StartNewTask(Action<CancellationToken> action, bool cancelCurrent,
-            bool runInCurrentSyncContext)
+        public async Task StartNewTask(Action<CancellationToken> action, bool cancelCurrent)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+            await ExecuteAsyncOperation(token => Task.Run(() => action(token), token));
+        }
+
+        public async Task ExecuteAsyncOperation(Func<CancellationToken, Task> func, bool cancelCurrent = true)
+        {
+            if (func == null)
+                throw new ArgumentNullException(nameof(func));
+
             if (!cancelCurrent && !CurrentTask.IsCompleted)
             {
                 _messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
                 return;
             }
+
             var newCts = new CancellationTokenSource();
             var oldCts = Interlocked.Exchange(ref _cancellationTokenSource, newCts);
             oldCts?.Cancel();
             var token = newCts.Token;
-            CurrentTask = Task.Factory.StartNew(
-                () => action(token),
-                token,
-                TaskCreationOptions.None,
-                runInCurrentSyncContext
-                    ? TaskScheduler.FromCurrentSynchronizationContext()
-                    : TaskScheduler.Default);
+            CurrentTask = func(token);
             await CurrentTask;
         }
-
 
         public void Cancel()
         {
             _cancellationTokenSource.Cancel();
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource.Dispose();
         }
     }
 }

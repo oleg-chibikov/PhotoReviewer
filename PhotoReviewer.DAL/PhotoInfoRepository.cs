@@ -11,11 +11,11 @@ using Scar.Common.DAL.LiteDB;
 namespace PhotoReviewer.DAL
 {
     [UsedImplicitly]
-    internal sealed class PhotoInfoRepository<TPhotoInfo> : LiteDbRepository<TPhotoInfo, string>,
-        IPhotoInfoRepository<TPhotoInfo>
+    internal sealed class PhotoInfoRepository<TPhotoInfo> : LiteDbRepository<TPhotoInfo, string>, IPhotoInfoRepository<TPhotoInfo>
         where TPhotoInfo : IPhotoInfo, new()
     {
-        public PhotoInfoRepository([NotNull] ILog logger) : base(logger)
+        public PhotoInfoRepository([NotNull] ILog logger)
+            : base(logger)
         {
             Task.Run(() => CleanNonExisting());
         }

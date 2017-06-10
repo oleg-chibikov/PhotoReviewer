@@ -71,11 +71,11 @@
     <Reference Include="Scar.Common.WPF.Controls.TimePicker, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.Controls.TimePicker.1.0.14\lib\net462\Scar.Common.WPF.Controls.TimePicker.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Controls.ZoomBorder, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.Controls.ZoomBorder.1.0.4\lib\net462\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Controls.ZoomBorder, Version=1.0.10.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Controls.ZoomBorder.1.0.10\lib\net462\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Converters, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.Converters.1.0.3\lib\net462\Scar.Common.WPF.Converters.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.Converters, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Converters.1.0.5\lib\net462\Scar.Common.WPF.Converters.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.View, Version=1.0.13.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.View.1.0.13\lib\net462\Scar.Common.WPF.View.dll</HintPath>
