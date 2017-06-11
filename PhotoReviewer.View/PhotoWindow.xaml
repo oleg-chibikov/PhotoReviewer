@@ -13,7 +13,7 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:command="http://www.galasoft.ch/mvvmlight"
     xmlns:view="clr-namespace:PhotoReviewer.View"
-    Title="{Binding Path=Photo.DisplayedInfo,StringFormat=Photo Reviewer - {0}}"
+    Title="{Binding Path=Photo.DisplayedInfo, Mode=OneWay, StringFormat=Photo Reviewer - {0}}"
     Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
     WindowStartupLocation="Manual"
     Background="#222"
@@ -49,14 +49,14 @@
                 x:Key="ColorByDeleted">
                 <Style.Triggers>
                     <DataTrigger
-                        Binding="{Binding Path=Photo.MarkedForDeletion}"
+                        Binding="{Binding Path=Photo.MarkedForDeletion, Mode=OneWay}"
                         Value="True">
                         <Setter
                             Property="Background"
                             Value="OrangeRed" />
                     </DataTrigger>
                     <DataTrigger
-                        Binding="{Binding Path=Photo.Favorited}"
+                        Binding="{Binding Path=Photo.Favorited, Mode=OneWay}"
                         Value="True">
                         <Setter
                             Property="Background"
@@ -99,63 +99,63 @@
         <KeyBinding
             Key="R"
             Modifiers="Control"
-            Command="{Binding RenameToDateCommand}" />
+            Command="{Binding RenameToDateCommand, Mode=OneTime}" />
         <KeyBinding
             Key="F"
-            Command="{Binding FavoriteCommand}" />
+            Command="{Binding FavoriteCommand, Mode=OneTime}" />
         <KeyBinding
             Key="Back"
-            Command="{Binding MarkForDeletionCommand}" />
+            Command="{Binding MarkForDeletionCommand, Mode=OneTime}" />
         <KeyBinding
             Key="Delete"
-            Command="{Binding MarkForDeletionCommand}" />
+            Command="{Binding MarkForDeletionCommand, Mode=OneTime}" />
         <KeyBinding
             Key="Right"
-            Command="{Binding ChangePhotoCommand}"
+            Command="{Binding ChangePhotoCommand, Mode=OneTime}"
             CommandParameter="{x:Static viewModel:ChangeType.Next}" />
         <KeyBinding
             Key="Left"
-            Command="{Binding ChangePhotoCommand}"
+            Command="{Binding ChangePhotoCommand, Mode=OneTime}"
             CommandParameter="{x:Static viewModel:ChangeType.Prev}" />
     </commonView:BaseWindow.InputBindings>
     <i:Interaction.Triggers>
         <i:EventTrigger
             EventName="MouseUp">
             <command:EventToCommand
-                Command="{Binding ChangePhotoCommand}"
+                Command="{Binding ChangePhotoCommand, Mode=OneTime}"
                 EventArgsConverter="{StaticResource MouseButtonEventArgsToPhotoActionConverter}"
                 PassEventArgsToCommand="True" />
         </i:EventTrigger>
         <i:EventTrigger
             EventName="Closing">
             <command:EventToCommand
-                Command="{Binding WindowClosingCommand}" />
+                Command="{Binding WindowClosingCommand, Mode=OneTime}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <commonView:BaseWindow.ContextMenu>
         <ContextMenu>
             <MenuItem
                 Header="Favorite (F)"
-                Command="{Binding FavoriteCommand}" />
+                Command="{Binding FavoriteCommand, Mode=OneTime}" />
             <MenuItem
                 Header="Mark as deleted (Delete|Backspace)"
-                Command="{Binding MarkForDeletionCommand}" />
+                Command="{Binding MarkForDeletionCommand, Mode=OneTime}" />
             <MenuItem
-                IsEnabled="{Binding Photo.DateImageTakenIsSpecified}"
+                IsEnabled="{Binding Photo.DateImageTakenIsSpecified, Mode=OneWay}"
                 Header="Rename to date (Ctrl+R)"
-                Command="{Binding RenameToDateCommand}" />
+                Command="{Binding RenameToDateCommand, Mode=OneTime}" />
             <MenuItem
                 Header="Open in Explorer"
-                Command="{Binding OpenPhotoInExplorerCommand}" />
+                Command="{Binding OpenPhotoInExplorerCommand, Mode=OneTime}" />
             <MenuItem
-                IsEnabled="{Binding Photo.OrientationIsSpecified}"
+                IsEnabled="{Binding Photo.OrientationIsSpecified, Mode=OneWay}"
                 Header="Rotate clockwise"
-                Command="{Binding RotateCommand}"
+                Command="{Binding RotateCommand, Mode=OneTime}"
                 CommandParameter="{x:Static data:RotationType.Clockwise}" />
             <MenuItem
-                IsEnabled="{Binding Photo.OrientationIsSpecified}"
+                IsEnabled="{Binding Photo.OrientationIsSpecified, Mode=OneWay}"
                 Header="Rotate counter clockwise"
-                Command="{Binding RotateCommand}"
+                Command="{Binding RotateCommand, Mode=OneTime}"
                 CommandParameter="{x:Static data:RotationType.CounterClockwise}" />
         </ContextMenu>
     </commonView:BaseWindow.ContextMenu>
@@ -172,7 +172,7 @@
                 ToolTip="Previous photo"
                 Canvas.Top="-19"
                 Canvas.Left="0"
-                Command="{Binding ChangePhotoCommand}"
+                Command="{Binding ChangePhotoCommand, Mode=OneTime}"
                 CommandParameter="{x:Static viewModel:ChangeType.Prev}">
                 <materialDesign:PackIcon
                     Kind="ChevronLeft" />
@@ -181,7 +181,7 @@
                 ToolTip="Next photo"
                 Canvas.Top="-19"
                 Canvas.Right="0"
-                Command="{Binding ChangePhotoCommand}"
+                Command="{Binding ChangePhotoCommand, Mode=OneTime}"
                 CommandParameter="{x:Static viewModel:ChangeType.Next}">
                 <materialDesign:PackIcon
                     Kind="ChevronRight" />
@@ -197,28 +197,24 @@
                 Canvas.Top="0"
                 Canvas.Left="0">
                 <TextBlock
-                    Text="{Binding Path=Photo.Name}" />
+                    Text="{Binding Path=Photo.Name, Mode=OneWay}" />
                 <TextBlock
-                    Text="{Binding Path=Photo.Metadata.CameraModel}" />
+                    Text="{Binding Path=Photo.Metadata.CameraModel, Mode=OneWay}" />
                 <TextBlock
-                    Text="{Binding Path=Photo.PositionInCollection}" />
+                    Text="{Binding Path=Photo.PositionInCollection, Mode=OneWay}" />
                 <StackPanel.Style>
                     <Style
                         TargetType="{x:Type StackPanel}">
+                        <Setter
+                            Property="Visibility"
+                            Value="Visible" />
                         <Style.Triggers>
                             <DataTrigger
-                                Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                Binding="{Binding WindowState, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                 Value="Normal">
                                 <Setter
                                     Property="Visibility"
                                     Value="Hidden" />
-                            </DataTrigger>
-                            <DataTrigger
-                                Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                Value="Maximized">
-                                <Setter
-                                    Property="Visibility"
-                                    Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -228,8 +224,8 @@
                 Canvas.Top="0"
                 Canvas.Right="0"
                 ToolTip="Toggle full height"
-                Command="{Binding ToggleFullHeightCommand}"
-                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type viewContracts:IPhotoWindow}}}">
+                Command="{Binding ToggleFullHeightCommand, Mode=OneTime}"
+                CommandParameter="{Binding Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type viewContracts:IPhotoWindow}}}">
                 <materialDesign:PackIcon>
                     <materialDesign:PackIcon.Style>
                         <Style
@@ -237,7 +233,7 @@
                             BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}">
                             <Style.Triggers>
                                 <DataTrigger
-                                    Binding="{Binding IsFullHeight, RelativeSource={RelativeSource AncestorType={x:Type viewContracts:IPhotoWindow}}}"
+                                    Binding="{Binding IsFullHeight, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type viewContracts:IPhotoWindow}}}"
                                     Value="False">
                                     <Setter
                                         Property="Kind"
@@ -273,17 +269,17 @@
                     </Style>
                 </StackPanel.Resources>
                 <Button
-                    Visibility="{Binding Photo.OrientationIsSpecified, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Visibility="{Binding Photo.OrientationIsSpecified, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                     ToolTip="Rotate clockwise"
-                    Command="{Binding RotateCommand}"
+                    Command="{Binding RotateCommand, Mode=OneTime}"
                     CommandParameter="{x:Static data:RotationType.Clockwise}">
                     <materialDesign:PackIcon
                         Kind="RotateRight" />
                 </Button>
                 <Button
-                    Visibility="{Binding Photo.OrientationIsSpecified, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Visibility="{Binding Photo.OrientationIsSpecified, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                     ToolTip="Rotate counter clockwise"
-                    Command="{Binding RotateCommand}"
+                    Command="{Binding RotateCommand, Mode=OneTime}"
                     CommandParameter="{x:Static data:RotationType.CounterClockwise}">
                     <materialDesign:PackIcon
                         Kind="RotateLeft" />
@@ -307,8 +303,8 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
                 <Image
-                    Tag="{Binding Photo, NotifyOnTargetUpdated=True}"
-                    Source="{Binding BitmapSource}"
+                    Tag="{Binding Photo, Mode=OneWay, NotifyOnTargetUpdated=True}"
+                    Source="{Binding BitmapSource, Mode=OneWay}"
                     TargetUpdated="Image_TargetUpdated">
                     <Image.Triggers>
                         <EventTrigger

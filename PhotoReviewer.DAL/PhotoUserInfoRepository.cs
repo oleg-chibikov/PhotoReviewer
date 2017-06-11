@@ -54,7 +54,7 @@ namespace PhotoReviewer.DAL
 
         public void Delete(string filePath)
         {
-            _logger.Debug($"Checking {filePath}...");
+            _logger.Trace($"Checking {filePath}...");
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 

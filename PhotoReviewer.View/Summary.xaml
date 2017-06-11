@@ -14,15 +14,15 @@
         Orientation="Horizontal">
         <TextBlock>Total:</TextBlock>
         <TextBlock
-            Text="{Binding Path=PhotoCollection.Count}" />
+            Text="{Binding PhotoCollection.Count, Mode=OneWay}" />
         <TextBlock>Selected:</TextBlock>
         <TextBlock
-            Text="{Binding Path=SelectedCount}" />
+            Text="{Binding SelectedCount, Mode=OneWay}" />
         <TextBlock>Marked for deletion:</TextBlock>
         <TextBlock
-            Text="{Binding Path=PhotoCollection.MarkedForDeletionCount}" />
+            Text="{Binding PhotoCollection.MarkedForDeletionCount, Mode=OneWay}" />
         <TextBlock>Favorited:</TextBlock>
         <TextBlock
-            Text="{Binding Path=PhotoCollection.FavoritedCount}" />
+            Text="{Binding PhotoCollection.FavoritedCount, Mode=OneWay}" />
     </StackPanel>
 </UserControl>

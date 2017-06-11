@@ -117,7 +117,7 @@ namespace PhotoReviewer.ViewModel
             if (newPhoto == null)
                 return;
 
-            await _cancellationTokenSourceProvider.StartNewTask(token => LoadPhotoInternal(token, newPhoto));
+            await _cancellationTokenSourceProvider.StartNewTask(token => LoadPhotoInternal(token, newPhoto)).ConfigureAwait(false);
         }
 
         private async void LoadPhotoInternal(CancellationToken token, [NotNull] Photo photo)
@@ -130,11 +130,11 @@ namespace PhotoReviewer.ViewModel
             var orientation = photo.Metadata.Orientation;
             try
             {
-                var bytes = await filePath.ReadFileAsync(token);
+                var bytes = await filePath.ReadFileAsync(token).ConfigureAwait(false);
                 //Firstly load and display low quality image
-                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation, previewWidth);
+                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation, previewWidth).ConfigureAwait(false);
                 //Then load full image
-                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation);
+                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -168,8 +168,8 @@ namespace PhotoReviewer.ViewModel
                         var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FilePath, false, token);
                         LoadPhotoInternal(token, Photo);
                         Photo.ReloadMetadata();
-                        Photo.SetThumbnailAsync(token);
-                        await task;
+                        Photo.LoadThumbnailAsync(token);
+                        await task.ConfigureAwait(false);
                         _logger.Info($"{Photo} is rotated {rotationType}");
                     }
                     catch (OperationCanceledException)

@@ -24,7 +24,7 @@
         <i:EventTrigger
             EventName="Closing">
             <i:InvokeCommandAction
-                Command="{Binding WindowClosingCommand}" />
+                Command="{Binding WindowClosingCommand, Mode=OneTime}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <commonView:BaseWindow.Resources>
@@ -40,17 +40,17 @@
 
     <commonView:BaseWindow.TaskbarItemInfo>
         <TaskbarItemInfo
-            ProgressState="{Binding ProgressState}"
-            Description="{Binding ProgressDescription}"
-            ProgressValue="{Binding Progress, Converter={StaticResource PercentageIntToDoubleConverter}}" />
+            ProgressState="{Binding ProgressState, Mode=OneWay}"
+            Description="{Binding ProgressDescription, Mode=OneWay}"
+            ProgressValue="{Binding Progress, Mode=OneWay, Converter={StaticResource PercentageIntToDoubleConverter}}" />
     </commonView:BaseWindow.TaskbarItemInfo>
 
     <!-- Master Container -->
     <materialDesign:DialogHost
-        IsOpen="{Binding ShiftDateViewModel.IsShiftDateDialogOpen}">
+        IsOpen="{Binding ShiftDateViewModel.IsShiftDateDialogOpen, Mode=OneWay}">
         <materialDesign:DialogHost.DialogContent>
             <view:ShiftDateDialog
-                DataContext="{Binding ShiftDateViewModel}" />
+                DataContext="{Binding ShiftDateViewModel, Mode=OneTime}" />
         </materialDesign:DialogHost.DialogContent>
         <Grid
             Margin="10">
@@ -111,11 +111,11 @@
                 <!-- Metadata Panel -->
                 <view:MainControls
                     DockPanel.Dock="Bottom"
-                    DataContext="{Binding}" />
+                    DataContext="{Binding Mode=OneTime}" />
                 <view:Metadata
                     Margin="0,0,0,10"
                     DockPanel.Dock="Top"
-                    DataContext="{Binding PhotoCollection.FilteredView}" />
+                    DataContext="{Binding PhotoCollection.FilteredView, Mode=OneTime}" />
             </DockPanel>
 
         </Grid>

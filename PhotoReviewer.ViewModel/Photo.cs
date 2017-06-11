@@ -1,11 +1,12 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Common.Logging;
 using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
-using Microsoft.VisualBasic.FileIO;
+using PhotoReviewer.Contracts.DAL;
 using PhotoReviewer.Contracts.ViewModel;
 using PhotoReviewer.Resources;
 using PropertyChanged;
@@ -18,6 +19,8 @@ namespace PhotoReviewer.ViewModel
     [ImplementPropertyChanged]
     public sealed class Photo : IPhoto
     {
+        private static readonly ExifMetadata EmptyMetadataForInit = new ExifMetadata();
+
         [NotNull]
         private readonly PhotoCollection _collection;
 
@@ -33,26 +36,26 @@ namespace PhotoReviewer.ViewModel
         private int? _index;
 
         public Photo(
-            [NotNull] PhotoDetails photoDetails,
+            [NotNull] string filePath,
             [NotNull] PhotoCollection collection,
-            CancellationToken cancellationToken,
             [NotNull] ILog logger,
             [NotNull] IMessenger messenger,
-            [NotNull] IImageRetriever imageRetriever)
+            [NotNull] IImageRetriever imageRetriever,
+            [NotNull] IPhotoUserInfoRepository photoUserInfoRepository)
         {
-            if (photoDetails == null)
-                throw new ArgumentNullException(nameof(photoDetails));
-
+            if (photoUserInfoRepository == null)
+                throw new ArgumentNullException(nameof(photoUserInfoRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
             _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
             _collection = collection ?? throw new ArgumentNullException(nameof(collection));
-            FilePath = photoDetails.FilePath;
-            Name = Path.GetFileNameWithoutExtension(FilePath);
-            MarkedForDeletion = photoDetails.MarkedForDeletion;
-            Favorited = photoDetails.Favorited;
-            Metadata = photoDetails.Metadata;
-            SetThumbnailAsync(cancellationToken);
+            FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+            //TODO: instead of Checking every photo against DB - get all info to inmemory and then work
+            var photoUserInfo = photoUserInfoRepository.Check(filePath);
+            Favorited = photoUserInfo.Favorited;
+            MarkedForDeletion = photoUserInfo.MarkedForDeletion;
+            //Set name only - filepath is not changed
+            SetFilePathAndName(filePath);
         }
 
         [DependsOn(nameof(Metadata))]
@@ -62,10 +65,12 @@ namespace PhotoReviewer.ViewModel
         public bool DateImageTakenIsSpecified => Metadata.DateImageTaken != null;
 
         public bool LastOperationFailed { get; set; }
+
         public bool LastOperationFinished { get; set; }
 
+        //TODO: Configureawait false everywhere in libs
         [NotNull]
-        public ExifMetadata Metadata { get; set; }
+        public ExifMetadata Metadata { get; set; } = EmptyMetadataForInit;
 
         [NotNull]
         public string PositionInCollection { get; private set; } = "Not set";
@@ -115,22 +120,23 @@ namespace PhotoReviewer.ViewModel
             PositionInCollection = $"{Index + 1} of {_collection.FilteredView.Count}";
         }
 
-        public void CopyFileIfFavorited()
+        public async Task LoadThumbnailAsync(CancellationToken cancellationToken)
         {
-            if (!_favorited || !File.Exists(FilePath))
-                return;
-
-            var favoritedFilePath = PhotoDetails.GetFavoritedFilePath(FilePath);
-            if (!File.Exists(favoritedFilePath))
-                File.Copy(FilePath, favoritedFilePath);
-        }
-
-        public void DeleteFileIfMarked()
-        {
-            if (!_markedForDeletion || !File.Exists(FilePath))
-                return;
-
-            FileSystem.DeleteFile(FilePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+            try
+            {
+                var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FilePath, cancellationToken).ConfigureAwait(false);
+                if (thumbnailBytes != null)
+                    Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                var message = $"Cannot load thumbnail for {this}";
+                _logger.Warn(message, ex);
+                _messenger.Send(message, MessengerTokens.UserErrorToken);
+            }
         }
 
         public void MarkAsNotSynced()
@@ -145,25 +151,6 @@ namespace PhotoReviewer.ViewModel
             // ReSharper disable once AssignNullToNotNullAttribute
             Metadata = null;
             Metadata = metadata;
-        }
-
-        public async void SetThumbnailAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FilePath, cancellationToken);
-                if (thumbnailBytes != null)
-                    Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                var message = $"Cannot load thumbnail for {FilePath}";
-                _logger.Warn(message, ex);
-                _messenger.Send(message, MessengerTokens.UserErrorToken);
-            }
         }
 
         public override string ToString()
@@ -203,14 +190,15 @@ namespace PhotoReviewer.ViewModel
         }
 
         [NotNull]
-        public string Name { get; set; }
+        public string Name { get; private set; } = string.Empty;
 
         [NotNull]
         public string FilePath { get; set; }
 
         public void SetFilePathAndName([NotNull] string filePath)
         {
-            FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+            if (FilePath != filePath)
+                FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
             Name = Path.GetFileNameWithoutExtension(filePath);
         }
 

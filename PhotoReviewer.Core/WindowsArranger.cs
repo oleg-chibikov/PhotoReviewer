@@ -64,7 +64,7 @@ namespace PhotoReviewer.Core
                     if (photoWindow.Photo != photo)
                         continue;
 
-                    _logger.Debug($"Closing view for {photoWindow.Photo}...");
+                    _logger.Trace($"Closing view for {photoWindow.Photo}...");
                     photoWindow.Close();
                     i--;
                 }
@@ -75,7 +75,7 @@ namespace PhotoReviewer.Core
         {
             lock (_lockObject)
             {
-                _logger.Debug("Closing all views...");
+                _logger.Trace("Closing all views...");
                 for (var i = 0; i < PhotoWindows.Count; i++)
                 {
                     PhotoWindows[i].Close();
@@ -115,7 +115,7 @@ namespace PhotoReviewer.Core
 
         private void ArrangeWindows(bool defaultHeight = false)
         {
-            _logger.Debug("Arranging windows...");
+            _logger.Trace("Arranging windows...");
             var mainWindow = _mainWindowFactory.GetWindow();
             if (PhotoWindows.Any())
             {
@@ -139,7 +139,7 @@ namespace PhotoReviewer.Core
                     firstPhotoHeight = firstPhoto.Height;
                     mainWindowHeight = activeScreenArea.Height - firstPhotoHeight + 2 * WindowBorderWidth;
                 }
-                _logger.Debug($"Arranging as {mainWindowHeight:##.#}:{firstPhotoHeight:##.#}...");
+                _logger.Trace($"Arranging as {mainWindowHeight:##.#}:{firstPhotoHeight:##.#}...");
 
                 mainWindow.WindowState = WindowState.Normal;
                 mainWindow.Top = activeScreenArea.Top;
@@ -171,7 +171,7 @@ namespace PhotoReviewer.Core
         {
             if (window.IsFullHeight)
             {
-                _logger.Debug("Normalizing window view...");
+                _logger.Trace("Normalizing window view...");
                 window.WindowState = WindowState.Normal;
                 window.Topmost = false;
                 window.WindowStyle = WindowStyle.SingleBorderWindow;
@@ -180,7 +180,7 @@ namespace PhotoReviewer.Core
             }
             else
             {
-                _logger.Debug("Maximizing window...");
+                _logger.Trace("Maximizing window...");
                 window.WindowState = WindowState.Maximized;
                 // hide the window before changing window style
                 window.Visibility = Visibility.Collapsed;

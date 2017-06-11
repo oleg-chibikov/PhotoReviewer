@@ -29,7 +29,8 @@ namespace PhotoReviewer.Core
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
-            await ExecuteAsyncOperation(token => Task.Run(() => action(token), token));
+
+            await ExecuteAsyncOperation(token => Task.Run(() => action(token), token)).ConfigureAwait(false);
         }
 
         public async Task ExecuteAsyncOperation(Func<CancellationToken, Task> func, bool cancelCurrent = true)
@@ -48,7 +49,7 @@ namespace PhotoReviewer.Core
             oldCts?.Cancel();
             var token = newCts.Token;
             CurrentTask = func(token);
-            await CurrentTask;
+            await CurrentTask.ConfigureAwait(false);
         }
 
         public void Cancel()

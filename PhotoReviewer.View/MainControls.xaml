@@ -33,7 +33,7 @@
                     TargetType="DockPanel">
                     <Style.Triggers>
                         <DataTrigger
-                            Binding="{Binding ProgressState}"
+                            Binding="{Binding ProgressState, Mode=OneWay}"
                             Value="Normal">
                             <DataTrigger.EnterActions>
                                 <BeginStoryboard>
@@ -63,8 +63,8 @@
                 Minimum="0"
                 Maximum="100"
                 Height="20"
-                Value="{Binding Progress}"
-                ToolTip="{Binding ProgressDescription}" />
+                Value="{Binding Progress, Mode=OneWay}"
+                ToolTip="{Binding ProgressDescription, Mode=OneWay}" />
         </DockPanel>
 
         <!-- Zoom Control -->
@@ -75,7 +75,7 @@
                 Orientation="Horizontal"
                 Minimum="80"
                 Maximum="320"
-                Value="{Binding PhotoSize}"
+                Value="{Binding PhotoSize, Mode=TwoWay}"
                 TickFrequency="80"
                 TickPlacement="BottomRight"
                 SmallChange="5"
@@ -86,8 +86,8 @@
             <!-- Visibility CheckBox -->
             <CheckBox
                 VerticalAlignment="Center"
-                Command="{Binding ShowOnlyMarkedChangedCommand}"
-                CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
+                Command="{Binding ShowOnlyMarkedChangedCommand, Mode=OneTime}"
+                CommandParameter="{Binding IsChecked, Mode=OneWay, RelativeSource={RelativeSource Self}}"
                 Content="Only marked" />
 
             <!-- Image Buttons -->
@@ -110,14 +110,14 @@
                 </UniformGrid.Resources>
 
                 <Button
-                    Command="{Binding ViewLogsCommand}"
+                    Command="{Binding ViewLogsCommand, Mode=OneTime}"
                     ToolTip="Show Logs">
                     <materialDesign:PackIcon
                         Kind="FileDocument" />
                 </Button>
 
                 <Button
-                    Command="{Binding OpenSettingsFolderCommand}"
+                    Command="{Binding OpenSettingsFolderCommand, Mode=OneTime}"
                     ToolTip="Open settings directory">
                     <materialDesign:PackIcon
                         Kind="Folder" />
@@ -127,10 +127,10 @@
 
         <!-- Copy Favorited Button -->
         <Button
-            Command="{Binding CopyFavoritedCommand}">
+            Command="{Binding CopyFavoritedCommand, Mode=OneTime}">
             <Button.Content>
                 <TextBlock
-                    Text="{Binding PhotoCollection.FavoritedCount, StringFormat='Copy favorited ({0})'}" />
+                    Text="{Binding PhotoCollection.FavoritedCount, Mode=OneWay, StringFormat='Copy favorited ({0})'}" />
             </Button.Content>
             <Button.Style>
                 <Style
@@ -141,14 +141,14 @@
                         Value="True" />
                     <Style.Triggers>
                         <DataTrigger
-                            Binding="{Binding ProgressState}"
+                            Binding="{Binding ProgressState, Mode=OneWay}"
                             Value="Normal">
                             <Setter
                                 Property="IsEnabled"
                                 Value="False" />
                         </DataTrigger>
                         <DataTrigger
-                            Binding="{Binding PhotoCollection.FavoritedCount}"
+                            Binding="{Binding PhotoCollection.FavoritedCount, Mode=OneWay}"
                             Value="0">
                             <Setter
                                 Property="IsEnabled"
@@ -161,10 +161,10 @@
 
         <!-- Delete Button -->
         <Button
-            Command="{Binding DeleteMarkedCommand}">
+            Command="{Binding DeleteMarkedCommand, Mode=OneTime}">
             <Button.Content>
                 <TextBlock
-                    Text="{Binding PhotoCollection.MarkedForDeletionCount, StringFormat='Delete marked ({0})'}" />
+                    Text="{Binding PhotoCollection.MarkedForDeletionCount, Mode=OneWay, StringFormat='Delete marked ({0})'}" />
             </Button.Content>
             <Button.Style>
                 <Style
@@ -175,14 +175,14 @@
                         Value="True" />
                     <Style.Triggers>
                         <DataTrigger
-                            Binding="{Binding ProgressState}"
+                            Binding="{Binding ProgressState, Mode=OneWay}"
                             Value="Normal">
                             <Setter
                                 Property="IsEnabled"
                                 Value="False" />
                         </DataTrigger>
                         <DataTrigger
-                            Binding="{Binding PhotoCollection.MarkedForDeletionCount}"
+                            Binding="{Binding PhotoCollection.MarkedForDeletionCount, Mode=OneWay}"
                             Value="0">
                             <Setter
                                 Property="IsEnabled"
@@ -196,8 +196,8 @@
         <!-- Open in Explorer Button -->
         <Button
             Content="Open folder in Explorer"
-            Command="{Binding OpenDirectoryInExplorerCommand}"
-            IsEnabled="{Binding CurrentDirectoryPath, Converter={StaticResource NullToBooleanConverter}}" />
+            Command="{Binding OpenDirectoryInExplorerCommand, Mode=OneTime}"
+            IsEnabled="{Binding CurrentDirectoryPath, Mode=OneWay, Converter={StaticResource NullToBooleanConverter}}" />
 
     </StackPanel>
 </UserControl>

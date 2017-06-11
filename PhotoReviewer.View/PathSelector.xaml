@@ -18,15 +18,15 @@
             VerticalAlignment="Center">
             <TextBox.InputBindings>
                 <KeyBinding
-                    Command="{Binding ChangeDirectoryPathCommand}"
-                    CommandParameter="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}"
+                    Command="{Binding ChangeDirectoryPathCommand, Mode=OneTime}"
+                    CommandParameter="{Binding Text, Mode=OneWay, RelativeSource={RelativeSource AncestorType=TextBox}}"
                     Key="Enter" />
             </TextBox.InputBindings>
         </TextBox>
         <Button
             HorizontalAlignment="Right"
             Width="80"
-            Command="{Binding BrowseDirectoryCommand}"
+            Command="{Binding BrowseDirectoryCommand, Mode=OneTime}"
             Content="Browse" />
     </DockPanel>
 </UserControl>

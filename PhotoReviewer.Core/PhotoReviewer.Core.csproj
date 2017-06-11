@@ -71,7 +71,9 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CancellationTokenSourceProvider.cs" />
+    <Compile Include="IAppendable.cs" />
     <Compile Include="ICancellationTokenSourceProvider.cs" />
+    <Compile Include="QueueAppendable.cs" />
     <Compile Include="WindowsArranger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

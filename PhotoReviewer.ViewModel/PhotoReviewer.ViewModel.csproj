@@ -118,7 +118,6 @@
     <Compile Include="MainViewModel.cs" />
     <Compile Include="Photo.cs" />
     <Compile Include="PhotoCollection.cs" />
-    <Compile Include="PhotoDetails.cs" />
     <Compile Include="PhotoViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShiftDateViewModel.cs" />

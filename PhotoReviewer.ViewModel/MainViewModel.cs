@@ -95,9 +95,11 @@ namespace PhotoReviewer.ViewModel
         public IEnumerable<Photo> SelectedPhotos { get; private set; } = new Photo[0];
 
         [NotNull]
+        [DoNotNotify]
         public PhotoCollection PhotoCollection { get; }
 
         [NotNull]
+        [DoNotNotify]
         public ShiftDateViewModel ShiftDateViewModel { get; }
 
         public void Dispose()
@@ -187,7 +189,7 @@ namespace PhotoReviewer.ViewModel
                 settings.LastUsedDirectoryPath = CurrentDirectoryPath = directoryPath;
                 _settingsRepository.Settings = settings;
             }
-            await task;
+            await task.ConfigureAwait(false);
         }
 
         #region Dependency Properties
@@ -263,7 +265,7 @@ namespace PhotoReviewer.ViewModel
 
         private void BrowseDirectory()
         {
-            _logger.Debug("Browsing directory...");
+            _logger.Trace("Browsing directory...");
             //TODO: Another dialog third party? Use OpenFileService and DI
             var dialog = new FolderBrowserDialog();
             var lastUsedPath = _settingsRepository.Settings.LastUsedDirectoryPath;
@@ -273,13 +275,13 @@ namespace PhotoReviewer.ViewModel
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            _logger.Info($"Changing directory path to {dialog.SelectedPath}...");
+            _logger.Debug($"Changing directory path to {dialog.SelectedPath}...");
             SetDirectoryPathAsync(dialog.SelectedPath);
         }
 
         private void ChangeDirectoryPath([NotNull] string directoryPath)
         {
-            _logger.Info($"Changing directory path to {directoryPath}...");
+            _logger.Debug($"Changing directory path to {directoryPath}...");
             if (directoryPath == null)
                 throw new ArgumentNullException(nameof(directoryPath));
 
@@ -295,13 +297,13 @@ namespace PhotoReviewer.ViewModel
         private async void CopyFavoritedAsync()
         {
             _logger.Info("Copying favorited photos...");
-            await PhotoCollection.CopyFavoritedAsync();
+            await PhotoCollection.CopyFavoritedAsync().ConfigureAwait(false);
         }
 
         private async void DeleteMarkedAsync()
         {
             _logger.Info("Deleting marked photos...");
-            await PhotoCollection.DeleteMarkedAsync();
+            await PhotoCollection.DeleteMarkedAsync().ConfigureAwait(false);
         }
 
         public void Favorite()
@@ -328,12 +330,12 @@ namespace PhotoReviewer.ViewModel
             if (!SelectedPhotos.Any())
                 throw new InvalidOperationException("Photos are not selected");
 
-            await PhotoCollection.RenameToDateAsync(SelectedPhotos.ToArray());
+            await PhotoCollection.RenameToDateAsync(SelectedPhotos.ToArray()).ConfigureAwait(false);
         }
 
         private void OpenPhotoInExplorer()
         {
-            _logger.Debug($"Opening selected photo ({SelectedPhoto?.FilePath}) in explorer...");
+            _logger.Trace($"Opening selected photo ({SelectedPhoto?.FilePath}) in explorer...");
             if (SelectedPhoto == null)
                 throw new InvalidOperationException("Photos are not selected");
 
@@ -342,7 +344,7 @@ namespace PhotoReviewer.ViewModel
 
         private void OpenDirectoryInExplorer()
         {
-            _logger.Debug($"Opening current directory ({CurrentDirectoryPath}) in explorer...");
+            _logger.Trace($"Opening current directory ({CurrentDirectoryPath}) in explorer...");
             if (CurrentDirectoryPath == null)
                 throw new InvalidOperationException("No directory entered");
 
@@ -351,7 +353,7 @@ namespace PhotoReviewer.ViewModel
 
         private void OpenPhoto()
         {
-            _logger.Debug($"Opening selected photo ({SelectedPhoto?.FilePath}) in a separate window...");
+            _logger.Trace($"Opening selected photo ({SelectedPhoto?.FilePath}) in a separate window...");
             if (SelectedPhoto == null)
                 throw new InvalidOperationException("Photos are not selected");
 
@@ -372,21 +374,21 @@ namespace PhotoReviewer.ViewModel
 
         private void WindowClosing()
         {
-            _logger.Debug("Performing cleanup before dependencies disposal...");
+            _logger.Trace("Performing cleanup before dependencies disposal...");
             //Need to finish current task before disposal (especially, repository)
             PhotoCollection.CancelCurrentTasks();
         }
 
         private void OpenSettingsFolder()
         {
-            _logger.Debug($"Opening setting folder ({Paths.SettingsPath})...");
+            _logger.Trace($"Opening setting folder ({Paths.SettingsPath})...");
             $@"{Paths.SettingsPath}".OpenDirectoryInExplorer();
         }
 
         private void ViewLogs()
         {
             var logsPath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\{nameof(Scar)}\{nameof(PhotoReviewer)}\Logs\Full.log";
-            _logger.Debug($"Viewing logs file ({logsPath})...");
+            _logger.Trace($"Viewing logs file ({logsPath})...");
             logsPath.OpenFile();
         }
 

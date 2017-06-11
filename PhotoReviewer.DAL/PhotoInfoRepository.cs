@@ -43,7 +43,7 @@ namespace PhotoReviewer.DAL
             var notExisting = GetAll().Where(photoInfo => !File.Exists(photoInfo.Id)).ToArray();
             if (!notExisting.Any())
             {
-                Logger.Debug("All records are up to date");
+                Logger.Trace("All records are up to date");
                 return;
             }
 

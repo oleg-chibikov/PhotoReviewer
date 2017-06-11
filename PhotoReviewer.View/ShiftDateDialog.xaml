@@ -67,12 +67,12 @@
             commonView:MarginSetter.Margin="10">
             <Button
                 IsDefault="True"
-                IsEnabled="{Binding ShiftBy, Converter={StaticResource TimeSpanNotNullConverter}}"
+                IsEnabled="{Binding ShiftBy, Mode=OneWay, Converter={StaticResource TimeSpanNotNullConverter}}"
                 Content="OK"
-                Command="{Binding ShiftDateCommand}" />
+                Command="{Binding ShiftDateCommand, Mode=OneTime}" />
             <Button
                 IsCancel="True"
-                Command="{Binding CancelShiftDateCommand}"
+                Command="{Binding CancelShiftDateCommand, Mode=OneTime}"
                 Content="Cancel" />
         </StackPanel>
     </StackPanel>

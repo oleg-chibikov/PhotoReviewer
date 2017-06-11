@@ -14,9 +14,9 @@ namespace PhotoReviewer.Core
         void Cancel();
 
         [NotNull]
-        Task StartNewTask([NotNull] Action<CancellationToken> action, bool cancelCurrent = true);
+        Task ExecuteAsyncOperation([NotNull] Func<CancellationToken, Task> func, bool cancelCurrent = true);
 
         [NotNull]
-        Task ExecuteAsyncOperation([NotNull] Func<CancellationToken,Task> func, bool cancelCurrent = true);
+        Task StartNewTask([NotNull] Action<CancellationToken> action, bool cancelCurrent = true);
     }
 }

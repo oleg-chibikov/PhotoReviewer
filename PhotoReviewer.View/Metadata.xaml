@@ -116,13 +116,13 @@
                     Name:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Name}" />
+                    Text="{Binding Name, Mode=OneWay}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     Index:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=PositionInCollection}" />
+                    Text="{Binding PositionInCollection, Mode=OneWay}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     Size:
@@ -130,11 +130,14 @@
                 <TextBlock>
                     <TextBlock.Text>
                         <MultiBinding
+                            Mode="OneWay"
                             Converter="{StaticResource PhotoSizeConverterReference}">
                             <Binding
-                                Path="Metadata.Width" />
+                                Path="Metadata.Width"
+                                Mode="OneTime" />
                             <Binding
-                                Path="Metadata.Height" />
+                                Path="Metadata.Height"
+                                Mode="OneTime" />
                         </MultiBinding>
                     </TextBlock.Text>
                 </TextBlock>
@@ -143,43 +146,43 @@
                     Date Image Taken:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Metadata.DateImageTaken, StringFormat=yyyy-MM-dd HH:mm:ss}" />
+                    Text="{Binding Metadata.DateImageTaken, Mode=OneWay, StringFormat=yyyy-MM-dd HH:mm:ss}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     Camera Model:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Metadata.CameraModel}" />
+                    Text="{Binding Metadata.CameraModel, Mode=OneWay}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     Lens Aperture:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Metadata.LensAperture, Converter={StaticResource LensApertureConverterReference}}" />
+                    Text="{Binding Metadata.LensAperture, Mode=OneWay, Converter={StaticResource LensApertureConverterReference}}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     Focal Length:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Metadata.FocalLength, Converter={StaticResource FocalLengthConverterReference}}" />
+                    Text="{Binding Metadata.FocalLength, Mode=OneWay, Converter={StaticResource FocalLengthConverterReference}}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     ISO Speed:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Metadata.IsoSpeed}" />
+                    Text="{Binding Metadata.IsoSpeed, Mode=OneWay}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     Exposure Time:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Metadata.ExposureTime, Converter={StaticResource ExposureTimeConverterReference}}" />
+                    Text="{Binding Metadata.ExposureTime, Mode=OneWay, Converter={StaticResource ExposureTimeConverterReference}}" />
                 <TextBlock
                     Style="{StaticResource MetadataHeader}">
                     Orientation:
                 </TextBlock>
                 <TextBlock
-                    Text="{Binding Path=Metadata.Orientation}" />
+                    Text="{Binding Metadata.Orientation, Mode=OneWay}" />
             </StackPanel>
         </ScrollViewer>
     </GroupBox>

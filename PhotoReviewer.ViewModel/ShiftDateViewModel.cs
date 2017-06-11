@@ -51,7 +51,7 @@ namespace PhotoReviewer.ViewModel
 
         private void CancelShiftDate()
         {
-            _logger.Debug("Cancelling shifting date...");
+            _logger.Trace("Cancelling shifting date...");
             ShiftBy = default(TimeSpan);
             IsShiftDateDialogOpen = false;
             Plus = true;
@@ -59,7 +59,7 @@ namespace PhotoReviewer.ViewModel
 
         private void OpenShiftDateDialog()
         {
-            _logger.Debug("Showing shift date dialog for selected photos...");
+            _logger.Trace("Showing shift date dialog for selected photos...");
             if (!_mainViewModel.SelectedPhotos.Any())
                 throw new InvalidOperationException("Photos are not selected");
 
@@ -75,7 +75,7 @@ namespace PhotoReviewer.ViewModel
             if (_photos == null)
                 throw new InvalidOperationException("Photos are not set");
 
-            await _mainViewModel.PhotoCollection.ShiftDateAsync(_photos, ShiftBy, Plus, RenameToDate);
+            await _mainViewModel.PhotoCollection.ShiftDateAsync(_photos, ShiftBy, Plus, RenameToDate).ConfigureAwait(false);
         }
     }
 }

@@ -10,7 +10,7 @@
         <materialDesign:Card
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
-            ToolTip="{Binding FilePath}"
+            ToolTip="{Binding FilePath, Mode=OneWay}"
             materialDesign:ShadowAssist.ShadowDepth="Depth3"
             Margin="3"
             Padding="3">
@@ -18,7 +18,7 @@
                 <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
                 <MouseBinding
                     MouseAction="LeftDoubleClick"
-                    Command="{Binding DataContext.OpenPhotoCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                    Command="{Binding DataContext.OpenPhotoCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
             </materialDesign:Card.InputBindings>
             <Grid>
                 <Grid.RowDefinitions>
@@ -31,7 +31,7 @@
                     Grid.Row="0"
                     HorizontalAlignment="Center"
                     Foreground="Black"
-                    Text="{Binding Name}"
+                    Text="{Binding Name, Mode=OneWay}"
                     Margin="3" />
                 <Border
                     BorderThickness="1"
@@ -42,28 +42,28 @@
                         <Style>
                             <Style.Triggers>
                                 <DataTrigger
-                                    Binding="{Binding Path=MarkedForDeletion}"
+                                    Binding="{Binding Path=MarkedForDeletion, Mode=OneWay}"
                                     Value="True">
                                     <Setter
                                         Property="Border.Background"
                                         Value="OrangeRed" />
                                 </DataTrigger>
                                 <DataTrigger
-                                    Binding="{Binding Path=Favorited}"
+                                    Binding="{Binding Path=Favorited, Mode=OneWay}"
                                     Value="True">
                                     <Setter
                                         Property="Border.Background"
                                         Value="LimeGreen" />
                                 </DataTrigger>
                                 <DataTrigger
-                                    Binding="{Binding Path=LastOperationFinished}"
+                                    Binding="{Binding Path=LastOperationFinished, Mode=OneWay}"
                                     Value="True">
                                     <Setter
                                         Property="Border.Background"
                                         Value="LightSkyBlue" />
                                 </DataTrigger>
                                 <DataTrigger
-                                    Binding="{Binding Path=LastOperationFailed}"
+                                    Binding="{Binding Path=LastOperationFailed, Mode=OneWay}"
                                     Value="True">
                                     <Setter
                                         Property="Border.Background"
@@ -81,7 +81,7 @@
                         Background="#222">
                         <Image
                             Stretch="Uniform"
-                            Source="{Binding Thumbnail}" />
+                            Source="{Binding Thumbnail, Mode=OneWay}" />
                     </Border>
                 </Border>
             </Grid>

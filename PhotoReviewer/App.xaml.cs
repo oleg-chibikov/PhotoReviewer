@@ -9,7 +9,6 @@ using System.Windows.Threading;
 using Autofac;
 using Common.Logging;
 using GalaSoft.MvvmLight.Messaging;
-using GalaSoft.MvvmLight.Threading;
 using JetBrains.Annotations;
 using PhotoReviewer.Contracts.View;
 using PhotoReviewer.Core;
@@ -48,7 +47,7 @@ namespace PhotoReviewer
 
         public App()
         {
-            DispatcherHelper.Initialize();
+            //TODO:Bindings wModes explicit!
             _container = RegisterDependencies();
 
             //CultureUtilities.ChangeCulture(container.Resolve<ISettingsRepository>().Get().UiLanguage);
@@ -130,6 +129,7 @@ namespace PhotoReviewer
             builder.RegisterType<PhotoUserInfoRepository>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<WindowsArranger>().AsSelf().SingleInstance();
+            builder.RegisterType<QueueAppendable>().AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterType<CancellationTokenSourceProvider>().AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterModule<LoggingModule>();
 
