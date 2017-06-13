@@ -43,13 +43,6 @@ namespace PhotoReviewer.ViewModel
         private readonly IExifTool _exifTool;
 
         [NotNull]
-        private readonly FileSystemWatcher _imagesDirectoryWatcher = new FileSystemWatcher
-        {
-            //TODO: polling every n seconds or use queue for handlers
-            InternalBufferSize = 64 * 1024
-        };
-
-        [NotNull]
         private readonly ILifetimeScope _lifetimeScope;
 
         [NotNull]
@@ -60,6 +53,9 @@ namespace PhotoReviewer.ViewModel
 
         [NotNull]
         private readonly IMessenger _messenger;
+
+        [NotNull]
+        private readonly IDirectoryWatcher _directoryWatcher;
 
         [NotNull]
         private readonly IMetadataExtractor _metadataExtractor;
@@ -88,8 +84,10 @@ namespace PhotoReviewer.ViewModel
             [NotNull] IPhotoUserInfoRepository photoUserInfoRepository,
             [NotNull] IExifTool exifTool,
             [NotNull] ICancellationTokenSourceProvider cancellationTokenSourceProvider,
-            [NotNull] IAppendable<Func<Task>> additionalInfoLoaderQueue)
+            [NotNull] IAppendable<Func<Task>> additionalInfoLoaderQueue,
+            [NotNull] IDirectoryWatcher directoryWatcher)
         {
+            _directoryWatcher = directoryWatcher ?? throw new ArgumentNullException(nameof(directoryWatcher));
             _additionalInfoLoaderQueue = additionalInfoLoaderQueue ?? throw new ArgumentNullException(nameof(additionalInfoLoaderQueue));
             _mainOperationsCancellationTokenSourceProvider = cancellationTokenSourceProvider ?? throw new ArgumentNullException(nameof(cancellationTokenSourceProvider));
             _exifTool = exifTool ?? throw new ArgumentNullException(nameof(exifTool));
@@ -101,9 +99,10 @@ namespace PhotoReviewer.ViewModel
             CollectionChanged += PhotoCollection_CollectionChanged;
             FilteredView = (ListCollectionView) CollectionViewSource.GetDefaultView(this);
             FilteredView.CustomSort = comparer ?? throw new ArgumentNullException(nameof(comparer));
-            _imagesDirectoryWatcher.Created += ImagesDirectoryWatcher_Changed;
-            _imagesDirectoryWatcher.Deleted += ImagesDirectoryWatcher_Changed;
-            _imagesDirectoryWatcher.Renamed += ImagesDirectoryWatcher_Renamed;
+
+            _directoryWatcher.FileAdded += DirectoryWatcher_FileAdded;
+            _directoryWatcher.FileDeleted += DirectoryWatcher_FileDeleted;
+            _directoryWatcher.FileRenamed += DirectoryWatcher_FileRenamed;
 
             Action notify = () =>
             {
@@ -135,11 +134,10 @@ namespace PhotoReviewer.ViewModel
 
         public void Dispose()
         {
+            _directoryWatcher.FileAdded -= DirectoryWatcher_FileAdded;
+            _directoryWatcher.FileDeleted -= DirectoryWatcher_FileDeleted;
+            _directoryWatcher.FileRenamed -= DirectoryWatcher_FileRenamed;
             CancelCurrentTasks();
-            _imagesDirectoryWatcher.Dispose();
-            _imagesDirectoryWatcher.Created -= ImagesDirectoryWatcher_Changed;
-            _imagesDirectoryWatcher.Deleted -= ImagesDirectoryWatcher_Changed;
-            _imagesDirectoryWatcher.Renamed -= ImagesDirectoryWatcher_Renamed;
         }
 
         public event EventHandler<EventArgs> PhotoNotification;
@@ -155,9 +153,8 @@ namespace PhotoReviewer.ViewModel
                 throw new ArgumentNullException(nameof(directoryPath));
 
             _logger.Info($"Changing directory path to '{directoryPath}'...");
-            SupressFileSystemEvents();
-            _imagesDirectoryWatcher.Path = directoryPath;
-            RestoreFileSystemEvents();
+
+            _directoryWatcher.SetDirectoryPath(directoryPath);
 
             if (string.IsNullOrWhiteSpace(directoryPath))
             {
@@ -202,7 +199,9 @@ namespace PhotoReviewer.ViewModel
                                 EnqueueLoadAdditionalInfoTask(photos, blockIndex, token);
                                 OnProgress(blockIndex, blocksCount);
                                 //Little delay to prevent freezing of UI thread
+                                // ReSharper disable MethodSupportsCancellation - no cancellation is needed for this small delay because we need expensive try catch in that case
                                 Task.Delay(10).Wait();
+                                // ReSharper restore MethodSupportsCancellation
                                 return true;
                             });
                         GC.Collect();
@@ -226,7 +225,7 @@ namespace PhotoReviewer.ViewModel
                     async token =>
                     {
                         //TODO: Mark photos as failed/processed until new operation
-                        SupressFileSystemEvents();
+                        var notificationSupresser = _directoryWatcher.SupressNotification();
                         AddTempPostfix(photos);
                         try
                         {
@@ -278,7 +277,7 @@ namespace PhotoReviewer.ViewModel
                         finally
                         {
                             FinalizeDateShift(photos, shiftBy, plus);
-                            RestoreFileSystemEvents();
+                            notificationSupresser.Dispose();
                         }
                     })
                 .ConfigureAwait(false);
@@ -299,31 +298,32 @@ namespace PhotoReviewer.ViewModel
                         var i = 0;
                         var totalCount = photos.Length;
                         _logger.Trace($"There are {totalCount} files in this directory");
-                        SupressFileSystemEvents();
-                        photos.RunByBlocks(
-                            MaxBlockSize,
-                            (block, blocksCount) =>
-                            {
-                                if (token.IsCancellationRequested)
-                                    return false;
+                        using (_directoryWatcher.SupressNotification())
+                        {
+                            photos.RunByBlocks(
+                                MaxBlockSize,
+                                (block, blocksCount) =>
+                                {
+                                    if (token.IsCancellationRequested)
+                                        return false;
 
-                                _logger.Trace($"Processing block {i++} ({block.Length} files)...");
+                                    _logger.Trace($"Processing block {i++} ({block.Length} files)...");
 
-                                _syncContext.Send(
-                                    t =>
-                                    {
-                                        foreach (var photo in block)
-                                            RenamePhotoToDate(photo);
-                                    },
-                                    null);
+                                    _syncContext.Send(
+                                        t =>
+                                        {
+                                            foreach (var photo in block)
+                                                RenamePhotoToDate(photo);
+                                        },
+                                        null);
 
-                                OnProgress(i, blocksCount);
+                                    OnProgress(i, blocksCount);
 
-                                return true;
-                            });
+                                    return true;
+                                });
 
-                        _refreshViewDebounced();
-                        RestoreFileSystemEvents();
+                            _refreshViewDebounced();
+                        }
                     })
                 .ConfigureAwait(false);
         }
@@ -452,20 +452,26 @@ namespace PhotoReviewer.ViewModel
 
         #region WatcherHandlers
 
-        private async void OnFileAddedAsync([NotNull] string filePath)
+        private async void DirectoryWatcher_FileAdded(object sender, [NotNull] EventArgs<string> e)
         {
+            if (e == null)
+                throw new ArgumentNullException(nameof(e));
+            var filePath = e.Parameter;
             await _mainOperationsCancellationTokenSourceProvider.CurrentTask.ConfigureAwait(false);
             var photo = _lifetimeScope.Resolve<Photo>(
                 new TypedParameter(typeof(string), filePath),
                 new TypedParameter(typeof(PhotoCollection), this),
                 new TypedParameter(typeof(CancellationToken), CancellationToken.None));
             _syncContext.Send(x => Add(photo), null);
-            //TODO: load all other info async
             _refreshViewDebounced();
+            await LoadAdditionalInfoForPhotoAsync(photo, CancellationToken.None);
         }
 
-        private async void OnFileDeletedAsync([NotNull] string filePath)
+        private async void DirectoryWatcher_FileDeleted(object sender, [NotNull] EventArgs<string> e)
         {
+            if (e == null)
+                throw new ArgumentNullException(nameof(e));
+            var filePath = e.Parameter;
             await _mainOperationsCancellationTokenSourceProvider.CurrentTask.ConfigureAwait(false);
             _photoUserInfoRepository.Delete(filePath);
             var photo = this.SingleOrDefault(x => x.FilePath == filePath);
@@ -479,8 +485,12 @@ namespace PhotoReviewer.ViewModel
                 FavoritedCount--;
         }
 
-        private async void OnFileRenamedAsync([NotNull] string oldFilePath, [NotNull] string newFilePath)
+        private async void DirectoryWatcher_FileRenamed(object sender, [NotNull] EventArgs<Tuple<string,string>> e)
         {
+            if (e == null)
+                throw new ArgumentNullException(nameof(e));
+            var oldFilePath = e.Parameter.Item1;
+            var newFilePath = e.Parameter.Item2;
             await _mainOperationsCancellationTokenSourceProvider.CurrentTask.ConfigureAwait(false);
             var photo = this.SingleOrDefault(x => x.FilePath == oldFilePath);
             if (photo == null)
@@ -624,37 +634,6 @@ namespace PhotoReviewer.ViewModel
             _notifyOpenPhotosDebounced();
         }
 
-        private static bool IsImage(string filePath)
-        {
-            var extenstion = Path.GetExtension(filePath);
-            return extenstion != null && Constants.FileExtensions.Contains(extenstion, StringComparer.InvariantCultureIgnoreCase);
-        }
-
-        private void ImagesDirectoryWatcher_Changed([NotNull] object sender, [NotNull] FileSystemEventArgs fileSystemEventArgs)
-        {
-            var filePath = fileSystemEventArgs.FullPath;
-            if (!IsImage(filePath))
-                return;
-
-            switch (fileSystemEventArgs.ChangeType)
-            {
-                case WatcherChangeTypes.Deleted:
-                    OnFileDeletedAsync(filePath);
-                    break;
-                case WatcherChangeTypes.Created:
-                    OnFileAddedAsync(filePath);
-                    break;
-            }
-        }
-
-        private void ImagesDirectoryWatcher_Renamed([NotNull] object sender, [NotNull] RenamedEventArgs renamedEventArgs)
-        {
-            if (!IsImage(renamedEventArgs.FullPath))
-                return;
-
-            OnFileRenamedAsync(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath);
-        }
-
         private void FinalizeDateShift([NotNull] Photo[] photos, TimeSpan shiftBy, bool plus)
         {
             _logger.Trace("Finalizing date shift result...");
@@ -686,18 +665,6 @@ namespace PhotoReviewer.ViewModel
             }
             photo.Metadata = _metadataExtractor.Extract(filePath);
             await photo.LoadThumbnailAsync(token).ConfigureAwait(false);
-        }
-
-        private void SupressFileSystemEvents()
-        {
-            _logger.Trace("Supressing file system events...");
-            _imagesDirectoryWatcher.EnableRaisingEvents = false;
-        }
-
-        private void RestoreFileSystemEvents()
-        {
-            _logger.Trace("Restoring file system events...");
-            _imagesDirectoryWatcher.EnableRaisingEvents = true;
         }
 
         private static void ShiftDateInMetadata(TimeSpan shiftBy, bool plus, [NotNull] Photo photo)

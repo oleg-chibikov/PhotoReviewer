@@ -121,6 +121,7 @@ namespace PhotoReviewer
             builder.RegisterType<ImageRetriever>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ProcessUtility>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ExifTool>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<ImagesDirectoryWatcher>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<Messenger>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<PhotoInfoRepository<FavoritedPhoto>>().AsImplementedInterfaces().SingleInstance();

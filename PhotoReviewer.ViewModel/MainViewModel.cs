@@ -26,13 +26,7 @@ namespace PhotoReviewer.ViewModel
 {
     //TODO: More logs
     //TODO: Localization
-    //TODO: Manual rotate
-    //TODO: Auto Rotate
-    //TODO: Incorrect toggle fullheight when 1 image and almos full height
     //TODO: Detect photo change
-    //TODO: Move directory watcher to separate class
-    //TODO: Incorrect multiple photos selection when over one screen
-    //TODO: Disable context menu items while performing an operation
     //TODO: Change Path can only cancel another same operation
 
     [ImplementPropertyChanged]
