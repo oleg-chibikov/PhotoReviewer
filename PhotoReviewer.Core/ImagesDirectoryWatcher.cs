@@ -14,6 +14,8 @@ namespace PhotoReviewer.Core
     {
         [NotNull]
         private readonly ILog _logger;
+        //TODO: IsImage needs to be moved as an abstract
+        //TODO: Library (IO)
 
         public ImagesDirectoryWatcher([NotNull] ILog logger)
         {

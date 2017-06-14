@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using Autofac;
 using Common.Logging;
+using Common.Multithreading;
 using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
@@ -179,15 +180,13 @@ namespace PhotoReviewer.ViewModel
                     _logger.Trace($"There are {totalCount} files in this directory");
                     if (files.Any())
                     {
-                        var blockIndex = 0;
                         files.RunByBlocks(
                             MaxBlockSize,
-                            (block, blocksCount) =>
+                            (block, index, blocksCount) =>
                             {
                                 if (token.IsCancellationRequested)
                                     return false;
-                                //TODO: Get blockIndex from RunByBLocks
-                                _logger.Trace($"Processing block {blockIndex++} ({block.Length} files)...");
+                                _logger.Trace($"Processing block {index ++} ({block.Length} files)...");
                                 var photos = block.Select(filePath => _lifetimeScope.Resolve<Photo>(new TypedParameter(typeof(string), filePath), new TypedParameter(typeof(PhotoCollection), this))).ToArray();
                                 _syncContext.Send(
                                     t =>
@@ -196,8 +195,8 @@ namespace PhotoReviewer.ViewModel
                                             Add(photo);
                                     },
                                     null);
-                                EnqueueLoadAdditionalInfoTask(photos, blockIndex, token);
-                                OnProgress(blockIndex, blocksCount);
+                                EnqueueLoadAdditionalInfoTask(photos, index, token);
+                                OnProgress(index, blocksCount);
                                 //Little delay to prevent freezing of UI thread
                                 // ReSharper disable MethodSupportsCancellation - no cancellation is needed for this small delay because we need expensive try catch in that case
                                 Task.Delay(10).Wait();
@@ -295,19 +294,18 @@ namespace PhotoReviewer.ViewModel
             await StartLongOperationAsync(
                     token =>
                     {
-                        var i = 0;
                         var totalCount = photos.Length;
                         _logger.Trace($"There are {totalCount} files in this directory");
                         using (_directoryWatcher.SupressNotification())
                         {
                             photos.RunByBlocks(
                                 MaxBlockSize,
-                                (block, blocksCount) =>
+                                (block, index, blocksCount) =>
                                 {
                                     if (token.IsCancellationRequested)
                                         return false;
 
-                                    _logger.Trace($"Processing block {i++} ({block.Length} files)...");
+                                    _logger.Trace($"Processing block {index++} ({block.Length} files)...");
 
                                     _syncContext.Send(
                                         t =>
@@ -317,7 +315,7 @@ namespace PhotoReviewer.ViewModel
                                         },
                                         null);
 
-                                    OnProgress(i, blocksCount);
+                                    OnProgress(index, blocksCount);
 
                                     return true;
                                 });
@@ -485,7 +483,7 @@ namespace PhotoReviewer.ViewModel
                 FavoritedCount--;
         }
 
-        private async void DirectoryWatcher_FileRenamed(object sender, [NotNull] EventArgs<Tuple<string,string>> e)
+        private async void DirectoryWatcher_FileRenamed(object sender, [NotNull] EventArgs<Tuple<string, string>> e)
         {
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
@@ -613,7 +611,6 @@ namespace PhotoReviewer.ViewModel
 
         private void EnqueueLoadAdditionalInfoTask([NotNull] IEnumerable<Photo> photosBlock, int blockIndex, CancellationToken token)
         {
-            //TODO: queue these tasks
             _additionalInfoLoaderQueue.Append(
                 async () =>
                 {
@@ -663,7 +660,7 @@ namespace PhotoReviewer.ViewModel
                 _photoUserInfoRepository.Favorite(filePath);
                 photo.Favorited = true;
             }
-            photo.Metadata = _metadataExtractor.Extract(filePath);
+            photo.Metadata = await _metadataExtractor.ExtractAsync(filePath).ConfigureAwait(false);
             await photo.LoadThumbnailAsync(token).ConfigureAwait(false);
         }
 

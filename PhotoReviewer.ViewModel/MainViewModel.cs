@@ -29,7 +29,8 @@ namespace PhotoReviewer.ViewModel
     //TODO: Detect photo change
     //TODO: Change Path can only cancel another same operation
 
-    [ImplementPropertyChanged]
+    [AddINotifyPropertyChangedInterface]
+    [UsedImplicitly]
     public sealed class MainViewModel : IDisposable
     {
         [NotNull]
@@ -190,19 +191,19 @@ namespace PhotoReviewer.ViewModel
 
         public double PhotoSize { get; set; } = 230;
 
-        public int Progress { get; set; }
-
-        public string ProgressDescription { get; set; }
-
-        public TaskbarItemProgressState ProgressState { get; set; }
-
-        [CanBeNull]
-        public string CurrentDirectoryPath { get; set; }
-
         [CanBeNull]
         public Photo SelectedPhoto { get; set; }
 
-        public int SelectedCount { get; set; }
+        public int SelectedCount { get; private set; }
+
+        public int Progress { get; private set; }
+
+        public string ProgressDescription { get; private set; }
+
+        public TaskbarItemProgressState ProgressState { get; private set; }
+
+        [CanBeNull]
+        public string CurrentDirectoryPath { get; private set; }
 
         #endregion
 

@@ -16,7 +16,8 @@ using Scar.Common.Drawing.Metadata;
 namespace PhotoReviewer.ViewModel
 {
     /// <summary>This class describes a single photo - its location, the image and the metadata extracted from the image.</summary>
-    [ImplementPropertyChanged]
+    [AddINotifyPropertyChangedInterface]
+    [UsedImplicitly]
     public sealed class Photo : IPhoto
     {
         private static readonly ExifMetadata EmptyMetadataForInit = new ExifMetadata();
@@ -68,7 +69,6 @@ namespace PhotoReviewer.ViewModel
 
         public bool LastOperationFinished { get; set; }
 
-        //TODO: Configureawait false everywhere in libs
         [NotNull]
         public ExifMetadata Metadata { get; set; } = EmptyMetadataForInit;
 

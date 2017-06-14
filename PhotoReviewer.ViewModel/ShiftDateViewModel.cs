@@ -8,7 +8,7 @@ using Scar.Common.WPF.Commands;
 
 namespace PhotoReviewer.ViewModel
 {
-    [ImplementPropertyChanged]
+    [AddINotifyPropertyChangedInterface]
     [UsedImplicitly]
     public sealed class ShiftDateViewModel
     {

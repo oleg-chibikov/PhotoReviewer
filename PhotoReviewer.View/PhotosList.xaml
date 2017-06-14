@@ -47,7 +47,7 @@
                         </Setter>
                     </Style>
 
-                    <!-- Style for an individual generic item -->
+                    <!-- Style for an individual generic item - do not remove -->
                     <Style
                         TargetType="{x:Type ListBoxItem}" />
 

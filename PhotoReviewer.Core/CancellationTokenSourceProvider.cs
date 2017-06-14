@@ -10,6 +10,7 @@ namespace PhotoReviewer.Core
     [UsedImplicitly]
     internal sealed class CancellationTokenSourceProvider : IDisposable, ICancellationTokenSourceProvider
     {
+        //TODO: Remove dependency from messenger and move to library
         [NotNull]
         private readonly IMessenger _messenger;
 

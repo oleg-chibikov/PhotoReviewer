@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Autofac;
 using Common.Logging;
+using Common.Multithreading;
 using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
 using PhotoReviewer.Contracts.View;
@@ -130,7 +131,7 @@ namespace PhotoReviewer
             builder.RegisterType<PhotoUserInfoRepository>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<WindowsArranger>().AsSelf().SingleInstance();
-            builder.RegisterType<QueueAppendable>().AsImplementedInterfaces().InstancePerDependency();
+            builder.RegisterType<TaskQueue>().AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterType<CancellationTokenSourceProvider>().AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterModule<LoggingModule>();
 

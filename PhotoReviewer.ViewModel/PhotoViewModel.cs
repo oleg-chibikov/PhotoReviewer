@@ -17,7 +17,8 @@ using Scar.Common.WPF.Commands;
 
 namespace PhotoReviewer.ViewModel
 {
-    [ImplementPropertyChanged]
+    [AddINotifyPropertyChangedInterface]
+    [UsedImplicitly]
     public sealed class PhotoViewModel
     {
         [NotNull]
@@ -168,6 +169,7 @@ namespace PhotoReviewer.ViewModel
                         var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FilePath, false, token);
                         LoadPhotoInternal(token, Photo);
                         Photo.ReloadMetadata();
+                        //TODO
                         Photo.LoadThumbnailAsync(token);
                         await task.ConfigureAwait(false);
                         _logger.Info($"{Photo} is rotated {rotationType}");
