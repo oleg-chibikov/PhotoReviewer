@@ -186,7 +186,7 @@ namespace PhotoReviewer.ViewModel
                             {
                                 if (token.IsCancellationRequested)
                                     return false;
-                                _logger.Trace($"Processing block {index ++} ({block.Length} files)...");
+                                _logger.Trace($"Processing block {index} ({block.Length} files)...");
                                 var photos = block.Select(filePath => _lifetimeScope.Resolve<Photo>(new TypedParameter(typeof(string), filePath), new TypedParameter(typeof(PhotoCollection), this))).ToArray();
                                 _syncContext.Send(
                                     t =>
@@ -196,7 +196,7 @@ namespace PhotoReviewer.ViewModel
                                     },
                                     null);
                                 EnqueueLoadAdditionalInfoTask(photos, index, token);
-                                OnProgress(index, blocksCount);
+                                OnProgress(index + 1, blocksCount);
                                 //Little delay to prevent freezing of UI thread
                                 // ReSharper disable MethodSupportsCancellation - no cancellation is needed for this small delay because we need expensive try catch in that case
                                 Task.Delay(10).Wait();
@@ -305,7 +305,7 @@ namespace PhotoReviewer.ViewModel
                                     if (token.IsCancellationRequested)
                                         return false;
 
-                                    _logger.Trace($"Processing block {index++} ({block.Length} files)...");
+                                    _logger.Trace($"Processing block {index} ({block.Length} files)...");
 
                                     _syncContext.Send(
                                         t =>
@@ -315,7 +315,7 @@ namespace PhotoReviewer.ViewModel
                                         },
                                         null);
 
-                                    OnProgress(index, blocksCount);
+                                    OnProgress(index + 1, blocksCount);
 
                                     return true;
                                 });
