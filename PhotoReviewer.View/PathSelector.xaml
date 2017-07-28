@@ -15,12 +15,19 @@
         commonView:MarginSetter.Margin="10"
         commonView:MarginSetter.Orientation="Horizontal">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition
+                Width="Auto" />
+            <ColumnDefinition
+                Width="*" />
+            <ColumnDefinition
+                Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Column="0">Path:</TextBlock>
-        <TextBox Grid.Column="1"
+        <TextBlock
+            Grid.Column="0">
+            Path:
+        </TextBlock>
+        <TextBox
+            Grid.Column="1"
             Text="{Binding CurrentDirectoryPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
             VerticalAlignment="Center">
             <TextBox.InputBindings>
@@ -30,7 +37,8 @@
                     Key="Enter" />
             </TextBox.InputBindings>
         </TextBox>
-        <Button Grid.Column="2"
+        <Button
+            Grid.Column="2"
             Width="80"
             Command="{Binding BrowseDirectoryCommand, Mode=OneTime}"
             Content="Browse" />

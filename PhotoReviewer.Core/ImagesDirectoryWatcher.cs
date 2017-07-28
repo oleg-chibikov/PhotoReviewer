@@ -13,6 +13,13 @@ namespace PhotoReviewer.Core
     internal sealed class ImagesDirectoryWatcher : IDirectoryWatcher, IDisposable
     {
         [NotNull]
+        private readonly FileSystemWatcher _fileSystemWatcher = new FileSystemWatcher
+        {
+            //TODO: polling every n seconds or use queue for handlers
+            InternalBufferSize = 64 * 1024
+        };
+
+        [NotNull]
         private readonly ILog _logger;
         //TODO: IsImage needs to be moved as an abstract
         //TODO: Library (IO)
@@ -23,6 +30,39 @@ namespace PhotoReviewer.Core
             _fileSystemWatcher.Created += FileSystemWatcher_Changed;
             _fileSystemWatcher.Deleted += FileSystemWatcher_Changed;
             _fileSystemWatcher.Renamed += FileSystemWatcher_Renamed;
+        }
+
+        public event EventHandler<EventArgs<string>> FileAdded;
+        public event EventHandler<EventArgs<string>> FileDeleted;
+        public event EventHandler<EventArgs<Tuple<string, string>>> FileRenamed;
+
+        public void SetDirectoryPath(string directoryPath)
+        {
+            using (SupressNotification())
+            {
+                _fileSystemWatcher.Path = directoryPath;
+            }
+        }
+
+        [NotNull]
+        public NotificationSupresser SupressNotification()
+        {
+            //TODO: DI
+            return new FileSystemWatcherNotificationSupresser(this, _fileSystemWatcher, _logger);
+        }
+
+        public bool NotificationIsSupressed { get; set; }
+
+        public void Dispose()
+        {
+            _fileSystemWatcher.Dispose();
+            _fileSystemWatcher.Created -= FileSystemWatcher_Changed;
+            _fileSystemWatcher.Deleted -= FileSystemWatcher_Changed;
+            _fileSystemWatcher.Renamed -= FileSystemWatcher_Renamed;
+            //Unsubscribe all
+            FileAdded = null;
+            FileRenamed = null;
+            FileDeleted = null;
         }
 
         private void FileSystemWatcher_Changed([NotNull] object sender, [NotNull] FileSystemEventArgs fileSystemEventArgs)
@@ -58,50 +98,10 @@ namespace PhotoReviewer.Core
             FileRenamed?.Invoke(this, new EventArgs<Tuple<string, string>>(new Tuple<string, string>(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath)));
         }
 
-        [NotNull]
-        private readonly FileSystemWatcher _fileSystemWatcher = new FileSystemWatcher
-        {
-            //TODO: polling every n seconds or use queue for handlers
-            InternalBufferSize = 64 * 1024
-        };
-
-        public event EventHandler<EventArgs<string>> FileAdded;
-        public event EventHandler<EventArgs<string>> FileDeleted;
-        public event EventHandler<EventArgs<Tuple<string, string>>> FileRenamed;
-
-        public void SetDirectoryPath(string directoryPath)
-        {
-            using (SupressNotification())
-            {
-                _fileSystemWatcher.Path = directoryPath;
-            }
-        }
-
-        public void Dispose()
-        {
-            _fileSystemWatcher.Dispose();
-            _fileSystemWatcher.Created -= FileSystemWatcher_Changed;
-            _fileSystemWatcher.Deleted -= FileSystemWatcher_Changed;
-            _fileSystemWatcher.Renamed -= FileSystemWatcher_Renamed;
-            //Unsubscribe all
-            FileAdded = null;
-            FileRenamed = null;
-            FileDeleted = null;
-        }
-
         private static bool IsImage(string filePath)
         {
             var extenstion = Path.GetExtension(filePath);
             return extenstion != null && Constants.FileExtensions.Contains(extenstion, StringComparer.InvariantCultureIgnoreCase);
         }
-
-        [NotNull]
-        public NotificationSupresser SupressNotification()
-        {
-            //TODO: DI
-            return new FileSystemWatcherNotificationSupresser(this, _fileSystemWatcher, _logger);
-        }
-
-        public bool NotificationIsSupressed { get; set; }
     }
 }

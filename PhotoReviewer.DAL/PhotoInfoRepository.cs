@@ -34,7 +34,11 @@ namespace PhotoReviewer.DAL
 
             {
                 Collection.Delete(oldFilePath);
-                Collection.Insert(new TPhotoInfo {Id = newFilePath});
+                Collection.Insert(
+                    new TPhotoInfo
+                    {
+                        Id = newFilePath
+                    });
             }
         }
 

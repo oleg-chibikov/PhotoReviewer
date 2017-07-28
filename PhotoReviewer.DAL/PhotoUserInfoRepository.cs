@@ -68,7 +68,11 @@ namespace PhotoReviewer.DAL
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
-            _favoritedPhotoRepository.Save(new FavoritedPhoto {Id = filePath});
+            _favoritedPhotoRepository.Save(
+                new FavoritedPhoto
+                {
+                    Id = filePath
+                });
             _markedForDeletionPhotoRepository.Delete(filePath);
         }
 
@@ -78,7 +82,12 @@ namespace PhotoReviewer.DAL
             if (filePaths == null)
                 throw new ArgumentNullException(nameof(filePaths));
 
-            _favoritedPhotoRepository.Save(filePaths.Select(filePath => new FavoritedPhoto {Id = filePath}));
+            _favoritedPhotoRepository.Save(
+                filePaths.Select(
+                    filePath => new FavoritedPhoto
+                    {
+                        Id = filePath
+                    }));
             _markedForDeletionPhotoRepository.Delete(filePaths);
         }
 
@@ -88,7 +97,11 @@ namespace PhotoReviewer.DAL
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
-            _markedForDeletionPhotoRepository.Save(new MarkedForDeletionPhoto {Id = filePath});
+            _markedForDeletionPhotoRepository.Save(
+                new MarkedForDeletionPhoto
+                {
+                    Id = filePath
+                });
             _favoritedPhotoRepository.Delete(filePath);
         }
 
@@ -98,7 +111,12 @@ namespace PhotoReviewer.DAL
             if (filePaths == null)
                 throw new ArgumentNullException(nameof(filePaths));
 
-            _markedForDeletionPhotoRepository.Save(filePaths.Select(filePath => new MarkedForDeletionPhoto {Id = filePath}));
+            _markedForDeletionPhotoRepository.Save(
+                filePaths.Select(
+                    filePath => new MarkedForDeletionPhoto
+                    {
+                        Id = filePath
+                    }));
             _favoritedPhotoRepository.Delete(filePaths);
         }
 

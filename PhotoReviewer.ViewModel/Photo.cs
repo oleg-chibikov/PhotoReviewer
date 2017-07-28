@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Common.Logging;
 using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
@@ -111,6 +111,12 @@ namespace PhotoReviewer.ViewModel
             }
         }
 
+        /// <summary>
+        /// A hack to raise NotifyPropertyChanged for other properties
+        /// </summary>
+        [AlsoNotifyFor(nameof(Metadata))]
+        private bool ReRenderMetadataSwitch { get; set; }
+
         //TODO: replace by collection event?
         public void ReloadCollectionInfoIfNeeded()
         {
@@ -144,13 +150,9 @@ namespace PhotoReviewer.ViewModel
             _index = null;
         }
 
-        /// <summary>Hack to reload metadata since its properties are not dependency properties</summary>
         public void ReloadMetadata()
         {
-            var metadata = Metadata;
-            // ReSharper disable once AssignNullToNotNullAttribute
-            Metadata = null;
-            Metadata = metadata;
+            ReRenderMetadataSwitch = !ReRenderMetadataSwitch;
         }
 
         public override string ToString()
@@ -203,7 +205,7 @@ namespace PhotoReviewer.ViewModel
         }
 
         [CanBeNull]
-        public ImageSource Thumbnail { get; set; }
+        public BitmapSource Thumbnail { get; set; }
 
         #endregion
     }

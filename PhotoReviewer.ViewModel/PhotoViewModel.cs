@@ -160,6 +160,9 @@ namespace PhotoReviewer.ViewModel
             }
             var originalOrientation = Photo.Metadata.Orientation;
             Photo.Metadata.Orientation = originalOrientation.GetNextOrientation(rotationType);
+            var angle = rotationType == RotationType.Clockwise
+                ? 90
+                : -90;
             _cancellationTokenSourceProvider.StartNewTask(
                 async token =>
                 {
@@ -167,10 +170,7 @@ namespace PhotoReviewer.ViewModel
                     {
                         //no need to cancel this operation (if rotation starts it should be finished)
                         var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FilePath, false, token);
-                        LoadPhotoInternal(token, Photo);
-                        Photo.ReloadMetadata();
-                        //TODO
-                        Photo.LoadThumbnailAsync(token);
+                        RotatePhoto(angle);
                         await task.ConfigureAwait(false);
                         _logger.Info($"{Photo} is rotated {rotationType}");
                     }
@@ -183,8 +183,16 @@ namespace PhotoReviewer.ViewModel
                         _messenger.Send(Errors.RotationFailed, MessengerTokens.UserWarningToken);
                         _logger.Warn("Rotation failed", ex);
                         Photo.Metadata.Orientation = originalOrientation;
+                        RotatePhoto(-angle);
                     }
                 });
+        }
+
+        private void RotatePhoto(int angle)
+        {
+            BitmapSource = _imageRetriever.ApplyRotateTransform(angle, BitmapSource);
+            Photo.Thumbnail = _imageRetriever.ApplyRotateTransform(angle, Photo.Thumbnail);
+            Photo.ReloadMetadata();
         }
 
         private void Favorite()

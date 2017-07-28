@@ -41,6 +41,9 @@ namespace PhotoReviewer.ViewModel
         private readonly IAppendable<Func<Task>> _additionalInfoLoaderQueue;
 
         [NotNull]
+        private readonly IDirectoryWatcher _directoryWatcher;
+
+        [NotNull]
         private readonly IExifTool _exifTool;
 
         [NotNull]
@@ -54,9 +57,6 @@ namespace PhotoReviewer.ViewModel
 
         [NotNull]
         private readonly IMessenger _messenger;
-
-        [NotNull]
-        private readonly IDirectoryWatcher _directoryWatcher;
 
         [NotNull]
         private readonly IMetadataExtractor _metadataExtractor;

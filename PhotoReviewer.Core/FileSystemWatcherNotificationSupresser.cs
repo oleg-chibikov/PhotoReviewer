@@ -10,6 +10,7 @@ namespace PhotoReviewer.Core
     {
         [NotNull]
         private readonly FileSystemWatcher _fileSystemWatcher;
+
         [NotNull]
         private readonly ILog _logger;
 
