@@ -186,6 +186,7 @@ namespace PhotoReviewer.ViewModel
                             {
                                 if (token.IsCancellationRequested)
                                     return false;
+
                                 _logger.Trace($"Processing block {index} ({block.Length} files)...");
                                 var photos = block.Select(filePath => _lifetimeScope.Resolve<Photo>(new TypedParameter(typeof(string), filePath), new TypedParameter(typeof(PhotoCollection), this))).ToArray();
                                 _syncContext.Send(
@@ -242,6 +243,7 @@ namespace PhotoReviewer.ViewModel
                                     _logger.Warn($"Photo not found in collection for filepath {e.FilePath}");
                                     return;
                                 }
+
                                 photo.LastOperationFinished = true;
                             }
 
@@ -253,6 +255,7 @@ namespace PhotoReviewer.ViewModel
                                     _logger.Warn($"Photo not found in collection for filepath {e.FilePath}");
                                     return;
                                 }
+
                                 photo.LastOperationFailed = true;
                             }
 
@@ -454,6 +457,7 @@ namespace PhotoReviewer.ViewModel
         {
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
+
             var filePath = e.Parameter;
             await _mainOperationsCancellationTokenSourceProvider.CurrentTask.ConfigureAwait(false);
             var photo = _lifetimeScope.Resolve<Photo>(
@@ -469,6 +473,7 @@ namespace PhotoReviewer.ViewModel
         {
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
+
             var filePath = e.Parameter;
             await _mainOperationsCancellationTokenSourceProvider.CurrentTask.ConfigureAwait(false);
             _photoUserInfoRepository.Delete(filePath);
@@ -487,6 +492,7 @@ namespace PhotoReviewer.ViewModel
         {
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
+
             var oldFilePath = e.Parameter.Item1;
             var newFilePath = e.Parameter.Item2;
             await _mainOperationsCancellationTokenSourceProvider.CurrentTask.ConfigureAwait(false);
@@ -617,6 +623,7 @@ namespace PhotoReviewer.ViewModel
                     _logger.Trace($"Loading additional info for block {blockIndex}...");
                     foreach (var photo in photosBlock)
                         await LoadAdditionalInfoForPhotoAsync(photo, token).ConfigureAwait(false);
+
                     _logger.Trace($"Additional info for block {blockIndex} is loaded");
                 });
         }
@@ -651,8 +658,10 @@ namespace PhotoReviewer.ViewModel
         {
             if (photo == null)
                 throw new ArgumentNullException(nameof(photo));
+
             if (token.IsCancellationRequested)
                 return;
+
             var filePath = photo.FilePath;
             var favoritedFileExists = File.Exists(GetFavoritedFilePath(filePath));
             if (!photo.Favorited && favoritedFileExists)

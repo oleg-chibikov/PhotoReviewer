@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Common.Logging;
@@ -66,7 +65,7 @@ namespace PhotoReviewer.ViewModel
             RenameToDateCommand = new CorrelationCommand(RenameToDate);
             OpenPhotoInExplorerCommand = new CorrelationCommand(OpenPhotoInExplorer);
             ChangePhotoCommand = new CorrelationCommand<ChangeType>(ChangePhotoAsync);
-            RotateCommand = new CorrelationCommand<RotationType>(Rotate);
+            RotateCommand = new CorrelationCommand<RotationType>(RotateAsync);
             WindowClosingCommand = new CorrelationCommand(WindowClosing);
         }
 
@@ -118,37 +117,37 @@ namespace PhotoReviewer.ViewModel
             if (newPhoto == null)
                 return;
 
-            await _cancellationTokenSourceProvider.StartNewTask(token => LoadPhotoInternal(token, newPhoto)).ConfigureAwait(false);
+            await _cancellationTokenSourceProvider.StartNewTask(
+                    async token =>
+                    {
+                        _mainViewModel.SelectedPhoto = Photo;
+                        newPhoto.ReloadCollectionInfoIfNeeded();
+                        Photo = newPhoto;
+                        const int previewWidth = 800;
+                        var filePath = newPhoto.FilePath;
+                        var orientation = newPhoto.Metadata.Orientation;
+                        try
+                        {
+                            var bytes = await filePath.ReadFileAsync(token).ConfigureAwait(false);
+                            //Firstly load and display low quality image
+                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation, previewWidth).ConfigureAwait(false);
+                            //Then load full image
+                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation).ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                        }
+                        catch (Exception ex)
+                        {
+                            var message = $"Cannot load image {filePath}";
+                            _logger.Warn(message, ex);
+                            _messenger.Send(message, MessengerTokens.UserErrorToken);
+                        }
+                    })
+                .ConfigureAwait(false);
         }
 
-        private async void LoadPhotoInternal(CancellationToken token, [NotNull] Photo photo)
-        {
-            _mainViewModel.SelectedPhoto = Photo;
-            photo.ReloadCollectionInfoIfNeeded();
-            Photo = photo;
-            const int previewWidth = 800;
-            var filePath = photo.FilePath;
-            var orientation = photo.Metadata.Orientation;
-            try
-            {
-                var bytes = await filePath.ReadFileAsync(token).ConfigureAwait(false);
-                //Firstly load and display low quality image
-                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation, previewWidth).ConfigureAwait(false);
-                //Then load full image
-                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                var message = $"Cannot load image {filePath}";
-                _logger.Warn(message, ex);
-                _messenger.Send(message, MessengerTokens.UserErrorToken);
-            }
-        }
-
-        private void Rotate(RotationType rotationType)
+        private async void RotateAsync(RotationType rotationType)
         {
             _logger.Info($"Rotating {Photo} {rotationType}...");
 
@@ -158,19 +157,20 @@ namespace PhotoReviewer.ViewModel
                 _messenger.Send(Errors.NoMetadata, MessengerTokens.UserWarningToken);
                 return;
             }
+
             var originalOrientation = Photo.Metadata.Orientation;
             Photo.Metadata.Orientation = originalOrientation.GetNextOrientation(rotationType);
             var angle = rotationType == RotationType.Clockwise
                 ? 90
                 : -90;
-            _cancellationTokenSourceProvider.StartNewTask(
+            await _cancellationTokenSourceProvider.StartNewTask(
                 async token =>
                 {
                     try
                     {
                         //no need to cancel this operation (if rotation starts it should be finished)
                         var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FilePath, false, token);
-                        RotatePhoto(angle);
+                        RotateVisualRepresentation(angle);
                         await task.ConfigureAwait(false);
                         _logger.Info($"{Photo} is rotated {rotationType}");
                     }
@@ -183,12 +183,12 @@ namespace PhotoReviewer.ViewModel
                         _messenger.Send(Errors.RotationFailed, MessengerTokens.UserWarningToken);
                         _logger.Warn("Rotation failed", ex);
                         Photo.Metadata.Orientation = originalOrientation;
-                        RotatePhoto(-angle);
+                        RotateVisualRepresentation(-angle);
                     }
                 });
         }
 
-        private void RotatePhoto(int angle)
+        private void RotateVisualRepresentation(int angle)
         {
             BitmapSource = _imageRetriever.ApplyRotateTransform(angle, BitmapSource);
             Photo.Thumbnail = _imageRetriever.ApplyRotateTransform(angle, Photo.Thumbnail);

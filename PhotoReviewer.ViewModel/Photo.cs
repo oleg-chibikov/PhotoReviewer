@@ -46,6 +46,7 @@ namespace PhotoReviewer.ViewModel
         {
             if (photoUserInfoRepository == null)
                 throw new ArgumentNullException(nameof(photoUserInfoRepository));
+
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
             _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
