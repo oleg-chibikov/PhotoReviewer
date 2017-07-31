@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Common.Logging;
 using JetBrains.Annotations;
@@ -32,12 +33,29 @@ namespace PhotoReviewer.DAL
 
         public PhotoUserInfo Check(string filePath)
         {
+            _logger.Trace($"Checking {filePath}...");
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
             var favorited = _favoritedPhotoRepository.Check(filePath);
             var markedForDeletion = _markedForDeletionPhotoRepository.Check(filePath);
             return new PhotoUserInfo(favorited, markedForDeletion);
+        }
+
+        public IDictionary<string, PhotoUserInfo> GetUltimateInfo()
+        {
+            _logger.Trace("Getting ultimate info about all photos...");
+            var allFavorited = _favoritedPhotoRepository.GetAll().Select(favoritedPhoto => favoritedPhoto.Id).ToArray();
+            var allMarkedForDeletion = _markedForDeletionPhotoRepository.GetAll().Select(markedForDeletionPhoto => markedForDeletionPhoto.Id).ToArray();
+            var intersection = allFavorited.Intersect(allMarkedForDeletion).ToArray();
+            var onlyFavorited = allFavorited.Except(intersection);
+            var onlyMarked = allMarkedForDeletion.Except(intersection);
+            var ultimateInfo = intersection.ToDictionary(filePath => filePath, photoInfo => new PhotoUserInfo(true, true));
+            foreach (var filePath in onlyFavorited)
+                ultimateInfo.Add(filePath, new PhotoUserInfo(true, false));
+            foreach (var filePath in onlyMarked)
+                ultimateInfo.Add(filePath, new PhotoUserInfo(false, true));
+            return ultimateInfo;
         }
 
         public void Rename(string oldFilePath, string newFilePath)
@@ -54,7 +72,7 @@ namespace PhotoReviewer.DAL
 
         public void Delete(string filePath)
         {
-            _logger.Trace($"Checking {filePath}...");
+            _logger.Debug($"Deleting {filePath}...");
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 

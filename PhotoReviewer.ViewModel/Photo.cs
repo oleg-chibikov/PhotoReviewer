@@ -6,7 +6,7 @@ using System.Windows.Media.Imaging;
 using Common.Logging;
 using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
-using PhotoReviewer.Contracts.DAL;
+using PhotoReviewer.Contracts.DAL.Data;
 using PhotoReviewer.Contracts.ViewModel;
 using PhotoReviewer.Resources;
 using PropertyChanged;
@@ -38,22 +38,20 @@ namespace PhotoReviewer.ViewModel
 
         public Photo(
             [NotNull] string filePath,
+            [NotNull] PhotoUserInfo photoUserInfo,
             [NotNull] PhotoCollection collection,
             [NotNull] ILog logger,
             [NotNull] IMessenger messenger,
-            [NotNull] IImageRetriever imageRetriever,
-            [NotNull] IPhotoUserInfoRepository photoUserInfoRepository)
+            [NotNull] IImageRetriever imageRetriever)
         {
-            if (photoUserInfoRepository == null)
-                throw new ArgumentNullException(nameof(photoUserInfoRepository));
+            if (photoUserInfo == null)
+                throw new ArgumentNullException(nameof(photoUserInfo));
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
             _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
             _collection = collection ?? throw new ArgumentNullException(nameof(collection));
             FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
-            //TODO: instead of Checking every photo against DB - get all info to inmemory and then work
-            var photoUserInfo = photoUserInfoRepository.Check(filePath);
             Favorited = photoUserInfo.Favorited;
             MarkedForDeletion = photoUserInfo.MarkedForDeletion;
             //Set name only - filepath is not changed
@@ -196,7 +194,7 @@ namespace PhotoReviewer.ViewModel
         public string Name { get; private set; } = string.Empty;
 
         [NotNull]
-        public string FilePath { get; set; }
+        public string FilePath { get; private set; }
 
         public void SetFilePathAndName([NotNull] string filePath)
         {

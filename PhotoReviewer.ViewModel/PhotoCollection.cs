@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,6 +15,7 @@ using GalaSoft.MvvmLight.Messaging;
 using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
 using PhotoReviewer.Contracts.DAL;
+using PhotoReviewer.Contracts.DAL.Data;
 using PhotoReviewer.Core;
 using PhotoReviewer.Resources;
 using PropertyChanged;
@@ -35,7 +35,11 @@ namespace PhotoReviewer.ViewModel
     {
         private const int MaxBlockSize = 25;
 
+        [NotNull]
         private const string OperationPostfix = "_TO_BE_MODIFIED.jpg";
+
+        [NotNull]
+        private const string FavoriteDirectoryName = "Favorite";
 
         [NotNull]
         private readonly IAppendable<Func<Task>> _additionalInfoLoaderQueue;
@@ -97,7 +101,7 @@ namespace PhotoReviewer.ViewModel
             _metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
             _lifetimeScope = lifetimeScope ?? throw new ArgumentNullException(nameof(lifetimeScope));
             _photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
-            CollectionChanged += PhotoCollection_CollectionChanged;
+            CollectionChanged += (s, e) => _notifyOpenPhotosDebounced();
             FilteredView = (ListCollectionView) CollectionViewSource.GetDefaultView(this);
             FilteredView.CustomSort = comparer ?? throw new ArgumentNullException(nameof(comparer));
 
@@ -174,6 +178,7 @@ namespace PhotoReviewer.ViewModel
             await StartLongOperationAsync(
                 token =>
                 {
+                    var ultimatePhotoUserInfo = _photoUserInfoRepository.GetUltimateInfo();
                     FavoritedCount = MarkedForDeletionCount = 0;
                     var files = directoryPath.GetFiles(Constants.FilterExtensions).ToArray();
                     var totalCount = files.Length;
@@ -188,7 +193,17 @@ namespace PhotoReviewer.ViewModel
                                     return false;
 
                                 _logger.Trace($"Processing block {index} ({block.Length} files)...");
-                                var photos = block.Select(filePath => _lifetimeScope.Resolve<Photo>(new TypedParameter(typeof(string), filePath), new TypedParameter(typeof(PhotoCollection), this))).ToArray();
+                                var photos = block.Select(
+                                        filePath =>
+                                        {
+                                            if (!ultimatePhotoUserInfo.TryGetValue(filePath, out PhotoUserInfo photoUserInfo))
+                                                photoUserInfo = new PhotoUserInfo(false, false);
+                                            return _lifetimeScope.Resolve<Photo>(
+                                                new TypedParameter(typeof(string), filePath),
+                                                new TypedParameter(typeof(PhotoUserInfo), photoUserInfo),
+                                                new TypedParameter(typeof(PhotoCollection), this));
+                                        })
+                                    .ToArray();
                                 _syncContext.Send(
                                     t =>
                                     {
@@ -460,8 +475,10 @@ namespace PhotoReviewer.ViewModel
 
             var filePath = e.Parameter;
             await _mainOperationsCancellationTokenSourceProvider.CurrentTask.ConfigureAwait(false);
+            var photoUserInfo = _photoUserInfoRepository.Check(filePath);
             var photo = _lifetimeScope.Resolve<Photo>(
                 new TypedParameter(typeof(string), filePath),
+                new TypedParameter(typeof(PhotoUserInfo), photoUserInfo),
                 new TypedParameter(typeof(PhotoCollection), this),
                 new TypedParameter(typeof(CancellationToken), CancellationToken.None));
             _syncContext.Send(x => Add(photo), null);
@@ -575,8 +592,6 @@ namespace PhotoReviewer.ViewModel
             return Path.Combine(GetFavoriteDirectory(filePath), Path.GetFileName(filePath));
         }
 
-        private const string FavoriteDirectoryName = "Favorite";
-
         [NotNull]
         private static string GetFavoriteDirectory([NotNull] string filePath)
         {
@@ -590,10 +605,12 @@ namespace PhotoReviewer.ViewModel
         {
             if (!photo.Favorited || !File.Exists(photo.FilePath))
                 return;
-            //TODO: Move method to collection?
+
             var favoritedFilePath = GetFavoritedFilePath(photo.FilePath);
             if (!File.Exists(favoritedFilePath))
                 File.Copy(photo.FilePath, favoritedFilePath);
+            else
+                _logger.Warn($"Favorited file {favoritedFilePath} already exists, skipped copying");
         }
 
         private void DeleteFileIfMarked([NotNull] Photo photo)
@@ -633,11 +650,6 @@ namespace PhotoReviewer.ViewModel
             Progress?.Invoke(this, new ProgressEventArgs(current, total));
         }
 
-        private void PhotoCollection_CollectionChanged([NotNull] object sender, [NotNull] NotifyCollectionChangedEventArgs e)
-        {
-            _notifyOpenPhotosDebounced();
-        }
-
         private void FinalizeDateShift([NotNull] Photo[] photos, TimeSpan shiftBy, bool plus)
         {
             _logger.Trace("Finalizing date shift result...");
@@ -646,11 +658,11 @@ namespace PhotoReviewer.ViewModel
                 if (!photo.LastOperationFailed)
                     ShiftDateInMetadata(shiftBy, plus, photo);
 
-                if (photo.FilePath.EndsWith(OperationPostfix, StringComparison.InvariantCulture))
-                {
-                    var originalFilePath = photo.FilePath.Remove(photo.FilePath.Length - OperationPostfix.Length);
-                    RenameFile(photo, originalFilePath);
-                }
+                if (!photo.FilePath.EndsWith(OperationPostfix, StringComparison.InvariantCulture))
+                    continue;
+
+                var originalFilePath = photo.FilePath.Remove(photo.FilePath.Length - OperationPostfix.Length);
+                RenameFile(photo, originalFilePath);
             }
         }
 
@@ -666,6 +678,7 @@ namespace PhotoReviewer.ViewModel
             var favoritedFileExists = File.Exists(GetFavoritedFilePath(filePath));
             if (!photo.Favorited && favoritedFileExists)
             {
+                _logger.Info($"Favoriting {photo} due to existence of favorited file...");
                 _photoUserInfoRepository.Favorite(filePath);
                 photo.Favorited = true;
             }

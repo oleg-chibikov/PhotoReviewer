@@ -48,7 +48,6 @@ namespace PhotoReviewer
 
         public App()
         {
-            //TODO:Bindings wModes explicit!
             _container = RegisterDependencies();
 
             //CultureUtilities.ChangeCulture(container.Resolve<ISettingsRepository>().Get().UiLanguage);
