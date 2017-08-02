@@ -46,6 +46,7 @@
     <Compile Include="..\PhotoReviewer\Properties\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DAL\Data\FileLocation.cs" />
     <Compile Include="DAL\Data\IPhotoInfo.cs" />
     <Compile Include="DAL\Data\ISettings.cs" />
     <Compile Include="DAL\Data\PhotoUserInfo.cs" />

@@ -2,7 +2,7 @@
 
 namespace PhotoReviewer.Contracts.DAL.Data
 {
-    public interface IPhotoInfo : IEntity<string>
+    public interface IPhotoInfo : IEntity<FileLocation>
     {
     }
 }

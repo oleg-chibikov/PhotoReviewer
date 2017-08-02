@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -37,7 +36,7 @@ namespace PhotoReviewer.ViewModel
         private int? _index;
 
         public Photo(
-            [NotNull] string filePath,
+            [NotNull] FileLocation fileLocation,
             [NotNull] PhotoUserInfo photoUserInfo,
             [NotNull] PhotoCollection collection,
             [NotNull] ILog logger,
@@ -51,11 +50,9 @@ namespace PhotoReviewer.ViewModel
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
             _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
             _collection = collection ?? throw new ArgumentNullException(nameof(collection));
-            FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+            FileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
             Favorited = photoUserInfo.Favorited;
             MarkedForDeletion = photoUserInfo.MarkedForDeletion;
-            //Set name only - filepath is not changed
-            SetFilePathAndName(filePath);
         }
 
         [DependsOn(nameof(Metadata))]
@@ -129,7 +126,7 @@ namespace PhotoReviewer.ViewModel
         {
             try
             {
-                var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FilePath, cancellationToken).ConfigureAwait(false);
+                var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FileLocation.ToString(), cancellationToken).ConfigureAwait(false);
                 if (thumbnailBytes != null)
                     Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation).ConfigureAwait(false);
             }
@@ -156,7 +153,7 @@ namespace PhotoReviewer.ViewModel
 
         public override string ToString()
         {
-            return FilePath;
+            return FileLocation.ToString();
         }
 
         #region Dependency Properties
@@ -191,17 +188,10 @@ namespace PhotoReviewer.ViewModel
         }
 
         [NotNull]
-        public string Name { get; private set; } = string.Empty;
+        public FileLocation FileLocation { get; set; }
 
         [NotNull]
-        public string FilePath { get; private set; }
-
-        public void SetFilePathAndName([NotNull] string filePath)
-        {
-            if (FilePath != filePath)
-                FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
-            Name = Path.GetFileNameWithoutExtension(filePath);
-        }
+        public string Name => FileLocation.FileName;
 
         [CanBeNull]
         public BitmapSource Thumbnail { get; set; }

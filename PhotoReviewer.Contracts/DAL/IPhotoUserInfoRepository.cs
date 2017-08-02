@@ -7,21 +7,21 @@ namespace PhotoReviewer.Contracts.DAL
     public interface IPhotoUserInfoRepository
     {
         [NotNull]
-        PhotoUserInfo Check([NotNull] string filePath);
+        PhotoUserInfo Check([NotNull] FileLocation fileLocation);
 
-        void Delete([NotNull] string filePath);
-        void Favorite([NotNull] string filePath);
-        void Favorite([NotNull] string[] filePaths);
+        void Delete([NotNull] FileLocation fileLocation);
+        void Favorite([NotNull] FileLocation fileLocation);
+        void Favorite([NotNull] FileLocation[] fileLocations);
 
         [NotNull]
-        IDictionary<string, PhotoUserInfo> GetUltimateInfo();
+        IDictionary<FileLocation, PhotoUserInfo> GetUltimateInfo([NotNull] string directoryPath);
 
-        void MarkForDeletion([NotNull] string filePath);
-        void MarkForDeletion([NotNull] string[] filePaths);
-        void Rename([NotNull] string oldFilePath, [NotNull] string newFilePath);
-        void UnFavorite([NotNull] string filePath);
-        void UnFavorite([NotNull] string[] filePaths);
-        void UnMarkForDeletion([NotNull] string filePath);
-        void UnMarkForDeletion([NotNull] string[] filePaths);
+        void MarkForDeletion([NotNull] FileLocation fileLocation);
+        void MarkForDeletion([NotNull] FileLocation[] fileLocations);
+        void Rename([NotNull] FileLocation oldFileLocation, [NotNull] FileLocation newFileLocation);
+        void UnFavorite([NotNull] FileLocation fileLocation);
+        void UnFavorite([NotNull] FileLocation[] fileLocations);
+        void UnMarkForDeletion([NotNull] FileLocation fileLocation);
+        void UnMarkForDeletion([NotNull] FileLocation[] fileLocations);
     }
 }

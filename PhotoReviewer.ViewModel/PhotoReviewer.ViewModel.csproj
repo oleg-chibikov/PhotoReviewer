@@ -85,8 +85,8 @@
     <Reference Include="Scar.Common.Drawing.MetadataExtractor, Version=1.0.33.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Drawing.MetadataExtractor.1.0.33\lib\net462\Scar.Common.Drawing.MetadataExtractor.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.IO, Version=1.0.21.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.IO.1.0.21\lib\net462\Scar.Common.IO.dll</HintPath>
+    <Reference Include="Scar.Common.IO, Version=1.0.23.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.IO.1.0.23\lib\net462\Scar.Common.IO.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.Notification, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Notification.1.0.4\lib\net462\Scar.Common.Notification.dll</HintPath>

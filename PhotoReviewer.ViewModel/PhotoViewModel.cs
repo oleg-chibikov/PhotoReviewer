@@ -72,10 +72,10 @@ namespace PhotoReviewer.ViewModel
         #region Dependency Properties
 
         [CanBeNull]
-        public BitmapSource BitmapSource { get; set; }
+        public BitmapSource BitmapSource { get; private set; }
 
         [NotNull]
-        public Photo Photo { get; set; }
+        public Photo Photo { get; private set; }
 
         #endregion
 
@@ -124,11 +124,11 @@ namespace PhotoReviewer.ViewModel
                         newPhoto.ReloadCollectionInfoIfNeeded();
                         Photo = newPhoto;
                         const int previewWidth = 800;
-                        var filePath = newPhoto.FilePath;
+                        var newPhotoFileLocation = newPhoto.FileLocation;
                         var orientation = newPhoto.Metadata.Orientation;
                         try
                         {
-                            var bytes = await filePath.ReadFileAsync(token).ConfigureAwait(false);
+                            var bytes = await newPhotoFileLocation.ToString().ReadFileAsync(token).ConfigureAwait(false);
                             //Firstly load and display low quality image
                             BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation, previewWidth).ConfigureAwait(false);
                             //Then load full image
@@ -139,7 +139,7 @@ namespace PhotoReviewer.ViewModel
                         }
                         catch (Exception ex)
                         {
-                            var message = $"Cannot load image {filePath}";
+                            var message = $"Cannot load image {newPhotoFileLocation}";
                             _logger.Warn(message, ex);
                             _messenger.Send(message, MessengerTokens.UserErrorToken);
                         }
@@ -147,6 +147,7 @@ namespace PhotoReviewer.ViewModel
                 .ConfigureAwait(false);
         }
 
+        //TODO: Move to PhotoCollection. Apply multiple rotations at once
         private async void RotateAsync(RotationType rotationType)
         {
             _logger.Info($"Rotating {Photo} {rotationType}...");
@@ -169,7 +170,7 @@ namespace PhotoReviewer.ViewModel
                     try
                     {
                         //no need to cancel this operation (if rotation starts it should be finished)
-                        var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FilePath, false, token);
+                        var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FileLocation.ToString(), false, token);
                         RotateVisualRepresentation(angle);
                         await task.ConfigureAwait(false);
                         _logger.Info($"{Photo} is rotated {rotationType}");
@@ -215,7 +216,7 @@ namespace PhotoReviewer.ViewModel
 
         private void OpenPhotoInExplorer()
         {
-            Photo.FilePath.OpenFileInExplorer();
+            Photo.FileLocation.ToString().OpenFileInExplorer();
         }
 
         private void WindowClosing()

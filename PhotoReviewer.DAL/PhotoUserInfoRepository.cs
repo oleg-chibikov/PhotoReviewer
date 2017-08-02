@@ -31,147 +31,151 @@ namespace PhotoReviewer.DAL
             _favoritedPhotoRepository = favoritedPhotoRepository ?? throw new ArgumentNullException(nameof(favoritedPhotoRepository));
         }
 
-        public PhotoUserInfo Check(string filePath)
+        public PhotoUserInfo Check(FileLocation fileLocation)
         {
-            _logger.Trace($"Checking {filePath}...");
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
+            _logger.Trace($"Checking {fileLocation}...");
+            if (fileLocation == null)
+                throw new ArgumentNullException(nameof(fileLocation));
 
-            var favorited = _favoritedPhotoRepository.Check(filePath);
-            var markedForDeletion = _markedForDeletionPhotoRepository.Check(filePath);
+            var favorited = _favoritedPhotoRepository.Check(fileLocation);
+            var markedForDeletion = _markedForDeletionPhotoRepository.Check(fileLocation);
             return new PhotoUserInfo(favorited, markedForDeletion);
         }
 
-        public IDictionary<string, PhotoUserInfo> GetUltimateInfo()
+        public IDictionary<FileLocation, PhotoUserInfo> GetUltimateInfo(string directoryPath)
         {
-            _logger.Trace("Getting ultimate info about all photos...");
-            var allFavorited = _favoritedPhotoRepository.GetAll().Select(favoritedPhoto => favoritedPhoto.Id).ToArray();
-            var allMarkedForDeletion = _markedForDeletionPhotoRepository.GetAll().Select(markedForDeletionPhoto => markedForDeletionPhoto.Id).ToArray();
+            _logger.Trace($"Getting ultimate info about all photos in {directoryPath}...");
+            if (directoryPath == null)
+                throw new ArgumentNullException(nameof(directoryPath));
+
+            var allFavorited = _favoritedPhotoRepository.GetByDirectory(directoryPath).Select(favoritedPhoto => favoritedPhoto.Id).ToArray();
+            var allMarkedForDeletion = _markedForDeletionPhotoRepository.GetByDirectory(directoryPath).Select(markedForDeletionPhoto => markedForDeletionPhoto.Id).ToArray();
             var intersection = allFavorited.Intersect(allMarkedForDeletion).ToArray();
             var onlyFavorited = allFavorited.Except(intersection);
             var onlyMarked = allMarkedForDeletion.Except(intersection);
-            var ultimateInfo = intersection.ToDictionary(filePath => filePath, photoInfo => new PhotoUserInfo(true, true));
-            foreach (var filePath in onlyFavorited)
-                ultimateInfo.Add(filePath, new PhotoUserInfo(true, false));
-            foreach (var filePath in onlyMarked)
-                ultimateInfo.Add(filePath, new PhotoUserInfo(false, true));
+            var ultimateInfo = intersection.ToDictionary(fileLocation => fileLocation, photoInfo => new PhotoUserInfo(true, true));
+            foreach (var fileLocation in onlyFavorited)
+                ultimateInfo.Add(fileLocation, new PhotoUserInfo(true, false));
+            foreach (var fileLocation in onlyMarked)
+                ultimateInfo.Add(fileLocation, new PhotoUserInfo(false, true));
+
             return ultimateInfo;
         }
 
-        public void Rename(string oldFilePath, string newFilePath)
+        public void Rename(FileLocation oldFileLocation, FileLocation newFileLocation)
         {
-            _logger.Debug($"Renaming {oldFilePath} to {newFilePath}...");
-            if (oldFilePath == null)
-                throw new ArgumentNullException(nameof(oldFilePath));
-            if (newFilePath == null)
-                throw new ArgumentNullException(nameof(newFilePath));
+            _logger.Debug($"Renaming {oldFileLocation} to {newFileLocation}...");
+            if (oldFileLocation == null)
+                throw new ArgumentNullException(nameof(oldFileLocation));
+            if (newFileLocation == null)
+                throw new ArgumentNullException(nameof(newFileLocation));
 
-            _favoritedPhotoRepository.Rename(oldFilePath, newFilePath);
-            _markedForDeletionPhotoRepository.Rename(oldFilePath, newFilePath);
+            _favoritedPhotoRepository.Rename(oldFileLocation, newFileLocation);
+            _markedForDeletionPhotoRepository.Rename(oldFileLocation, newFileLocation);
         }
 
-        public void Delete(string filePath)
+        public void Delete(FileLocation fileLocation)
         {
-            _logger.Debug($"Deleting {filePath}...");
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
+            _logger.Debug($"Deleting {fileLocation}...");
+            if (fileLocation == null)
+                throw new ArgumentNullException(nameof(fileLocation));
 
-            _favoritedPhotoRepository.Delete(filePath);
-            _markedForDeletionPhotoRepository.Delete(filePath);
+            _favoritedPhotoRepository.Delete(fileLocation);
+            _markedForDeletionPhotoRepository.Delete(fileLocation);
         }
 
-        public void Favorite(string filePath)
+        public void Favorite(FileLocation fileLocation)
         {
-            _logger.Debug($"Favoriting {filePath}...");
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
+            _logger.Debug($"Favoriting {fileLocation}...");
+            if (fileLocation == null)
+                throw new ArgumentNullException(nameof(fileLocation));
 
             _favoritedPhotoRepository.Save(
                 new FavoritedPhoto
                 {
-                    Id = filePath
+                    Id = fileLocation
                 });
-            _markedForDeletionPhotoRepository.Delete(filePath);
+            _markedForDeletionPhotoRepository.Delete(fileLocation);
         }
 
-        public void Favorite(string[] filePaths)
+        public void Favorite(FileLocation[] fileLocations)
         {
-            _logger.Debug($"Favoriting {filePaths.Length} photos...");
-            if (filePaths == null)
-                throw new ArgumentNullException(nameof(filePaths));
+            _logger.Debug($"Favoriting {fileLocations.Length} photos...");
+            if (fileLocations == null)
+                throw new ArgumentNullException(nameof(fileLocations));
 
             _favoritedPhotoRepository.Save(
-                filePaths.Select(
-                    filePath => new FavoritedPhoto
+                fileLocations.Select(
+                    fileLocation => new FavoritedPhoto
                     {
-                        Id = filePath
+                        Id = fileLocation
                     }));
-            _markedForDeletionPhotoRepository.Delete(filePaths);
+            _markedForDeletionPhotoRepository.Delete(fileLocations);
         }
 
-        public void MarkForDeletion(string filePath)
+        public void MarkForDeletion(FileLocation fileLocation)
         {
-            _logger.Debug($"Marking {filePath} for deletion...");
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
+            _logger.Debug($"Marking {fileLocation} for deletion...");
+            if (fileLocation == null)
+                throw new ArgumentNullException(nameof(fileLocation));
 
             _markedForDeletionPhotoRepository.Save(
                 new MarkedForDeletionPhoto
                 {
-                    Id = filePath
+                    Id = fileLocation
                 });
-            _favoritedPhotoRepository.Delete(filePath);
+            _favoritedPhotoRepository.Delete(fileLocation);
         }
 
-        public void MarkForDeletion(string[] filePaths)
+        public void MarkForDeletion(FileLocation[] fileLocations)
         {
-            _logger.Debug($"Marking {filePaths.Length} photos for deletion...");
-            if (filePaths == null)
-                throw new ArgumentNullException(nameof(filePaths));
+            _logger.Debug($"Marking {fileLocations.Length} photos for deletion...");
+            if (fileLocations == null)
+                throw new ArgumentNullException(nameof(fileLocations));
 
             _markedForDeletionPhotoRepository.Save(
-                filePaths.Select(
-                    filePath => new MarkedForDeletionPhoto
+                fileLocations.Select(
+                    fileLocation => new MarkedForDeletionPhoto
                     {
-                        Id = filePath
+                        Id = fileLocation
                     }));
-            _favoritedPhotoRepository.Delete(filePaths);
+            _favoritedPhotoRepository.Delete(fileLocations);
         }
 
-        public void UnFavorite(string filePath)
+        public void UnFavorite(FileLocation fileLocation)
         {
-            _logger.Debug($"Unfavoriting {filePath}...");
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
+            _logger.Debug($"Unfavoriting {fileLocation}...");
+            if (fileLocation == null)
+                throw new ArgumentNullException(nameof(fileLocation));
 
-            _favoritedPhotoRepository.Delete(filePath);
+            _favoritedPhotoRepository.Delete(fileLocation);
         }
 
-        public void UnFavorite(string[] filePaths)
+        public void UnFavorite(FileLocation[] fileLocations)
         {
-            _logger.Debug($"Unfavoriting {filePaths.Length} photos...");
-            if (filePaths == null)
-                throw new ArgumentNullException(nameof(filePaths));
+            _logger.Debug($"Unfavoriting {fileLocations.Length} photos...");
+            if (fileLocations == null)
+                throw new ArgumentNullException(nameof(fileLocations));
 
-            _favoritedPhotoRepository.Delete(filePaths);
+            _favoritedPhotoRepository.Delete(fileLocations);
         }
 
-        public void UnMarkForDeletion(string filePath)
+        public void UnMarkForDeletion(FileLocation fileLocation)
         {
-            _logger.Debug($"Unmarking {filePath} for deletion...");
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
+            _logger.Debug($"Unmarking {fileLocation} for deletion...");
+            if (fileLocation == null)
+                throw new ArgumentNullException(nameof(fileLocation));
 
-            _markedForDeletionPhotoRepository.Delete(filePath);
+            _markedForDeletionPhotoRepository.Delete(fileLocation);
         }
 
-        public void UnMarkForDeletion(string[] filePaths)
+        public void UnMarkForDeletion(FileLocation[] fileLocations)
         {
-            _logger.Debug($"Unmarking {filePaths.Length} photos for deletion...");
-            if (filePaths == null)
-                throw new ArgumentNullException(nameof(filePaths));
+            _logger.Debug($"Unmarking {fileLocations.Length} photos for deletion...");
+            if (fileLocations == null)
+                throw new ArgumentNullException(nameof(fileLocations));
 
-            _markedForDeletionPhotoRepository.Delete(filePaths);
+            _markedForDeletionPhotoRepository.Delete(fileLocations);
         }
     }
 }

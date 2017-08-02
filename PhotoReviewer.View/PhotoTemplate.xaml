@@ -10,7 +10,7 @@
         <materialDesign:Card
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
-            ToolTip="{Binding FilePath, Mode=OneWay}"
+            ToolTip="{Binding FileLocation, Mode=OneWay}"
             materialDesign:ShadowAssist.ShadowDepth="Depth3"
             Margin="3"
             Padding="3">

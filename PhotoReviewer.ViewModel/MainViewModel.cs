@@ -169,6 +169,7 @@ namespace PhotoReviewer.ViewModel
 
         private async void SetDirectoryPathAsync([NotNull] string directoryPath)
         {
+            directoryPath = directoryPath.RemoveTrailingBackslash();
             var settings = _settingsRepository.Settings;
             var task = PhotoCollection.SetDirectoryPathAsync(directoryPath);
 
@@ -280,7 +281,7 @@ namespace PhotoReviewer.ViewModel
             if (directoryPath == null)
                 throw new ArgumentNullException(nameof(directoryPath));
 
-            SetDirectoryPathAsync(directoryPath.AddTrailingBackslash());
+            SetDirectoryPathAsync(directoryPath);
         }
 
         private void ShowOnlyMarkedChanged(bool isChecked)
@@ -330,11 +331,11 @@ namespace PhotoReviewer.ViewModel
 
         private void OpenPhotoInExplorer()
         {
-            _logger.Trace($"Opening selected photo ({SelectedPhoto?.FilePath}) in explorer...");
+            _logger.Trace($"Opening selected photo ({SelectedPhoto?.FileLocation}) in explorer...");
             if (SelectedPhoto == null)
                 throw new InvalidOperationException("Photos are not selected");
 
-            SelectedPhoto.FilePath.OpenFileInExplorer();
+            SelectedPhoto.FileLocation.ToString().OpenFileInExplorer();
         }
 
         private void OpenDirectoryInExplorer()
@@ -348,7 +349,7 @@ namespace PhotoReviewer.ViewModel
 
         private void OpenPhoto()
         {
-            _logger.Trace($"Opening selected photo ({SelectedPhoto?.FilePath}) in a separate window...");
+            _logger.Trace($"Opening selected photo ({SelectedPhoto?.FileLocation}) in a separate window...");
             if (SelectedPhoto == null)
                 throw new InvalidOperationException("Photos are not selected");
 

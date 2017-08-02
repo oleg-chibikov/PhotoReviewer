@@ -135,8 +135,8 @@
     <Reference Include="Scar.Common.DAL, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.DAL.1.0.5\lib\net462\Scar.Common.DAL.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.DAL.LiteDB, Version=1.0.13.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.DAL.LiteDB.1.0.13\lib\net462\Scar.Common.DAL.LiteDB.dll</HintPath>
+    <Reference Include="Scar.Common.DAL.LiteDB, Version=1.0.17.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.DAL.LiteDB.1.0.17\lib\net462\Scar.Common.DAL.LiteDB.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.Drawing.ExifTool, Version=1.0.39.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Drawing.ExifTool.1.0.39\lib\net462\Scar.Common.Drawing.ExifTool.dll</HintPath>
@@ -150,8 +150,8 @@
     <Reference Include="Scar.Common.Drawing.MetadataExtractor, Version=1.0.33.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Drawing.MetadataExtractor.1.0.33\lib\net462\Scar.Common.Drawing.MetadataExtractor.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.IO, Version=1.0.21.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.IO.1.0.21\lib\net462\Scar.Common.IO.dll</HintPath>
+    <Reference Include="Scar.Common.IO, Version=1.0.23.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.IO.1.0.23\lib\net462\Scar.Common.IO.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.Logging, Version=1.0.23.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.Logging.1.0.23\lib\net462\Scar.Common.Logging.dll</HintPath>
