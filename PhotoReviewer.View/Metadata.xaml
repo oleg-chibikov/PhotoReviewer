@@ -98,7 +98,7 @@
 
         <!-- Data converters for complex fields -->
         <view:PhotoSizeConverter
-            x:Key="PhotoSizeConverterReference" />
+            x:Key="PhotoSizeConverter" />
         <view:FocalLengthConverter
             x:Key="FocalLengthConverterReference" />
         <view:LensApertureConverter
@@ -131,7 +131,7 @@
                     <TextBlock.Text>
                         <MultiBinding
                             Mode="OneWay"
-                            Converter="{StaticResource PhotoSizeConverterReference}">
+                            Converter="{StaticResource PhotoSizeConverter}">
                             <Binding
                                 Path="Metadata.Width"
                                 Mode="OneTime" />

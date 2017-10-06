@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Common.Logging;
-using GalaSoft.MvvmLight.Messaging;
+using Easy.MessageHub;
 using JetBrains.Annotations;
 using PhotoReviewer.Contracts.View;
 using PhotoReviewer.Core;
@@ -12,6 +12,7 @@ using Scar.Common.Drawing.ExifTool;
 using Scar.Common.Drawing.ImageRetriever;
 using Scar.Common.Drawing.Metadata;
 using Scar.Common.IO;
+using Scar.Common.Messages;
 using Scar.Common.WPF.Commands;
 
 namespace PhotoReviewer.ViewModel
@@ -36,7 +37,7 @@ namespace PhotoReviewer.ViewModel
         private readonly MainViewModel _mainViewModel;
 
         [NotNull]
-        private readonly IMessenger _messenger;
+        private readonly IMessageHub _messenger;
 
         public PhotoViewModel(
             [NotNull] Photo photo,
@@ -44,7 +45,7 @@ namespace PhotoReviewer.ViewModel
             [NotNull] WindowsArranger windowsArranger,
             [NotNull] ILog logger,
             [NotNull] IExifTool exifTool,
-            [NotNull] IMessenger messenger,
+            [NotNull] IMessageHub messenger,
             [NotNull] ICancellationTokenSourceProvider cancellationTokenSourceProvider,
             [NotNull] IImageRetriever imageRetriever)
         {
@@ -141,7 +142,7 @@ namespace PhotoReviewer.ViewModel
                         {
                             var message = $"Cannot load image {newPhotoFileLocation}";
                             _logger.Warn(message, ex);
-                            _messenger.Send(message, MessengerTokens.UserErrorToken);
+                            _messenger.Publish(message.ToError());
                         }
                     })
                 .ConfigureAwait(false);
@@ -155,7 +156,7 @@ namespace PhotoReviewer.ViewModel
             if (!Photo.OrientationIsSpecified)
             {
                 _logger.Warn($"Orientation is not specified for {Photo}");
-                _messenger.Send(Errors.NoMetadata, MessengerTokens.UserWarningToken);
+                _messenger.Publish(Errors.NoMetadata.ToWarning());
                 return;
             }
 
@@ -181,7 +182,7 @@ namespace PhotoReviewer.ViewModel
                     }
                     catch (InvalidOperationException ex)
                     {
-                        _messenger.Send(Errors.RotationFailed, MessengerTokens.UserWarningToken);
+                        _messenger.Publish(Errors.RotationFailed.ToWarning());
                         _logger.Warn("Rotation failed", ex);
                         Photo.Metadata.Orientation = originalOrientation;
                         RotateVisualRepresentation(-angle);

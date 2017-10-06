@@ -3,14 +3,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Common.Logging;
-using GalaSoft.MvvmLight.Messaging;
+using Easy.MessageHub;
 using JetBrains.Annotations;
 using PhotoReviewer.Contracts.DAL.Data;
 using PhotoReviewer.Contracts.ViewModel;
-using PhotoReviewer.Resources;
 using PropertyChanged;
 using Scar.Common.Drawing.ImageRetriever;
 using Scar.Common.Drawing.Metadata;
+using Scar.Common.Messages;
 
 namespace PhotoReviewer.ViewModel
 {
@@ -31,7 +31,7 @@ namespace PhotoReviewer.ViewModel
         private readonly ILog _logger;
 
         [NotNull]
-        private readonly IMessenger _messenger;
+        private readonly IMessageHub _messenger;
 
         private int? _index;
 
@@ -40,7 +40,7 @@ namespace PhotoReviewer.ViewModel
             [NotNull] PhotoUserInfo photoUserInfo,
             [NotNull] PhotoCollection collection,
             [NotNull] ILog logger,
-            [NotNull] IMessenger messenger,
+            [NotNull] IMessageHub messenger,
             [NotNull] IImageRetriever imageRetriever)
         {
             if (photoUserInfo == null)
@@ -137,7 +137,7 @@ namespace PhotoReviewer.ViewModel
             {
                 var message = $"Cannot load thumbnail for {this}";
                 _logger.Warn(message, ex);
-                _messenger.Send(message, MessengerTokens.UserErrorToken);
+                _messenger.Publish(message.ToError());
             }
         }
 

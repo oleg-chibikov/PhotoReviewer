@@ -11,8 +11,8 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:viewContracts="clr-namespace:PhotoReviewer.Contracts.View;assembly=PhotoReviewer.Contracts"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-    xmlns:command="http://www.galasoft.ch/mvvmlight"
     xmlns:view="clr-namespace:PhotoReviewer.View"
+    xmlns:behaviors="clr-namespace:Scar.Common.WPF.Controls.Behaviors;assembly=Scar.Common.WPF.Controls.Behaviors"
     Title="{Binding Path=Photo.DisplayedInfo, Mode=OneWay, StringFormat=Photo Reviewer - {0}}"
     Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
     WindowStartupLocation="Manual"
@@ -121,14 +121,13 @@
     <i:Interaction.Triggers>
         <i:EventTrigger
             EventName="MouseUp">
-            <command:EventToCommand
+            <behaviors:InvokeCommandWithArgsAction
                 Command="{Binding ChangePhotoCommand, Mode=OneTime}"
-                EventArgsConverter="{StaticResource MouseButtonEventArgsToPhotoActionConverter}"
-                PassEventArgsToCommand="True" />
+                CommandParameterConverter="{StaticResource MouseButtonEventArgsToPhotoActionConverter}" />
         </i:EventTrigger>
         <i:EventTrigger
             EventName="Closing">
-            <command:EventToCommand
+            <i:InvokeCommandAction
                 Command="{Binding WindowClosingCommand, Mode=OneTime}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>

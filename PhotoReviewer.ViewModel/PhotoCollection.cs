@@ -11,7 +11,7 @@ using System.Windows.Data;
 using Autofac;
 using Common.Logging;
 using Common.Multithreading;
-using GalaSoft.MvvmLight.Messaging;
+using Easy.MessageHub;
 using JetBrains.Annotations;
 using Microsoft.VisualBasic.FileIO;
 using PhotoReviewer.Contracts.DAL;
@@ -24,6 +24,7 @@ using Scar.Common.Drawing.ExifTool;
 using Scar.Common.Drawing.MetadataExtractor;
 using Scar.Common.Events;
 using Scar.Common.IO;
+using Scar.Common.Messages;
 
 //TODO: BlockingCollection for photos commands
 
@@ -57,7 +58,7 @@ namespace PhotoReviewer.ViewModel
         private readonly ICancellationTokenSourceProvider _mainOperationsCancellationTokenSourceProvider;
 
         [NotNull]
-        private readonly IMessenger _messenger;
+        private readonly IMessageHub _messenger;
 
         [NotNull]
         private readonly IMetadataExtractor _metadataExtractor;
@@ -79,7 +80,7 @@ namespace PhotoReviewer.ViewModel
 
         public PhotoCollection(
             [NotNull] IComparer comparer,
-            [NotNull] IMessenger messenger,
+            [NotNull] IMessageHub messenger,
             [NotNull] ILog logger,
             [NotNull] IMetadataExtractor metadataExtractor,
             [NotNull] ILifetimeScope lifetimeScope,
@@ -164,13 +165,13 @@ namespace PhotoReviewer.ViewModel
 
             if (string.IsNullOrWhiteSpace(directoryPath))
             {
-                _messenger.Send(Errors.SelectDirectory, MessengerTokens.UserWarningToken);
+                _messenger.Publish(Errors.SelectDirectory.ToWarning());
                 return;
             }
 
             if (!Directory.Exists(directoryPath))
             {
-                _messenger.Send(string.Format(Errors.DirectoryDoesNotExist, directoryPath), MessengerTokens.UserWarningToken);
+                _messenger.Publish(string.Format(Errors.DirectoryDoesNotExist, directoryPath).ToWarning());
                 return;
             }
 
@@ -197,7 +198,7 @@ namespace PhotoReviewer.ViewModel
                                 var photos = block.Select(
                                         fileLocation =>
                                         {
-                                            if (!ultimatePhotoUserInfo.TryGetValue(fileLocation, out PhotoUserInfo photoUserInfo))
+                                            if (!ultimatePhotoUserInfo.TryGetValue(fileLocation, out var photoUserInfo))
                                                 photoUserInfo = new PhotoUserInfo(false, false);
                                             return _lifetimeScope.Resolve<Photo>(
                                                 new TypedParameter(typeof(FileLocation), fileLocation),
@@ -255,7 +256,7 @@ namespace PhotoReviewer.ViewModel
                         }
                         catch (InvalidOperationException ex)
                         {
-                            _messenger.Send(Errors.DateShiftFailed, MessengerTokens.UserWarningToken);
+                            _messenger.Publish(Errors.DateShiftFailed.ToWarning());
                             _logger.Warn("Date shift failed", ex);
                         }
                         finally
@@ -592,7 +593,7 @@ namespace PhotoReviewer.ViewModel
         {
             if (!photos.Any())
             {
-                _messenger.Send(Errors.NothingToProcess, MessengerTokens.UserWarningToken);
+                _messenger.Publish(Errors.NothingToProcess.ToWarning());
                 return true;
             }
 

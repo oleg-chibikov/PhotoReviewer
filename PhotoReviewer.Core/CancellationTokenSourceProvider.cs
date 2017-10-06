@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using GalaSoft.MvvmLight.Messaging;
+using Easy.MessageHub;
 using JetBrains.Annotations;
 using PhotoReviewer.Resources;
+using Scar.Common.Messages;
 
 namespace PhotoReviewer.Core
 {
@@ -12,12 +13,12 @@ namespace PhotoReviewer.Core
     {
         //TODO: Remove dependency from messenger and move to library
         [NotNull]
-        private readonly IMessenger _messenger;
+        private readonly IMessageHub _messenger;
 
         [NotNull]
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        public CancellationTokenSourceProvider([NotNull] IMessenger messenger)
+        public CancellationTokenSourceProvider([NotNull] IMessageHub messenger)
         {
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
         }
@@ -41,7 +42,7 @@ namespace PhotoReviewer.Core
 
             if (!cancelCurrent && !CurrentTask.IsCompleted)
             {
-                _messenger.Send(Errors.TaskInProgress, MessengerTokens.UserWarningToken);
+                _messenger.Publish(Errors.TaskInProgress.ToWarning());
                 return;
             }
 

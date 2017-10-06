@@ -3,18 +3,20 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using GalaSoft.MvvmLight.Command;
 using JetBrains.Annotations;
 using PhotoReviewer.ViewModel;
 
 namespace PhotoReviewer.View
 {
-    internal sealed class MouseButtonEventArgsToChangeTypeConverter : IEventArgsConverter
+    internal sealed class MouseButtonEventArgsToChangeTypeConverter : IValueConverter
     {
         [NotNull]
-        public object Convert(object value, object parameter)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var args = (MouseButtonEventArgs) value;
+            if (args == null)
+                return ChangeType.None;
+
             switch (args.ChangedButton)
             {
                 case MouseButton.XButton1:
@@ -24,6 +26,11 @@ namespace PhotoReviewer.View
                 default:
                     return ChangeType.None;
             }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
         }
     }
 

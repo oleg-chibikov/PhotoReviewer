@@ -28,6 +28,7 @@ namespace PhotoReviewer.ViewModel
     //TODO: Localization
     //TODO: Detect photo change
     //TODO: Change Path can only cancel another same operation
+    //BUG: Cannot rename files while loading additional info
 
     [AddINotifyPropertyChangedInterface]
     [UsedImplicitly]
