@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Common.Logging;
@@ -8,6 +8,7 @@ using PhotoReviewer.Contracts.View;
 using PhotoReviewer.Core;
 using PhotoReviewer.Resources;
 using PropertyChanged;
+using Scar.Common.Async;
 using Scar.Common.Drawing.ExifTool;
 using Scar.Common.Drawing.ImageRetriever;
 using Scar.Common.Drawing.Metadata;

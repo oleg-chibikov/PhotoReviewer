@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Logging;
@@ -90,7 +90,7 @@ namespace PhotoReviewer.DAL
             if (fileLocation == null)
                 throw new ArgumentNullException(nameof(fileLocation));
 
-            _favoritedPhotoRepository.Save(
+            _favoritedPhotoRepository.Upsert(
                 new FavoritedPhoto
                 {
                     Id = fileLocation
@@ -104,7 +104,7 @@ namespace PhotoReviewer.DAL
             if (fileLocations == null)
                 throw new ArgumentNullException(nameof(fileLocations));
 
-            _favoritedPhotoRepository.Save(
+            _favoritedPhotoRepository.Upsert(
                 fileLocations.Select(
                     fileLocation => new FavoritedPhoto
                     {
@@ -119,7 +119,7 @@ namespace PhotoReviewer.DAL
             if (fileLocation == null)
                 throw new ArgumentNullException(nameof(fileLocation));
 
-            _markedForDeletionPhotoRepository.Save(
+            _markedForDeletionPhotoRepository.Upsert(
                 new MarkedForDeletionPhoto
                 {
                     Id = fileLocation
@@ -133,7 +133,7 @@ namespace PhotoReviewer.DAL
             if (fileLocations == null)
                 throw new ArgumentNullException(nameof(fileLocations));
 
-            _markedForDeletionPhotoRepository.Save(
+            _markedForDeletionPhotoRepository.Upsert(
                 fileLocations.Select(
                     fileLocation => new MarkedForDeletionPhoto
                     {

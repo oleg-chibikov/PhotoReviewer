@@ -1,15 +1,18 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Common.Logging;
 using Easy.MessageHub;
 using JetBrains.Annotations;
+using PhotoReviewer.Contracts.DAL;
 using PhotoReviewer.Contracts.DAL.Data;
 using PhotoReviewer.Contracts.ViewModel;
 using PropertyChanged;
 using Scar.Common.Drawing.ImageRetriever;
 using Scar.Common.Drawing.Metadata;
+using Scar.Common.Drawing.MetadataExtractor;
 using Scar.Common.Messages;
 
 namespace PhotoReviewer.ViewModel
@@ -32,8 +35,15 @@ namespace PhotoReviewer.ViewModel
 
         [NotNull]
         private readonly IMessageHub _messenger;
+        [NotNull]
+        private readonly IPhotoUserInfoRepository _photoUserInfoRepository;
 
         private int? _index;
+
+        [NotNull]
+        private readonly IMetadataExtractor _metadataExtractor;
+        [NotNull]
+        private readonly CancellationToken _cancellationToken;
 
         public Photo(
             [NotNull] FileLocation fileLocation,
@@ -41,10 +51,16 @@ namespace PhotoReviewer.ViewModel
             [NotNull] PhotoCollection collection,
             [NotNull] ILog logger,
             [NotNull] IMessageHub messenger,
-            [NotNull] IImageRetriever imageRetriever)
+            [NotNull] IImageRetriever imageRetriever,
+            [NotNull] IMetadataExtractor metadataExtractor,
+            CancellationToken cancellationToken,
+            [NotNull] IPhotoUserInfoRepository photoUserInfoRepository)
         {
             if (photoUserInfo == null)
                 throw new ArgumentNullException(nameof(photoUserInfo));
+            _photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
+            _metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
+            _cancellationToken = cancellationToken;
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
@@ -53,7 +69,26 @@ namespace PhotoReviewer.ViewModel
             FileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
             Favorited = photoUserInfo.Favorited;
             MarkedForDeletion = photoUserInfo.MarkedForDeletion;
+            LoadAdditionalInfoTask = Task.Run(async () =>
+            {
+                if (_cancellationToken.IsCancellationRequested)
+                    return;
+
+                var favoritedFileExists = File.Exists(FileLocation.FavoriteFilePath);
+                if (!Favorited && favoritedFileExists)
+                {
+                    _logger.Info($"Favoriting {this} due to existence of favorited file...");
+                    _photoUserInfoRepository.Favorite(fileLocation);
+                    Favorited = true;
+                }
+                //await Task.Delay(5000, _cancellationToken);
+                Metadata = await _metadataExtractor.ExtractAsync(FileLocation.ToString()).ConfigureAwait(false);
+                await LoadThumbnailAsync(_cancellationToken).ConfigureAwait(false);
+            });
         }
+
+        [NotNull]
+        public readonly Task LoadAdditionalInfoTask; //TODO: create the proper task during construction
 
         [DependsOn(nameof(Metadata))]
         public bool OrientationIsSpecified => Metadata.Orientation != Orientation.NotSpecified;

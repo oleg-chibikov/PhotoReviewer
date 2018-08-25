@@ -1,7 +1,7 @@
 using System;
+using System.Threading;
 using System.Windows;
 using Autofac;
-using Common.Multithreading;
 using PhotoReviewer.Contracts.View;
 using PhotoReviewer.Core;
 using PhotoReviewer.DAL;
@@ -9,6 +9,8 @@ using PhotoReviewer.DAL.Model;
 using PhotoReviewer.Resources;
 using PhotoReviewer.View;
 using PhotoReviewer.ViewModel;
+using Scar.Common;
+using Scar.Common.Async;
 using Scar.Common.Comparers;
 using Scar.Common.Drawing.ExifTool;
 using Scar.Common.Drawing.ImageRetriever;
@@ -21,7 +23,6 @@ namespace PhotoReviewer
 {
     internal sealed partial class App
     {
-        protected override string AppGuid { get; } = new Guid("9fdf0bfb-637c-4054-b0e1-0249defe1d91").ToString();
         protected override string AlreadyRunningMessage { get; } = Errors.AlreadyRunning;
 
         protected override void RegisterDependencies(ContainerBuilder builder)
@@ -33,6 +34,8 @@ namespace PhotoReviewer
             builder.RegisterType<ProcessUtility>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ExifTool>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ImagesDirectoryWatcher>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<AutofacScopedWindowProvider>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<GenericWindowCreator<IMainWindow>>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<PhotoInfoRepository<FavoritedPhoto>>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<PhotoInfoRepository<MarkedForDeletionPhoto>>().AsImplementedInterfaces().SingleInstance();
@@ -40,11 +43,11 @@ namespace PhotoReviewer
             builder.RegisterType<PhotoUserInfoRepository>().AsImplementedInterfaces().SingleInstance();
 
             builder.RegisterType<WindowsArranger>().AsSelf().SingleInstance();
-            builder.RegisterType<TaskQueue>().AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterType<CancellationTokenSourceProvider>().AsImplementedInterfaces().InstancePerDependency();
 
             builder.RegisterAssemblyTypes(typeof(MainWindow).Assembly).AsImplementedInterfaces().InstancePerDependency();
             builder.RegisterAssemblyTypes(typeof(MainViewModel).Assembly).AsSelf().InstancePerDependency();
+            builder.RegisterType<RateLimiter>().AsImplementedInterfaces().InstancePerDependency();
         }
 
         protected override void ShowMessage(Message message)
@@ -67,9 +70,9 @@ namespace PhotoReviewer
             MessageBox.Show(message.Text, nameof(PhotoReviewer), MessageBoxButton.OK, image);
         }
 
-        protected override void OnStartup()
+        protected override async void OnStartup()
         {
-            Container.Resolve<WindowFactory<IMainWindow>>().ShowWindow();
+            await Container.Resolve<WindowFactory<IMainWindow>>().ShowWindowAsync(CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

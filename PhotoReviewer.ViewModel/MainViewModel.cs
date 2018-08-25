@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -26,9 +27,7 @@ namespace PhotoReviewer.ViewModel
 {
     //TODO: More logs
     //TODO: Localization
-    //TODO: Detect photo change
-    //TODO: Change Path can only cancel another same operation
-    //BUG: Cannot rename files while loading additional info
+    //TODO: Detect photo change (rotate in standard viewer)
 
     [AddINotifyPropertyChangedInterface]
     [UsedImplicitly]
@@ -71,7 +70,7 @@ namespace PhotoReviewer.ViewModel
             RenameToDateCommand = new CorrelationCommand(RenameToDateAsync);
             OpenPhotoInExplorerCommand = new CorrelationCommand(OpenPhotoInExplorer);
             OpenDirectoryInExplorerCommand = new CorrelationCommand(OpenDirectoryInExplorer);
-            OpenPhotoCommand = new CorrelationCommand(OpenPhoto);
+            OpenPhotoCommand = new CorrelationCommand(OpenPhotoAsync);
             SelectionChangedCommand = new CorrelationCommand<IList>(SelectionChanged);
             WindowClosingCommand = new CorrelationCommand(WindowClosing);
             OpenSettingsFolderCommand = new CorrelationCommand(OpenSettingsFolder);
@@ -348,14 +347,14 @@ namespace PhotoReviewer.ViewModel
             CurrentDirectoryPath.OpenDirectoryInExplorer();
         }
 
-        private void OpenPhoto()
+        private async void OpenPhotoAsync()
         {
             _logger.Trace($"Opening selected photo ({SelectedPhoto?.FileLocation}) in a separate window...");
             if (SelectedPhoto == null)
                 throw new InvalidOperationException("Photos are not selected");
 
             ReselectPhoto();
-            var mainWindow = _lifetimeScope.Resolve<WindowFactory<IMainWindow>>().GetWindow();
+            var mainWindow = await _lifetimeScope.Resolve<WindowFactory<IMainWindow>>().GetWindowAsync(CancellationToken.None);
             var photoViewModel = _lifetimeScope.Resolve<PhotoViewModel>(new TypedParameter(typeof(MainViewModel), this), new TypedParameter(typeof(Photo), SelectedPhoto));
             //Window is shown in its constructor
             var window = _lifetimeScope.Resolve<IPhotoWindow>(new TypedParameter(typeof(Window), mainWindow), new TypedParameter(typeof(PhotoViewModel), photoViewModel));
@@ -378,8 +377,8 @@ namespace PhotoReviewer.ViewModel
 
         private void OpenSettingsFolder()
         {
-            _logger.Trace($"Opening setting folder ({Paths.SettingsPath})...");
-            $@"{Paths.SettingsPath}".OpenDirectoryInExplorer();
+            _logger.Trace($"Opening setting folder ({CommonPaths.SettingsPath})...");
+            $@"{CommonPaths.SettingsPath}".OpenDirectoryInExplorer();
         }
 
         private void ViewLogs()

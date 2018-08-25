@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Common.Logging;
 using JetBrains.Annotations;
@@ -47,7 +49,7 @@ namespace PhotoReviewer.Core
                 var isFirst = !PhotoWindows.Any();
                 PhotoWindows.Add(window);
                 window.Photo.ReloadCollectionInfoIfNeeded();
-                ArrangeWindows(isFirst);
+                ArrangeWindowsAsync(isFirst);
             }
         }
 
@@ -96,7 +98,7 @@ namespace PhotoReviewer.Core
                     var activeScreenArea = currentWindow.ActiveScreenArea;
                     var fullHeight = activeScreenArea.Height + WindowBorderWidth;
                     if (currentWindow.IsFullHeight)
-                        ArrangeWindows(true);
+                        ArrangeWindowsAsync(true);
                     else
                         foreach (var photoView in PhotoWindows)
                         {
@@ -113,10 +115,10 @@ namespace PhotoReviewer.Core
 
         #region Private
 
-        private void ArrangeWindows(bool defaultHeight = false)
+        private async void ArrangeWindowsAsync(bool defaultHeight = false)
         {
             _logger.Trace("Arranging windows...");
-            var mainWindow = _mainWindowFactory.GetWindow();
+            var mainWindow = await _mainWindowFactory.GetWindowAsync(CancellationToken.None).ConfigureAwait(false);
             if (PhotoWindows.Any())
             {
                 var activeScreenArea = mainWindow.ActiveScreenArea;
@@ -176,7 +178,7 @@ namespace PhotoReviewer.Core
                 window.Topmost = false;
                 window.WindowStyle = WindowStyle.SingleBorderWindow;
                 window.ResizeMode = ResizeMode.CanResize;
-                ArrangeWindows(true);
+                ArrangeWindowsAsync(true);
             }
             else
             {
@@ -203,7 +205,7 @@ namespace PhotoReviewer.Core
                 if (PhotoWindows.Count == 1 && PhotoWindows.Single().IsFullHeight)
                     ToggleFullScreen(PhotoWindows.Single());
                 else
-                    ArrangeWindows();
+                    ArrangeWindowsAsync();
             }
             GC.Collect();
         }
