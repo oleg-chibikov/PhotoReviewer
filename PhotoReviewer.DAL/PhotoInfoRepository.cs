@@ -19,7 +19,8 @@ namespace PhotoReviewer.DAL
         [NotNull]
         private readonly ILog _logger;
 
-        public PhotoInfoRepository([NotNull] ILog logger):base(CommonPaths.SettingsPath)
+        public PhotoInfoRepository([NotNull] ILog logger)
+            : base(CommonPaths.SettingsPath)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             //TODO: This index cannot handle keys more than 512 bytes. So that filepath length is limited. Maybe store hash of filepath to find photos
@@ -31,7 +32,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Trace($"Getting all files by directory {directoryPath}...");
             if (directoryPath == null)
+            {
                 throw new ArgumentNullException(nameof(directoryPath));
+            }
 
             return Collection.Find(x => x.Id.Directory.Equals(directoryPath, StringComparison.InvariantCultureIgnoreCase));
         }

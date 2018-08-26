@@ -61,7 +61,9 @@ namespace PhotoReviewer.ViewModel
         {
             _logger.Trace("Showing shift date dialog for selected photos...");
             if (!_mainViewModel.SelectedPhotos.Any())
+            {
                 throw new InvalidOperationException("Photos are not selected");
+            }
 
             IsShiftDateDialogOpen = true;
             PhotosCount = _mainViewModel.SelectedCount;
@@ -73,7 +75,9 @@ namespace PhotoReviewer.ViewModel
             _logger.Info("Shifting date for selected photos...");
             IsShiftDateDialogOpen = false;
             if (_photos == null)
+            {
                 throw new InvalidOperationException("Photos are not set");
+            }
 
             await _mainViewModel.PhotoCollection.ShiftDateAsync(_photos, ShiftBy, Plus, RenameToDate).ConfigureAwait(false);
         }

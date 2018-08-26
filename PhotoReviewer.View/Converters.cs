@@ -13,9 +13,11 @@ namespace PhotoReviewer.View
         [NotNull]
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var args = (MouseButtonEventArgs) value;
+            var args = (MouseButtonEventArgs)value;
             if (args == null)
+            {
                 return ChangeType.None;
+            }
 
             switch (args.ChangedButton)
             {
@@ -39,16 +41,12 @@ namespace PhotoReviewer.View
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value == null
-                ? null
-                : $"1/{Math.Round(1 / (double) value)}";
+            return value == null ? null : $"1/{Math.Round(1 / (double)value)}";
         }
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
         {
-            return value == null
-                ? (object) null
-                : 1 / decimal.Parse(((string) value).Substring(2));
+            return value == null ? (object)null : 1 / decimal.Parse(((string)value).Substring(2));
         }
     }
 
@@ -57,16 +55,12 @@ namespace PhotoReviewer.View
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value != null
-                ? $"F{value:##.0}"
-                : null;
+            return value != null ? $"F{value:##.0}" : null;
         }
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
         {
-            return !string.IsNullOrEmpty((string) value)
-                ? (object) decimal.Parse(((string) value).Substring(1))
-                : null;
+            return !string.IsNullOrEmpty((string)value) ? (object)decimal.Parse(((string)value).Substring(1)) : null;
         }
     }
 
@@ -75,9 +69,7 @@ namespace PhotoReviewer.View
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value != null
-                ? $"{value}mm"
-                : null;
+            return value != null ? $"{value}mm" : null;
         }
 
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
@@ -100,10 +92,12 @@ namespace PhotoReviewer.View
         [NotNull]
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
-            if ((string) value == string.Empty)
+            if ((string)value == string.Empty)
+            {
                 return new object[2];
+            }
 
-            var sSize = ((string) value).Split('x');
+            var sSize = ((string)value).Split('x');
 
             var size = new object[2];
             size[0] = uint.Parse(sSize[0]);

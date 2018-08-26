@@ -6,7 +6,7 @@ using Scar.Common.Notification;
 
 namespace PhotoReviewer.Core
 {
-    public class FileSystemWatcherNotificationSupresser : NotificationSupresser
+    internal sealed class FileSystemWatcherNotificationSupresser : NotificationSupresser
     {
         [NotNull]
         private readonly FileSystemWatcher _fileSystemWatcher;
@@ -14,7 +14,10 @@ namespace PhotoReviewer.Core
         [NotNull]
         private readonly ILog _logger;
 
-        public FileSystemWatcherNotificationSupresser([NotNull] INotificationSupressable notificationSupressable, [NotNull] FileSystemWatcher fileSystemWatcher, [NotNull] ILog logger)
+        public FileSystemWatcherNotificationSupresser(
+            [NotNull] INotificationSupressable notificationSupressable,
+            [NotNull] FileSystemWatcher fileSystemWatcher,
+            [NotNull] ILog logger)
             : base(notificationSupressable)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

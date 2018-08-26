@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using Common.Logging;
 using JetBrains.Annotations;
@@ -41,7 +40,9 @@ namespace PhotoReviewer.Core
         public void Add([NotNull] IPhotoWindow window)
         {
             if (window == null)
+            {
                 throw new ArgumentNullException(nameof(window));
+            }
 
             lock (_lockObject)
             {
@@ -56,7 +57,9 @@ namespace PhotoReviewer.Core
         public void ClosePhoto([NotNull] IPhoto photo)
         {
             if (photo == null)
+            {
                 throw new ArgumentNullException(nameof(photo));
+            }
 
             lock (_lockObject)
             {
@@ -64,7 +67,9 @@ namespace PhotoReviewer.Core
                 {
                     var photoWindow = PhotoWindows[i];
                     if (photoWindow.Photo != photo)
+                    {
                         continue;
+                    }
 
                     _logger.Trace($"Closing view for {photoWindow.Photo}...");
                     photoWindow.Close();
@@ -89,7 +94,9 @@ namespace PhotoReviewer.Core
         public void ToggleFullHeight([NotNull] IPhotoWindow currentWindow)
         {
             if (currentWindow == null)
+            {
                 throw new ArgumentNullException(nameof(currentWindow));
+            }
 
             lock (_lockObject)
             {
@@ -98,13 +105,17 @@ namespace PhotoReviewer.Core
                     var activeScreenArea = currentWindow.ActiveScreenArea;
                     var fullHeight = activeScreenArea.Height + WindowBorderWidth;
                     if (currentWindow.IsFullHeight)
+                    {
                         ArrangeWindowsAsync(true);
+                    }
                     else
+                    {
                         foreach (var photoView in PhotoWindows)
                         {
                             photoView.Top = 0;
                             photoView.Height = fullHeight;
                         }
+                    }
                 }
                 else
                 {
@@ -141,6 +152,7 @@ namespace PhotoReviewer.Core
                     firstPhotoHeight = firstPhoto.Height;
                     mainWindowHeight = activeScreenArea.Height - firstPhotoHeight + 2 * WindowBorderWidth;
                 }
+
                 _logger.Trace($"Arranging as {mainWindowHeight:##.#}:{firstPhotoHeight:##.#}...");
 
                 mainWindow.WindowState = WindowState.Normal;
@@ -161,7 +173,9 @@ namespace PhotoReviewer.Core
                 }
 
                 if (PhotoWindows.Any())
+                {
                     PhotoWindows.Last().Restore();
+                }
             }
             else
             {
@@ -196,17 +210,22 @@ namespace PhotoReviewer.Core
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            var window = (IPhotoWindow) sender;
+            var window = (IPhotoWindow)sender;
             window.Closed -= Window_Closed;
 
             lock (_lockObject)
             {
                 PhotoWindows.Remove(window);
                 if (PhotoWindows.Count == 1 && PhotoWindows.Single().IsFullHeight)
+                {
                     ToggleFullScreen(PhotoWindows.Single());
+                }
                 else
+                {
                     ArrangeWindowsAsync();
+                }
             }
+
             GC.Collect();
         }
 

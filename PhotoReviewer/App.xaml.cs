@@ -67,6 +67,7 @@ namespace PhotoReviewer
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
             MessageBox.Show(message.Text, nameof(PhotoReviewer), MessageBoxButton.OK, image);
         }
 

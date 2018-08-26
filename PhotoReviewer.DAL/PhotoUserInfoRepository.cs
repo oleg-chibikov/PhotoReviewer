@@ -35,7 +35,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Trace($"Checking {fileLocation}...");
             if (fileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocation));
+            }
 
             var favorited = _favoritedPhotoRepository.Check(fileLocation);
             var markedForDeletion = _markedForDeletionPhotoRepository.Check(fileLocation);
@@ -46,7 +48,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Trace($"Getting ultimate info about all photos in {directoryPath}...");
             if (directoryPath == null)
+            {
                 throw new ArgumentNullException(nameof(directoryPath));
+            }
 
             var allFavorited = _favoritedPhotoRepository.GetByDirectory(directoryPath).Select(favoritedPhoto => favoritedPhoto.Id).ToArray();
             var allMarkedForDeletion = _markedForDeletionPhotoRepository.GetByDirectory(directoryPath).Select(markedForDeletionPhoto => markedForDeletionPhoto.Id).ToArray();
@@ -55,9 +59,14 @@ namespace PhotoReviewer.DAL
             var onlyMarked = allMarkedForDeletion.Except(intersection);
             var ultimateInfo = intersection.ToDictionary(fileLocation => fileLocation, photoInfo => new PhotoUserInfo(true, true));
             foreach (var fileLocation in onlyFavorited)
+            {
                 ultimateInfo.Add(fileLocation, new PhotoUserInfo(true, false));
+            }
+
             foreach (var fileLocation in onlyMarked)
+            {
                 ultimateInfo.Add(fileLocation, new PhotoUserInfo(false, true));
+            }
 
             return ultimateInfo;
         }
@@ -66,9 +75,14 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Renaming {oldFileLocation} to {newFileLocation}...");
             if (oldFileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(oldFileLocation));
+            }
+
             if (newFileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(newFileLocation));
+            }
 
             _favoritedPhotoRepository.Rename(oldFileLocation, newFileLocation);
             _markedForDeletionPhotoRepository.Rename(oldFileLocation, newFileLocation);
@@ -78,7 +92,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Deleting {fileLocation}...");
             if (fileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocation));
+            }
 
             _favoritedPhotoRepository.Delete(fileLocation);
             _markedForDeletionPhotoRepository.Delete(fileLocation);
@@ -88,7 +104,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Favoriting {fileLocation}...");
             if (fileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocation));
+            }
 
             _favoritedPhotoRepository.Upsert(
                 new FavoritedPhoto
@@ -102,7 +120,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Favoriting {fileLocations.Length} photos...");
             if (fileLocations == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocations));
+            }
 
             _favoritedPhotoRepository.Upsert(
                 fileLocations.Select(
@@ -117,7 +137,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Marking {fileLocation} for deletion...");
             if (fileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocation));
+            }
 
             _markedForDeletionPhotoRepository.Upsert(
                 new MarkedForDeletionPhoto
@@ -131,7 +153,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Marking {fileLocations.Length} photos for deletion...");
             if (fileLocations == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocations));
+            }
 
             _markedForDeletionPhotoRepository.Upsert(
                 fileLocations.Select(
@@ -146,7 +170,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Unfavoriting {fileLocation}...");
             if (fileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocation));
+            }
 
             _favoritedPhotoRepository.Delete(fileLocation);
         }
@@ -155,7 +181,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Unfavoriting {fileLocations.Length} photos...");
             if (fileLocations == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocations));
+            }
 
             _favoritedPhotoRepository.Delete(fileLocations);
         }
@@ -164,7 +192,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Unmarking {fileLocation} for deletion...");
             if (fileLocation == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocation));
+            }
 
             _markedForDeletionPhotoRepository.Delete(fileLocation);
         }
@@ -173,7 +203,9 @@ namespace PhotoReviewer.DAL
         {
             _logger.Debug($"Unmarking {fileLocations.Length} photos for deletion...");
             if (fileLocations == null)
+            {
                 throw new ArgumentNullException(nameof(fileLocations));
+            }
 
             _markedForDeletionPhotoRepository.Delete(fileLocations);
         }

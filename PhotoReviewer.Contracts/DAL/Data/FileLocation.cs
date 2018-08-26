@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using JetBrains.Annotations;
+// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace PhotoReviewer.Contracts.DAL.Data
 {
@@ -58,9 +59,14 @@ namespace PhotoReviewer.Contracts.DAL.Data
         public bool Equals(FileLocation other)
         {
             if (ReferenceEquals(null, other))
+            {
                 return false;
+            }
+
             if (ReferenceEquals(this, other))
+            {
                 return true;
+            }
 
             return string.Equals(Directory, other.Directory) && string.Equals(FileName, other.FileName) && string.Equals(Extension, other.Extension);
         }
@@ -68,9 +74,14 @@ namespace PhotoReviewer.Contracts.DAL.Data
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
+            {
                 return false;
+            }
+
             if (ReferenceEquals(this, obj))
+            {
                 return true;
+            }
 
             var a = obj as FileLocation;
             return a != null && Equals(a);

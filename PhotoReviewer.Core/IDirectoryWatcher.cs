@@ -10,6 +10,7 @@ namespace PhotoReviewer.Core
         event EventHandler<EventArgs<string>> FileAdded;
         event EventHandler<EventArgs<string>> FileDeleted;
         event EventHandler<EventArgs<Tuple<string, string>>> FileRenamed;
+
         void SetDirectoryPath([NotNull] string directoryPath);
     }
 }

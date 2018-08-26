@@ -5,18 +5,14 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Shell;
-using Autofac;
 using Common.Logging;
 using JetBrains.Annotations;
 using PhotoReviewer.Contracts.DAL;
 using PhotoReviewer.Contracts.View;
 using PhotoReviewer.Core;
-using PhotoReviewer.Resources;
 using PropertyChanged;
 using Scar.Common.Events;
 using Scar.Common.IO;
@@ -34,7 +30,11 @@ namespace PhotoReviewer.ViewModel
     public sealed class MainViewModel : IDisposable
     {
         [NotNull]
-        private readonly ILifetimeScope _lifetimeScope;
+        private readonly Func<MainViewModel, Photo, PhotoViewModel> _photoViewModelFactory;
+        [NotNull]
+        private readonly Func<IMainWindow, PhotoViewModel, IPhotoWindow> _photoWindowFactory;
+        [NotNull]
+        private readonly WindowFactory<IMainWindow> _mainWindowFactory;
 
         [NotNull]
         private readonly ILog _logger;
@@ -51,15 +51,22 @@ namespace PhotoReviewer.ViewModel
         public MainViewModel(
             [NotNull] PhotoCollection photoCollection,
             [NotNull] ISettingsRepository settingsRepository,
-            [NotNull] ILifetimeScope lifetimeScope,
             [NotNull] WindowsArranger windowsArranger,
-            [NotNull] ILog logger)
+            [NotNull] ILog logger,
+            [NotNull] Func<MainViewModel, ShiftDateViewModel> shiftDateViewModelFactory,
+            [NotNull] WindowFactory<IMainWindow> mainWindowFactory,
+            [NotNull] Func<MainViewModel, Photo, PhotoViewModel> photoViewModelFactory,
+            [NotNull] Func<IMainWindow, PhotoViewModel, IPhotoWindow> photoWindowFactory)
         {
             PhotoCollection = photoCollection ?? throw new ArgumentNullException(nameof(photoCollection));
             _settingsRepository = settingsRepository ?? throw new ArgumentNullException(nameof(settingsRepository));
-            _lifetimeScope = lifetimeScope ?? throw new ArgumentNullException(nameof(lifetimeScope));
             _windowsArranger = windowsArranger;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            shiftDateViewModelFactory = shiftDateViewModelFactory ?? throw new ArgumentNullException(nameof(shiftDateViewModelFactory));
+            _mainWindowFactory = mainWindowFactory ?? throw new ArgumentNullException(nameof(mainWindowFactory));
+            _photoViewModelFactory = photoViewModelFactory ?? throw new ArgumentNullException(nameof(photoViewModelFactory));
+            _photoWindowFactory = photoWindowFactory ?? throw new ArgumentNullException(nameof(photoWindowFactory));
+
             BrowseDirectoryCommand = new CorrelationCommand(BrowseDirectory);
             ChangeDirectoryPathCommand = new CorrelationCommand<string>(ChangeDirectoryPath);
             ShowOnlyMarkedChangedCommand = new CorrelationCommand<bool>(ShowOnlyMarkedChanged);
@@ -78,16 +85,18 @@ namespace PhotoReviewer.ViewModel
             PhotoCollection.Progress += PhotosCollection_Progress;
             PhotoCollection.CollectionChanged += PhotoCollection_CollectionChanged;
             PhotoCollection.PhotoNotification += PhotoCollection_PhotoNotification;
-            ShiftDateViewModel = lifetimeScope.Resolve<ShiftDateViewModel>(new TypedParameter(typeof(MainViewModel), this));
+            ShiftDateViewModel = shiftDateViewModelFactory(this);
 
             var directoryPath = settingsRepository.Settings.LastUsedDirectoryPath;
             if (!string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath))
+            {
                 SetDirectoryPathAsync(directoryPath);
+            }
         }
 
         [NotNull]
         [DoNotNotify]
-        public IEnumerable<Photo> SelectedPhotos { get; private set; } = new Photo[0];
+        internal IEnumerable<Photo> SelectedPhotos { get; private set; } = new Photo[0];
 
         [NotNull]
         [DoNotNotify]
@@ -127,10 +136,13 @@ namespace PhotoReviewer.ViewModel
                         //SelectionChanged is not hit sometimes
                         SelectionChanged(e.NewItems);
                     }
+
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (var photo in e.OldItems.Cast<Photo>())
+                    {
                         _windowsArranger.ClosePhoto(photo);
+                    }
 
                     break;
             }
@@ -139,7 +151,9 @@ namespace PhotoReviewer.ViewModel
         private void PhotoCollection_PhotoNotification(object sender, EventArgs e)
         {
             foreach (var photo in _windowsArranger.Photos)
+            {
                 photo.ReloadCollectionInfoIfNeeded();
+            }
 
             SelectedPhoto?.ReloadCollectionInfoIfNeeded();
         }
@@ -152,9 +166,13 @@ namespace PhotoReviewer.ViewModel
                     Progress = e.Percentage;
                     ProgressDescription = $"{e.Current} of {e.Total} ({e.Percentage} %)";
                     if (e.Current == 0)
+                    {
                         BeginProgress();
+                    }
                     else if (e.Current == e.Total)
+                    {
                         EndProgress();
+                    }
                 },
                 null);
         }
@@ -185,6 +203,7 @@ namespace PhotoReviewer.ViewModel
                 settings.LastUsedDirectoryPath = CurrentDirectoryPath = directoryPath;
                 _settingsRepository.Settings = settings;
             }
+
             await task.ConfigureAwait(false);
         }
 
@@ -267,9 +286,14 @@ namespace PhotoReviewer.ViewModel
             var lastUsedPath = _settingsRepository.Settings.LastUsedDirectoryPath;
 
             if (!string.IsNullOrEmpty(lastUsedPath))
+            {
                 dialog.SelectedPath = lastUsedPath;
+            }
+
             if (dialog.ShowDialog() != DialogResult.OK)
+            {
                 return;
+            }
 
             _logger.Debug($"Changing directory path to {dialog.SelectedPath}...");
             SetDirectoryPathAsync(dialog.SelectedPath);
@@ -279,7 +303,9 @@ namespace PhotoReviewer.ViewModel
         {
             _logger.Debug($"Changing directory path to {directoryPath}...");
             if (directoryPath == null)
+            {
                 throw new ArgumentNullException(nameof(directoryPath));
+            }
 
             SetDirectoryPathAsync(directoryPath);
         }
@@ -302,29 +328,35 @@ namespace PhotoReviewer.ViewModel
             await PhotoCollection.DeleteMarkedAsync().ConfigureAwait(false);
         }
 
-        public void Favorite()
+        internal void Favorite()
         {
             _logger.Info("(Un)Favoriting selected photos...");
             if (!SelectedPhotos.Any())
+            {
                 throw new InvalidOperationException("Photos are not selected");
+            }
 
             PhotoCollection.Favorite(SelectedPhotos.ToArray());
         }
 
-        public void MarkForDeletion()
+        internal void MarkForDeletion()
         {
             _logger.Info("(Un)Marking selected photos for deletion...");
             if (!SelectedPhotos.Any())
+            {
                 throw new InvalidOperationException("Photos are not selected");
+            }
 
             PhotoCollection.MarkForDeletion(SelectedPhotos.ToArray());
         }
 
-        public async void RenameToDateAsync()
+        internal async void RenameToDateAsync()
         {
             _logger.Info("Renaming selected photos to date...");
             if (!SelectedPhotos.Any())
+            {
                 throw new InvalidOperationException("Photos are not selected");
+            }
 
             await PhotoCollection.RenameToDateAsync(SelectedPhotos.ToArray()).ConfigureAwait(false);
         }
@@ -333,7 +365,9 @@ namespace PhotoReviewer.ViewModel
         {
             _logger.Trace($"Opening selected photo ({SelectedPhoto?.FileLocation}) in explorer...");
             if (SelectedPhoto == null)
+            {
                 throw new InvalidOperationException("Photos are not selected");
+            }
 
             SelectedPhoto.FileLocation.ToString().OpenFileInExplorer();
         }
@@ -342,7 +376,9 @@ namespace PhotoReviewer.ViewModel
         {
             _logger.Trace($"Opening current directory ({CurrentDirectoryPath}) in explorer...");
             if (CurrentDirectoryPath == null)
+            {
                 throw new InvalidOperationException("No directory entered");
+            }
 
             CurrentDirectoryPath.OpenDirectoryInExplorer();
         }
@@ -351,13 +387,15 @@ namespace PhotoReviewer.ViewModel
         {
             _logger.Trace($"Opening selected photo ({SelectedPhoto?.FileLocation}) in a separate window...");
             if (SelectedPhoto == null)
+            {
                 throw new InvalidOperationException("Photos are not selected");
+            }
 
             ReselectPhoto();
-            var mainWindow = await _lifetimeScope.Resolve<WindowFactory<IMainWindow>>().GetWindowAsync(CancellationToken.None);
-            var photoViewModel = _lifetimeScope.Resolve<PhotoViewModel>(new TypedParameter(typeof(MainViewModel), this), new TypedParameter(typeof(Photo), SelectedPhoto));
+            var mainWindow = await _mainWindowFactory.GetWindowAsync(CancellationToken.None);
+            var photoViewModel = _photoViewModelFactory(this, SelectedPhoto);
             //Window is shown in its constructor
-            var window = _lifetimeScope.Resolve<IPhotoWindow>(new TypedParameter(typeof(Window), mainWindow), new TypedParameter(typeof(PhotoViewModel), photoViewModel));
+            var window = _photoWindowFactory(mainWindow, photoViewModel);
             _windowsArranger.Add(window);
         }
 

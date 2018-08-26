@@ -14,9 +14,9 @@ namespace PhotoReviewer.View
         [NotNull]
         private readonly PhotoViewModel _photoViewModel;
 
-        public PhotoWindow([NotNull] Window mainWindow, [NotNull] PhotoViewModel photoViewModel)
+        public PhotoWindow([NotNull] IMainWindow mainWindow, [NotNull] PhotoViewModel photoViewModel)
         {
-            Owner = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
+            Owner = mainWindow as Window ?? throw new ArgumentNullException(nameof(mainWindow));
             _photoViewModel = photoViewModel ?? throw new ArgumentNullException(nameof(photoViewModel));
             DataContext = photoViewModel;
             InitializeComponent();

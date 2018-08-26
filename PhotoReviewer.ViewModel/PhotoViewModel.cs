@@ -51,15 +51,14 @@ namespace PhotoReviewer.ViewModel
             [NotNull] IImageRetriever imageRetriever)
         {
             _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
-            if (windowsArranger == null)
-                throw new ArgumentNullException(nameof(windowsArranger));
-
             _cancellationTokenSourceProvider = cancellationTokenSourceProvider ?? throw new ArgumentNullException(nameof(cancellationTokenSourceProvider));
             _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exifTool = exifTool ?? throw new ArgumentNullException(nameof(exifTool));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
             Photo = photo ?? throw new ArgumentNullException(nameof(photo));
+            windowsArranger = windowsArranger ?? throw new ArgumentNullException(nameof(windowsArranger));
+
             ChangePhotoAsync(ChangeType.Reload);
             ToggleFullHeightCommand = new CorrelationCommand<IPhotoWindow>(windowsArranger.ToggleFullHeight);
             FavoriteCommand = new CorrelationCommand(Favorite);
@@ -71,17 +70,11 @@ namespace PhotoReviewer.ViewModel
             WindowClosingCommand = new CorrelationCommand(WindowClosing);
         }
 
-        #region Dependency Properties
+        [DependsOn(nameof(Photo))]
+        public bool NextPhotoAvailable => Photo.Next != null;
 
-        [CanBeNull]
-        public BitmapSource BitmapSource { get; private set; }
-
-        [NotNull]
-        public Photo Photo { get; private set; }
-
-        #endregion
-
-        #region Commands
+        [DependsOn(nameof(Photo))]
+        public bool PrevPhotoAvailable => Photo.Prev != null;
 
         public ICommand ToggleFullHeightCommand { get; }
         public ICommand FavoriteCommand { get; }
@@ -91,10 +84,6 @@ namespace PhotoReviewer.ViewModel
         public ICommand ChangePhotoCommand { get; }
         public ICommand RotateCommand { get; }
         public ICommand WindowClosingCommand { get; }
-
-        #endregion
-
-        #region Command Handlers
 
         private async void ChangePhotoAsync(ChangeType changeType)
         {
@@ -117,7 +106,9 @@ namespace PhotoReviewer.ViewModel
             }
 
             if (newPhoto == null)
+            {
                 return;
+            }
 
             await _cancellationTokenSourceProvider.StartNewTask(
                     async token =>
@@ -163,9 +154,7 @@ namespace PhotoReviewer.ViewModel
 
             var originalOrientation = Photo.Metadata.Orientation;
             Photo.Metadata.Orientation = originalOrientation.GetNextOrientation(rotationType);
-            var angle = rotationType == RotationType.Clockwise
-                ? 90
-                : -90;
+            var angle = rotationType == RotationType.Clockwise ? 90 : -90;
             await _cancellationTokenSourceProvider.StartNewTask(
                 async token =>
                 {
@@ -193,8 +182,8 @@ namespace PhotoReviewer.ViewModel
 
         private void RotateVisualRepresentation(int angle)
         {
-            BitmapSource = _imageRetriever.ApplyRotateTransform(angle, BitmapSource);
-            Photo.Thumbnail = _imageRetriever.ApplyRotateTransform(angle, Photo.Thumbnail);
+            BitmapSource = _imageRetriever.ApplyRotateTransform(angle, BitmapSource ?? throw new InvalidOperationException());
+            Photo.Thumbnail = _imageRetriever.ApplyRotateTransform(angle, Photo.Thumbnail ?? throw new InvalidOperationException());
             Photo.ReloadMetadata();
         }
 
@@ -225,6 +214,14 @@ namespace PhotoReviewer.ViewModel
         {
             _cancellationTokenSourceProvider.Cancel();
         }
+
+        #region Dependency Properties
+
+        [CanBeNull]
+        public BitmapSource BitmapSource { get; private set; }
+
+        [NotNull]
+        public Photo Photo { get; private set; }
 
         #endregion
     }

@@ -84,6 +84,9 @@
     <Reference Include="Common.Logging.NLog41, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\packages\Common.Logging.NLog41.3.4.1\lib\net40\Common.Logging.NLog41.dll</HintPath>
     </Reference>
+    <Reference Include="Costura, Version=3.1.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Costura.Fody.3.1.0\lib\net46\Costura.dll</HintPath>
+    </Reference>
     <Reference Include="Easy.MessageHub, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Easy.MessageHub.3.4.0\lib\net35\Easy.MessageHub.dll</HintPath>
     </Reference>
@@ -160,9 +163,8 @@
       <HintPath>..\packages\Scar.Common.WPF.Controls.NumericUpDown.1.0.6811.31762\lib\net47\Scar.Common.WPF.Controls.NumericUpDown.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Scar.Common.WPF.Controls.TimePicker">
-      <HintPath>..\packages\Scar.Common.WPF.Controls.TimePicker.1.0.6811.32083\lib\net47\Scar.Common.WPF.Controls.TimePicker.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Scar.Common.WPF.Controls.TimePicker, Version=1.0.6812.22525, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.Controls.TimePicker.1.0.6812.22525\lib\net47\Scar.Common.WPF.Controls.TimePicker.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.Controls.ZoomBorder">
       <HintPath>..\packages\Scar.Common.WPF.Controls.ZoomBorder.1.0.6811.31625\lib\net47\Scar.Common.WPF.Controls.ZoomBorder.dll</HintPath>
@@ -179,16 +181,18 @@
       <HintPath>..\packages\Scar.Common.WPF.Startup.1.0.6785.25609\lib\net47\Scar.Common.WPF.Startup.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Scar.Common.WPF.View">
-      <HintPath>..\packages\Scar.Common.WPF.View.1.0.6789.21375\lib\net47\Scar.Common.WPF.View.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Scar.Common.WPF.View, Version=1.0.6812.21943, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.View.1.0.6812.21943\lib\net47\Scar.Common.WPF.View.dll</HintPath>
+    </Reference>
+    <Reference Include="Scar.Common.WPF.View.AutofacScopedWindowProvider, Version=1.0.6812.21429, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.View.AutofacScopedWindowProvider.1.0.6812.21429\lib\net47\Scar.Common.WPF.View.AutofacScopedWindowProvider.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.View.Contracts">
       <HintPath>..\packages\Scar.Common.WPF.View.Contracts.1.0.6719.21680\lib\net47\Scar.Common.WPF.View.Contracts.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Scar.Common.WPF.View.WindowFactory, Version=1.0.6764.32410, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.View.WindowFactory.1.0.6764.32410\lib\net47\Scar.Common.WPF.View.WindowFactory.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.View.WindowFactory, Version=1.0.6812.20901, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.View.WindowFactory.1.0.6812.20901\lib\net47\Scar.Common.WPF.View.WindowFactory.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.ViewModel">
       <HintPath>..\packages\Scar.Common.WPF.ViewModel.1.0.6719.21806\lib\net47\Scar.Common.WPF.ViewModel.dll</HintPath>
@@ -288,5 +292,9 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Costura.Fody.3.1.0\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.3.1.0\build\Costura.Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\Fody.3.1.4\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.3.1.4\build\Fody.targets'))" />
   </Target>
+  <Import Project="..\packages\Costura.Fody.3.1.0\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.3.1.0\build\Costura.Fody.targets')" />
+  <Import Project="..\packages\Fody.3.1.4\build\Fody.targets" Condition="Exists('..\packages\Fody.3.1.4\build\Fody.targets')" />
 </Project>

@@ -35,15 +35,11 @@ namespace PhotoReviewer.ViewModel
 
         [NotNull]
         private readonly IMessageHub _messenger;
+
         [NotNull]
-        private readonly IPhotoUserInfoRepository _photoUserInfoRepository;
+        public readonly Task LoadAdditionalInfoTask; //TODO: create the proper task during construction
 
         private int? _index;
-
-        [NotNull]
-        private readonly IMetadataExtractor _metadataExtractor;
-        [NotNull]
-        private readonly CancellationToken _cancellationToken;
 
         public Photo(
             [NotNull] FileLocation fileLocation,
@@ -57,10 +53,12 @@ namespace PhotoReviewer.ViewModel
             [NotNull] IPhotoUserInfoRepository photoUserInfoRepository)
         {
             if (photoUserInfo == null)
+            {
                 throw new ArgumentNullException(nameof(photoUserInfo));
-            _photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
-            _metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
-            _cancellationToken = cancellationToken;
+            }
+
+            photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
+            metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
@@ -69,26 +67,27 @@ namespace PhotoReviewer.ViewModel
             FileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
             Favorited = photoUserInfo.Favorited;
             MarkedForDeletion = photoUserInfo.MarkedForDeletion;
-            LoadAdditionalInfoTask = Task.Run(async () =>
-            {
-                if (_cancellationToken.IsCancellationRequested)
-                    return;
-
-                var favoritedFileExists = File.Exists(FileLocation.FavoriteFilePath);
-                if (!Favorited && favoritedFileExists)
+            LoadAdditionalInfoTask = Task.Run(
+                async () =>
                 {
-                    _logger.Info($"Favoriting {this} due to existence of favorited file...");
-                    _photoUserInfoRepository.Favorite(fileLocation);
-                    Favorited = true;
-                }
-                //await Task.Delay(5000, _cancellationToken);
-                Metadata = await _metadataExtractor.ExtractAsync(FileLocation.ToString()).ConfigureAwait(false);
-                await LoadThumbnailAsync(_cancellationToken).ConfigureAwait(false);
-            });
-        }
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
 
-        [NotNull]
-        public readonly Task LoadAdditionalInfoTask; //TODO: create the proper task during construction
+                    var favoritedFileExists = File.Exists(FileLocation.FavoriteFilePath);
+                    if (!Favorited && favoritedFileExists)
+                    {
+                        _logger.Info($"Favoriting {this} due to existence of favorited file...");
+                        photoUserInfoRepository.Favorite(fileLocation);
+                        Favorited = true;
+                    }
+
+                    //await Task.Delay(5000, _cancellationToken);
+                    Metadata = await metadataExtractor.ExtractAsync(FileLocation.ToString()).ConfigureAwait(false);
+                    await LoadThumbnailAsync(cancellationToken).ConfigureAwait(false);
+                });
+        }
 
         [DependsOn(nameof(Metadata))]
         public bool OrientationIsSpecified => Metadata.Orientation != Orientation.NotSpecified;
@@ -101,7 +100,7 @@ namespace PhotoReviewer.ViewModel
         public bool LastOperationFinished { get; set; }
 
         [NotNull]
-        public ExifMetadata Metadata { get; set; } = EmptyMetadataForInit;
+        public ExifMetadata Metadata { get; private set; } = EmptyMetadataForInit;
 
         [NotNull]
         public string PositionInCollection { get; private set; } = "Not set";
@@ -123,9 +122,7 @@ namespace PhotoReviewer.ViewModel
             get
             {
                 var index = Index;
-                return index == _collection.FilteredView.Count - 1 || index == -1
-                    ? null
-                    : (Photo) _collection.FilteredView.GetItemAt(index + 1);
+                return index == _collection.FilteredView.Count - 1 || index == -1 ? null : (Photo)_collection.FilteredView.GetItemAt(index + 1);
             }
         }
 
@@ -136,9 +133,7 @@ namespace PhotoReviewer.ViewModel
             get
             {
                 var index = Index;
-                return index == 0 || index == -1
-                    ? null
-                    : (Photo) _collection.FilteredView.GetItemAt(index - 1);
+                return index == 0 || index == -1 ? null : (Photo)_collection.FilteredView.GetItemAt(index - 1);
             }
         }
 
@@ -152,18 +147,19 @@ namespace PhotoReviewer.ViewModel
         public void ReloadCollectionInfoIfNeeded()
         {
             if (_index != null)
+            {
                 return;
+            }
 
             PositionInCollection = $"{Index + 1} of {_collection.FilteredView.Count}";
         }
 
-        public async Task LoadThumbnailAsync(CancellationToken cancellationToken)
+        private async Task LoadThumbnailAsync(CancellationToken cancellationToken)
         {
             try
             {
                 var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FileLocation.ToString(), cancellationToken).ConfigureAwait(false);
-                if (thumbnailBytes != null)
-                    Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation).ConfigureAwait(false);
+                Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -203,9 +199,13 @@ namespace PhotoReviewer.ViewModel
             {
                 _markedForDeletion = value;
                 if (value)
+                {
                     _collection.MarkedForDeletionCount++;
+                }
                 else
+                {
                     _collection.MarkedForDeletionCount--;
+                }
             }
         }
 
@@ -216,9 +216,13 @@ namespace PhotoReviewer.ViewModel
             {
                 _favorited = value;
                 if (value)
+                {
                     _collection.FavoritedCount++;
+                }
                 else
+                {
                     _collection.FavoritedCount--;
+                }
             }
         }
 

@@ -52,9 +52,6 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.8.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.4.8.1\lib\net45\Autofac.dll</HintPath>
-    </Reference>
     <Reference Include="Common.Logging.Core, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
       <HintPath>..\packages\Common.Logging.Core.3.4.1\lib\net40\Common.Logging.Core.dll</HintPath>
     </Reference>
@@ -68,7 +65,6 @@
       <HintPath>..\packages\JetBrains.Annotations.2018.2.1\lib\net20\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -106,14 +102,14 @@
       <HintPath>..\packages\Scar.Common.WPF.Commands.1.0.6753.27805\lib\net47\Scar.Common.WPF.Commands.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Scar.Common.WPF.View, Version=1.0.6789.21375, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.View.1.0.6789.21375\lib\net47\Scar.Common.WPF.View.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.View, Version=1.0.6812.21943, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.View.1.0.6812.21943\lib\net47\Scar.Common.WPF.View.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.View.Contracts, Version=1.0.6719.21680, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.View.Contracts.1.0.6719.21680\lib\net47\Scar.Common.WPF.View.Contracts.dll</HintPath>
     </Reference>
-    <Reference Include="Scar.Common.WPF.View.WindowFactory, Version=1.0.6764.32410, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Scar.Common.WPF.View.WindowFactory.1.0.6764.32410\lib\net47\Scar.Common.WPF.View.WindowFactory.dll</HintPath>
+    <Reference Include="Scar.Common.WPF.View.WindowFactory, Version=1.0.6812.20901, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Scar.Common.WPF.View.WindowFactory.1.0.6812.20901\lib\net47\Scar.Common.WPF.View.WindowFactory.dll</HintPath>
     </Reference>
     <Reference Include="Scar.Common.WPF.ViewModel, Version=1.0.6719.21806, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Scar.Common.WPF.ViewModel.1.0.6719.21806\lib\net47\Scar.Common.WPF.ViewModel.dll</HintPath>

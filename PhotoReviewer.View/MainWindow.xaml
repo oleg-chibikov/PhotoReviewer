@@ -1,4 +1,4 @@
-﻿<commonView:BaseWindow
+<baseWindow:BaseWindow
     x:Class="PhotoReviewer.View.MainWindow"
     x:ClassModifier="internal"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,8 +9,8 @@
     xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
     xmlns:converters="clr-namespace:Scar.Common.WPF.Converters;assembly=Scar.Common.WPF.Converters"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-    xmlns:commonView="clr-namespace:Scar.Common.WPF.View;assembly=Scar.Common.WPF.View"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:baseWindow="clr-namespace:Scar.Common.WPF.View;assembly=Scar.Common.WPF.View.BaseWindow"
     Title="Photo Reviewer"
     Icon="pack://application:,,/PhotoReviewer.Resources;component/Images/Icon.ico"
     MinWidth="800"
@@ -27,7 +27,7 @@
                 Command="{Binding WindowClosingCommand, Mode=OneTime}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    <commonView:BaseWindow.Resources>
+    <baseWindow:BaseWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
@@ -36,14 +36,14 @@
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </commonView:BaseWindow.Resources>
+    </baseWindow:BaseWindow.Resources>
 
-    <commonView:BaseWindow.TaskbarItemInfo>
+    <baseWindow:BaseWindow.TaskbarItemInfo>
         <TaskbarItemInfo
             ProgressState="{Binding ProgressState, Mode=OneWay}"
             Description="{Binding ProgressDescription, Mode=OneWay}"
             ProgressValue="{Binding Progress, Mode=OneWay, Converter={StaticResource PercentageIntToDoubleConverter}}" />
-    </commonView:BaseWindow.TaskbarItemInfo>
+    </baseWindow:BaseWindow.TaskbarItemInfo>
 
     <!-- Master Container -->
     <materialDesign:DialogHost
@@ -120,4 +120,4 @@
 
         </Grid>
     </materialDesign:DialogHost>
-</commonView:BaseWindow>
+</baseWindow:BaseWindow>
