@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Easy.MessageHub" Version="5.0.0" />
+    <PackageReference Include="Fody" Version="6.8.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="PropertyChanged.Fody" Version="4.1.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <PropertyChangedAnalyzerConfiguration>
+      <IsCodeGeneratorDisabled>false</IsCodeGeneratorDisabled>
+      <EventInvokerName>OnPropertyChanged</EventInvokerName>
+    </PropertyChangedAnalyzerConfiguration>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\ApplicationLifetime\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\ImageProcessing\ExifExtraction\ExifExtraction.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\ImageProcessing\MetadataExtraction\MetadataExtraction.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Various\Async\Async.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Various\Processes\Processes.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Various\RateLimiting\RateLimiting.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\ImageRetrieval\ImageRetrieval.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\WindowCreation\WindowCreation.csproj" />
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Resources\Resources.csproj" />
+  </ItemGroup>
+</Project>

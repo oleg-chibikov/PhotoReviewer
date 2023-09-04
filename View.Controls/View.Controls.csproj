@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <UseWpf>True</UseWpf>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="PhotoTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\TimePicker\TimePicker.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\ZoomBorder\ZoomBorder.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\Converters\Converters.csproj" />
+    <ProjectReference Include="..\View.Converters\View.Converters.csproj" />
+    <ProjectReference Include="..\ViewModel\ViewModel.csproj" />
+  </ItemGroup>
+</Project>

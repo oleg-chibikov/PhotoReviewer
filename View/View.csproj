@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <UseWpf>True</UseWpf>
+  </PropertyGroup>    
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\TimePicker\TimePicker.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\ZoomBorder\ZoomBorder.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\Converters\Converters.csproj" />
+    <ProjectReference Include="..\Resources\Resources.csproj" />
+    <ProjectReference Include="..\View.Controls\View.Controls.csproj" />
+    <ProjectReference Include="..\View.Converters\View.Converters.csproj" />
+    <ProjectReference Include="..\View.Windows\View.Windows.csproj" />
+    <ProjectReference Include="..\ViewModel\ViewModel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="icon.ico" />
+  </ItemGroup>
+</Project>

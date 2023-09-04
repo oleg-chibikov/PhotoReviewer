@@ -1,0 +1,132 @@
+<UserControl
+    x:Class="PhotoReviewer.View.Controls.PhotosList"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance Type=viewModel:MainViewModel, IsDesignTimeCreatable=False}"
+    xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:behaviors="clr-namespace:Scar.Common.WPF.Behaviors;assembly=Scar.Common.WPF.Behaviors"
+    xmlns:converters="clr-namespace:Scar.Common.WPF.Converters;assembly=Scar.Common.WPF.Converters">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="PhotoTemplate.xaml" />
+                <ResourceDictionary>
+                    <!-- Main photo catalog view -->
+                    <Style
+                        TargetType="{x:Type ListBox}">
+                        <Setter
+                            Property="Foreground"
+                            Value="White" />
+                        <Setter
+                            Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                        <Setter
+                            Property="VerticalContentAlignment"
+                            Value="Stretch" />
+                        <Setter
+                            Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate
+                                    TargetType="{x:Type ListBox}">
+                                    <WrapPanel
+                                        Margin="5"
+                                        IsItemsHost="True"
+                                        Orientation="Horizontal"
+                                        ItemHeight="{Binding PhotoSize, Mode=OneWay}"
+                                        ItemWidth="{Binding PhotoSize, Mode=OneWay}"
+                                        VerticalAlignment="Top"
+                                        HorizontalAlignment="Stretch" />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <!-- Style for an individual generic item - do not remove -->
+                    <Style
+                        TargetType="{x:Type ListBoxItem}" />
+
+                    <converters:ProgressStateToBooleanConverter
+                        x:Key="ProgressStateToBooleanConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <GroupBox
+        Header="{Binding Path=PhotoCollection.Count, Mode=OneWay}">
+        <ScrollViewer
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollBarVisibility="Disabled">
+            <ListBox
+                x:Name="PhotosListBox"
+                x:FieldModifier="public"
+                IsSynchronizedWithCurrentItem="True"
+                Margin="5"
+                SelectionMode="Extended"
+                ItemsSource="{Binding PhotoCollection.FilteredView, Mode=OneTime}"
+                SelectedItem="{Binding SelectedPhoto, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <b:Interaction.Behaviors>
+                    <behaviors:ListBoxScrollIntoViewBehavior />
+                </b:Interaction.Behaviors>
+                <b:Interaction.Triggers>
+                    <b:EventTrigger
+                        EventName="SelectionChanged">
+                        <b:InvokeCommandAction
+                            Command="{Binding SelectionChangedCommand, Mode=OneTime}"
+                            CommandParameter="{Binding SelectedItems, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" />
+                    </b:EventTrigger>
+                </b:Interaction.Triggers>
+                <ListBox.InputBindings>
+                    <KeyBinding
+                        Key="R"
+                        Modifiers="Control"
+                        Command="{Binding RenameToDateCommand, Mode=OneTime}" />
+                    <KeyBinding
+                        Key="D"
+                        Modifiers="Control"
+                        Command="{Binding ShiftDateViewModel.OpenShiftDateDialogCommand, Mode=OneTime}" />
+                    <KeyBinding
+                        Key="F"
+                        Command="{Binding FavoriteCommand, Mode=OneTime}" />
+                    <KeyBinding
+                        Key="Back"
+                        Command="{Binding MarkForDeletionCommand, Mode=OneTime}" />
+                    <KeyBinding
+                        Key="Delete"
+                        Command="{Binding MarkForDeletionCommand, Mode=OneTime}" />
+                    <KeyBinding
+                        Key="Enter"
+                        Command="{Binding OpenPhotoCommand, Mode=OneTime}" />
+                </ListBox.InputBindings>
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem
+                            Header="View (Double click|Enter)"
+                            Command="{Binding OpenPhotoCommand, Mode=OneTime}" />
+                        <MenuItem
+                            Header="Favorite (F)"
+                            Command="{Binding FavoriteCommand, Mode=OneTime}" />
+                        <MenuItem
+                            Header="Mark as deleted (Delete|Backspace)"
+                            Command="{Binding MarkForDeletionCommand, Mode=OneTime}" />
+                        <MenuItem
+                            Header="Rename to date (Ctrl+R)"
+                            Command="{Binding RenameToDateCommand, Mode=OneTime}"
+                            IsEnabled="{Binding ProgressState, Mode=OneWay, Converter={StaticResource ProgressStateToBooleanConverter}}" />
+                        <MenuItem
+                            Header="Shift date (Ctrl+D)"
+                            Command="{Binding ShiftDateViewModel.OpenShiftDateDialogCommand, Mode=OneTime}"
+                            IsEnabled="{Binding ProgressState, Mode=OneWay, Converter={StaticResource ProgressStateToBooleanConverter}}" />
+                        <MenuItem
+                            Header="Open in Explorer"
+                            Command="{Binding OpenPhotoInExplorerCommand, Mode=OneTime}" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+            </ListBox>
+        </ScrollViewer>
+    </GroupBox>
+</UserControl>
