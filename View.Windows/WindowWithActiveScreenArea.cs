@@ -17,6 +17,7 @@ namespace PhotoReviewer.View.Windows
         {
             _rateLimiter = new RateLimiter(SynchronizationContext.Current);
 
+            LocationChanged += LocationChangedAction;
             LocationChangedAction(this, EventArgs.Empty);
             return;
 

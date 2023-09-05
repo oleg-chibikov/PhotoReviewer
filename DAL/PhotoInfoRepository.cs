@@ -29,7 +29,7 @@ namespace PhotoReviewer.DAL
 
         public IEnumerable<TPhotoInfo> GetByDirectory(string directoryPath)
         {
-            _logger.LogTrace($"Getting all files by directory {directoryPath}...");
+            _logger.LogTrace("Getting all files by directory {DirectoryPath}...", directoryPath);
             if (directoryPath == null)
             {
                 throw new ArgumentNullException(nameof(directoryPath));
@@ -40,10 +40,10 @@ namespace PhotoReviewer.DAL
 
         public void Rename(FileLocation oldFileLocation, FileLocation newFileLocation)
         {
-            _logger.LogDebug($"Renaming {oldFileLocation} to {newFileLocation} in the database...");
+            _logger.LogDebug("Renaming {OldFileLocation} to {NewFileLocation} in the database...", oldFileLocation, newFileLocation);
             if (!Check(oldFileLocation))
             {
-                _logger.LogWarning($"There is no {oldFileLocation} in the database...");
+                _logger.LogWarning("There is no {OldFileLocation} in the database...", oldFileLocation);
                 return;
             }
 
@@ -64,7 +64,7 @@ namespace PhotoReviewer.DAL
                 return;
             }
 
-            _logger.LogDebug($"Deleting {notExisting.Length} non existing photos from the database...");
+            _logger.LogDebug("Deleting {NotExistingLength} non existing photos from the database...", notExisting.Length);
             Delete(notExisting);
         }
     }

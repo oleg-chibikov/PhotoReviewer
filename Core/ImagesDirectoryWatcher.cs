@@ -71,11 +71,8 @@ namespace PhotoReviewer.Core
 
         void FileSystemWatcher_Changed(object? sender, FileSystemEventArgs fileSystemEventArgs)
         {
-            _logger.LogInformation($"File system event received: {fileSystemEventArgs.ChangeType}: {fileSystemEventArgs.Name}, {fileSystemEventArgs.FullPath}");
-            var filePath = fileSystemEventArgs.FullPath;
-            if (!IsImage(filePath))
+            if (CheckImage(fileSystemEventArgs, out var filePath))
             {
-                _logger.LogTrace($"{fileSystemEventArgs.FullPath} is not considered to be an image");
                 return;
             }
 
@@ -92,14 +89,29 @@ namespace PhotoReviewer.Core
 
         void FileSystemWatcher_Renamed(object? sender, RenamedEventArgs renamedEventArgs)
         {
-            _logger.LogInformation($"File system event received: {renamedEventArgs.ChangeType}: {renamedEventArgs.Name}, {renamedEventArgs.FullPath}");
-            if (!IsImage(renamedEventArgs.FullPath))
+            if (CheckImage(renamedEventArgs, out var filePath))
             {
-                _logger.LogTrace($"{renamedEventArgs.FullPath} is not considered to be an image");
                 return;
             }
 
             FileRenamed?.Invoke(this, new EventArgs<FileRenamedArgs>(new FileRenamedArgs(renamedEventArgs.OldFullPath, renamedEventArgs.FullPath)));
+        }
+
+        bool CheckImage(FileSystemEventArgs fileSystemEventArgs, out string filePath)
+        {
+            _logger.LogInformation(
+                "File system event received: {ChangeType}: {Name}, {FullPath}",
+                fileSystemEventArgs.ChangeType,
+                fileSystemEventArgs.Name,
+                fileSystemEventArgs.FullPath);
+            filePath = fileSystemEventArgs.FullPath;
+            if (!IsImage(filePath))
+            {
+                _logger.LogTrace("{FullPath} is not considered to be an image", fileSystemEventArgs.FullPath);
+                return true;
+            }
+
+            return false;
         }
     }
 }

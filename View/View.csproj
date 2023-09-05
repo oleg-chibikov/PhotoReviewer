@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <UseWpf>True</UseWpf>
-  </PropertyGroup>    
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+  </ItemGroup>    
   <ItemGroup>
     <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\TimePicker\TimePicker.csproj" />
     <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\ZoomBorder\ZoomBorder.csproj" />

@@ -64,7 +64,7 @@ namespace PhotoReviewer.Core
                         continue;
                     }
 
-                    _logger.LogTrace($"Closing view for {photoWindow.Photo}...");
+                    _logger.LogTrace("Closing view for {Photo}...", photoWindow.Photo);
                     photoWindow.Close();
                     i--;
                 }
@@ -144,7 +144,7 @@ namespace PhotoReviewer.Core
                     mainWindowHeight = activeScreenArea.Height - firstPhotoHeight + (2 * WindowBorderWidth);
                 }
 
-                _logger.LogTrace($"Arranging as {mainWindowHeight:##.#}:{firstPhotoHeight:##.#}...");
+                _logger.LogTrace("Arranging as {MainWindowHeight:##.#}:{FirstPhotoHeight:##.#}...", mainWindowHeight, firstPhotoHeight);
 
                 mainWindow.WindowState = WindowState.Normal;
                 mainWindow.Top = activeScreenArea.Top;

@@ -3,6 +3,9 @@
     <UseWpf>True</UseWpf>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="PhotoTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -12,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\TimePicker\TimePicker.csproj" />
     <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\ZoomBorder\ZoomBorder.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\Behaviors\Behaviors.csproj" />
     <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\Converters\Converters.csproj" />
     <ProjectReference Include="..\View.Converters\View.Converters.csproj" />
     <ProjectReference Include="..\ViewModel\ViewModel.csproj" />

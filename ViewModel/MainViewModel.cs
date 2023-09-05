@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Shell;
@@ -17,6 +18,7 @@ using Scar.Common.ApplicationLifetime.Contracts;
 using Scar.Common.Events;
 using Scar.Common.IO;
 using Scar.Common.MVVM.Commands;
+using Scar.Common.RateLimiting;
 using Scar.Common.View.WindowCreation;
 
 namespace PhotoReviewer.ViewModel
@@ -29,20 +31,15 @@ namespace PhotoReviewer.ViewModel
     public partial class MainViewModel : IDisposable
     {
         readonly Func<MainViewModel, Photo, PhotoViewModel> _photoViewModelFactory;
-
         readonly Func<IMainWindow, PhotoViewModel, IPhotoWindow> _photoWindowFactory;
-
         readonly WindowFactory<IMainWindow> _mainWindowFactory;
-
         readonly ILogger _logger;
-
+        readonly IRateLimiter _reloadMetadataRateLimiter;
         readonly ISettingsRepository _settingsRepository;
-
         readonly SynchronizationContext _syncContext = SynchronizationContext.Current ?? throw new InvalidOperationException("SynchronizationContext.Current is null");
-
         readonly WindowsArranger _windowsArranger;
-
         readonly IAssemblyInfoProvider _assemblyInfoProvider;
+        Action? _loadMetadataForVisibleItems;
 
         public MainViewModel(
             PhotoCollection photoCollection,
@@ -54,7 +51,8 @@ namespace PhotoReviewer.ViewModel
             Func<MainViewModel, Photo, PhotoViewModel> photoViewModelFactory,
             Func<IMainWindow, PhotoViewModel, IPhotoWindow> photoWindowFactory,
             ICommandManager commandManager,
-            IAssemblyInfoProvider assemblyInfoProvider)
+            IAssemblyInfoProvider assemblyInfoProvider,
+            IRateLimiter reloadMetadataRateLimiter)
         {
             _ = commandManager ?? throw new ArgumentNullException(nameof(commandManager));
             PhotoCollection = photoCollection ?? throw new ArgumentNullException(nameof(photoCollection));
@@ -66,6 +64,7 @@ namespace PhotoReviewer.ViewModel
             _photoViewModelFactory = photoViewModelFactory ?? throw new ArgumentNullException(nameof(photoViewModelFactory));
             _photoWindowFactory = photoWindowFactory ?? throw new ArgumentNullException(nameof(photoWindowFactory));
             _assemblyInfoProvider = assemblyInfoProvider ?? throw new ArgumentNullException(nameof(assemblyInfoProvider));
+            _reloadMetadataRateLimiter = reloadMetadataRateLimiter ?? throw new ArgumentNullException(nameof(reloadMetadataRateLimiter));
 
             BrowseDirectoryCommand = new CorrelationCommand(commandManager, BrowseDirectory);
             ChangeDirectoryPathCommand = new CorrelationCommand<string>(commandManager, ChangeDirectoryPath);
@@ -81,10 +80,13 @@ namespace PhotoReviewer.ViewModel
             SelectionChangedCommand = new CorrelationCommand<IList>(commandManager, SelectionChanged);
             WindowClosingCommand = new CorrelationCommand(commandManager, WindowClosing);
             OpenSettingsFolderCommand = new CorrelationCommand(commandManager, OpenSettingsFolder);
+            ItemsVisibilityChangedCommand = new CorrelationCommand<IList<object>>(commandManager, ItemsVisibilityChanged);
+            ScrollViewLoadedCommand = new CorrelationCommand<Action>(commandManager, ScrollViewLoaded);
             ViewLogsCommand = new CorrelationCommand(commandManager, ViewLogs);
             PhotoCollection.Progress += PhotosCollection_Progress;
             PhotoCollection.CollectionChanged += PhotoCollection_CollectionChanged;
             PhotoCollection.PhotoNotification += PhotoCollection_PhotoNotification;
+            PhotoCollection.AllPhotosLoaded += PhotoCollection_AllPhotosLoaded;
             ShiftDateViewModel = shiftDateViewModelFactory(this);
 
             var directoryPath = settingsRepository.Settings.LastUsedDirectoryPath;
@@ -100,7 +102,7 @@ namespace PhotoReviewer.ViewModel
         [DoNotNotify]
         public ShiftDateViewModel ShiftDateViewModel { get; }
 
-        public double PhotoSize { get; set; } = 230;
+        public double PhotoSize { get; set; } = 500;
 
         public Photo? SelectedPhoto { get; set; }
 
@@ -143,6 +145,10 @@ namespace PhotoReviewer.ViewModel
         public ICommand ViewLogsCommand { get; }
 
         public ICommand OpenSettingsFolderCommand { get; }
+
+        public ICommand ItemsVisibilityChangedCommand { get; }
+
+        public ICommand ScrollViewLoadedCommand { get; }
 
         [DoNotNotify]
         internal IEnumerable<Photo> SelectedPhotos { get; set; } = Array.Empty<Photo>();
@@ -193,8 +199,33 @@ namespace PhotoReviewer.ViewModel
                 PhotoCollection.Progress -= PhotosCollection_Progress;
                 PhotoCollection.PhotoNotification -= PhotoCollection_PhotoNotification;
                 PhotoCollection.CollectionChanged -= PhotoCollection_CollectionChanged;
+                PhotoCollection.AllPhotosLoaded -= PhotoCollection_AllPhotosLoaded;
                 _mainWindowFactory.Dispose();
                 PhotoCollection.Dispose();
+            }
+        }
+
+        void PhotoCollection_AllPhotosLoaded(object? sender, EventArgs e)
+        {
+            _loadMetadataForVisibleItems?.Invoke();
+        }
+
+        void ScrollViewLoaded(Action loadMetadataForVisibleItems)
+        {
+            _ = loadMetadataForVisibleItems ?? throw new ArgumentNullException(nameof(loadMetadataForVisibleItems));
+            _loadMetadataForVisibleItems = loadMetadataForVisibleItems;
+        }
+
+        void ItemsVisibilityChanged(IList<object> visibleItems)
+        {
+            _reloadMetadataRateLimiter.ThrottleAsync(TimeSpan.FromMilliseconds(300), LoadAdditionalInfoAsync);
+            return;
+
+            async void LoadAdditionalInfoAsync()
+            {
+                var photos = visibleItems.Cast<Photo>();
+                await Task.WhenAll(photos.Select(async x => await x.LoadAdditionalInfoAsync(CancellationToken.None).ConfigureAwait(true)))
+                    .ConfigureAwait(true);
             }
         }
 
@@ -314,13 +345,13 @@ namespace PhotoReviewer.ViewModel
                 return;
             }
 
-            _logger.LogDebug($"Changing directory path to {dialog.SelectedPath}...");
+            _logger.LogDebug("Changing directory path to {DirectoryPath}...", dialog.SelectedPath);
             SetDirectoryPathAsync(dialog.SelectedPath);
         }
 
         void ChangeDirectoryPath(string directoryPath)
         {
-            _logger.LogDebug($"Changing directory path to {directoryPath}...");
+            _logger.LogDebug("Changing directory path to {DirectoryPath}...", directoryPath);
             if (directoryPath == null)
             {
                 throw new ArgumentNullException(nameof(directoryPath));
@@ -331,7 +362,7 @@ namespace PhotoReviewer.ViewModel
 
         void ShowOnlyMarkedChanged(bool isChecked)
         {
-            _logger.LogDebug($"Setting show only marked to {isChecked}...");
+            _logger.LogDebug("Setting show only marked to {IsChecked}...", isChecked);
             PhotoCollection.ChangeFilter(isChecked);
         }
 
@@ -349,7 +380,7 @@ namespace PhotoReviewer.ViewModel
 
         void OpenPhotoInExplorer()
         {
-            _logger.LogTrace($"Opening selected photo ({SelectedPhoto?.FileLocation}) in explorer...");
+            _logger.LogTrace("Opening selected photo ({FileLocation}) in explorer...", SelectedPhoto?.FileLocation);
             if (SelectedPhoto == null)
             {
                 throw new InvalidOperationException("Photos are not selected");
@@ -360,7 +391,7 @@ namespace PhotoReviewer.ViewModel
 
         void OpenDirectoryInExplorer()
         {
-            _logger.LogTrace($"Opening current directory ({CurrentDirectoryPath}) in explorer...");
+            _logger.LogTrace("Opening current directory ({DirectoryPath}) in explorer...", CurrentDirectoryPath);
             if (CurrentDirectoryPath == null)
             {
                 throw new InvalidOperationException("No directory entered");
@@ -371,7 +402,7 @@ namespace PhotoReviewer.ViewModel
 
         async void OpenPhotoAsync()
         {
-            _logger.LogTrace($"Opening selected photo ({SelectedPhoto?.FileLocation}) in a separate window...");
+            _logger.LogTrace("Opening selected photo ({FileLocation}) in a separate window...", SelectedPhoto?.FileLocation);
             if (SelectedPhoto == null)
             {
                 throw new InvalidOperationException("Photos are not selected");
@@ -403,15 +434,22 @@ namespace PhotoReviewer.ViewModel
 
         void OpenSettingsFolder()
         {
-            _logger.LogTrace($"Opening setting folder ({_assemblyInfoProvider.SettingsPath})...");
+            _logger.LogTrace("Opening setting folder ({SettingsPath})...", _assemblyInfoProvider.SettingsPath);
             $@"{_assemblyInfoProvider.SettingsPath}".OpenDirectoryInExplorer();
         }
 
         void ViewLogs()
         {
             var logsPath = PathsProvider.LogsPath;
-            _logger.LogTrace($"Viewing logs file ({logsPath})...");
+            _logger.LogTrace("Viewing logs file ({LogsPath})...", logsPath);
             logsPath.OpenFile();
+        }
+
+#pragma warning disable IDE0051 // Triggered by PropertyChanged.Fody
+        void OnPhotoSizeChanged()
+#pragma warning restore IDE0051
+        {
+            _loadMetadataForVisibleItems?.Invoke();
         }
     }
 }

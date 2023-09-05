@@ -91,6 +91,8 @@ namespace PhotoReviewer.ViewModel
             _exifTool.Error += ExifTool_Error;
         }
 
+        public event EventHandler<EventArgs>? AllPhotosLoaded;
+
         public event EventHandler<EventArgs>? PhotoNotification;
 
         public event EventHandler<ProgressEventArgs>? Progress;
@@ -119,7 +121,7 @@ namespace PhotoReviewer.ViewModel
                 throw new ArgumentNullException(nameof(directoryPath));
             }
 
-            _logger.LogInformation($"Changing directory path to '{directoryPath}'...");
+            _logger.LogInformation("Changing directory path to {DirectoryPath}...", directoryPath);
 
             _directoryWatcher.SetDirectoryPath(directoryPath);
 
@@ -131,7 +133,8 @@ namespace PhotoReviewer.ViewModel
 
             if (!Directory.Exists(directoryPath))
             {
-                _messenger.Publish(string.Format(CultureInfo.InvariantCulture, Errors.DirectoryDoesNotExist, directoryPath).ToWarning());
+                _messenger.Publish(string
+                    .Format(CultureInfo.InvariantCulture, Errors.DirectoryDoesNotExist, directoryPath).ToWarning());
                 return;
             }
 
@@ -145,60 +148,47 @@ namespace PhotoReviewer.ViewModel
 
             await StartLongOperationAsync(
                 _loadPathCancellationTokenSourceProvider,
-                token =>
-                {
-                    var ultimatePhotoUserInfo = _photoUserInfoRepository.GetUltimateInfo(directoryPath);
-                    FavoritedCount = MarkedForDeletionCount = 0;
-                    var fileLocations = directoryPath.GetFiles(Constants.FilterExtensions).Select(filePath => new FileLocation(filePath)).ToArray();
-                    var totalCount = fileLocations.Length;
-                    _logger.LogTrace($"There are {totalCount} files in this directory");
-                    if (fileLocations.Length > 0)
-                    {
-                        fileLocations.RunByBlocks(
-                            MaxBlockSize,
-                            (block, index, blocksCount) =>
-                            {
-                                if (token.IsCancellationRequested)
-                                {
-                                    return false;
-                                }
-
-                                _logger.LogTrace($"Processing block {index} ({block.Length} files)...");
-                                var photos = block.Select(
-                                        fileLocation =>
-                                        {
-                                            if (!ultimatePhotoUserInfo.TryGetValue(fileLocation, out var photoUserInfo))
-                                            {
-                                                photoUserInfo = new PhotoUserInfo(false, false);
-                                            }
-
-                                            return _photoFactory(fileLocation, photoUserInfo, token, this);
-                                        })
-                                    .ToArray();
-                                _syncContext.Send(
-                                    t =>
-                                    {
-                                        foreach (var photo in photos)
-                                        {
-                                            Add(photo);
-                                        }
-                                    },
-                                    null);
-                                OnProgress(index + 1, blocksCount);
-
-                                // Little delay to prevent freezing of UI thread
-                                // No cancellation is needed for this small delay because we need expensive try catch in that case
-                                Task.Delay(10).Wait();
-                                return true;
-                            });
-                        GC.Collect();
-                    }
-                },
+                LoadPhotos,
                 true).ConfigureAwait(true); // new operation cancels previous one
+            return;
 
             ////In order to display the Prev photos of Marked ones there is the need to refresh filter after all photos are loaded
             // if (_showOnlyMarked)
             //    FilteredView.Refresh();
+            void LoadPhotos(CancellationToken cancellationToken)
+            {
+                var ultimatePhotoUserInfo = _photoUserInfoRepository.GetUltimateInfo(directoryPath);
+                FavoritedCount = MarkedForDeletionCount = 0;
+                var total = 0;
+                Task.Run(
+                    () =>
+                    {
+                        Directory.EnumerateFiles(directoryPath).ForEach((_) => total++);
+                    },
+                    cancellationToken);
+                Directory.EnumerateFiles(directoryPath)
+                    .Where(x => Constants.FileExtensions.Contains(Path.GetExtension(x)))
+                    .Select(filePath => new FileLocation(filePath)).ForEachIndexed((fileLocation, index) =>
+                    {
+                        if (!ultimatePhotoUserInfo.TryGetValue(fileLocation, out var photoUserInfo))
+                        {
+                            photoUserInfo = new PhotoUserInfo(false, false);
+                        }
+
+                        var photo = _photoFactory(fileLocation, photoUserInfo, cancellationToken, this);
+                        _syncContext.Send(
+                            t =>
+                            {
+                                Add(photo);
+                            }, null);
+
+                        if (total != 0)
+                        {
+                            OnProgress(index + 1, total);
+                        }
+                    });
+                AllPhotosLoaded?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public async Task ShiftDateAsync(Photo[] photos, TimeSpan shiftBy, bool plus, bool renameToDate)
@@ -240,7 +230,7 @@ namespace PhotoReviewer.ViewModel
                         catch (InvalidOperationException ex)
                         {
                             _messenger.Publish(Errors.DateShiftFailed.ToWarning());
-                            _logger.LogWarning("Date shift failed", ex);
+                            _logger.LogWarning(ex, "Date shift failed");
                         }
                         finally
                         {
@@ -272,23 +262,23 @@ namespace PhotoReviewer.ViewModel
 
             await StartLongOperationAsync(
                     _operationsCancellationTokenSourceProvider,
-                    async token =>
+                    async cancellationToken =>
                     {
                         var totalCount = photos.Length;
-                        _logger.LogTrace($"There are {totalCount} files in this directory");
+                        _logger.LogTrace("There are {FileCount} files in this directory", totalCount);
                         using (_directoryWatcher.SupressNotification())
                         {
                             await photos.RunByBlocksAsync(
                                  MaxBlockSize,
                                  async (block, index, blocksCount) =>
                                  {
-                                     if (token.IsCancellationRequested)
+                                     if (cancellationToken.IsCancellationRequested)
                                      {
                                          return false;
                                      }
 
-                                     _logger.LogTrace($"Processing block {index} ({block.Length} files)...");
-                                     var tasks = block.Select(RenamePhotoToDateAsync);
+                                     _logger.LogTrace("Processing block {BlockIndex} ({BlockLength} files)...", index, block.Length);
+                                     var tasks = block.Select(x => RenamePhotoToDateAsync(x, cancellationToken));
                                      await Task.WhenAll(tasks).ConfigureAwait(false);
 
                                      OnProgress(index + 1, blocksCount);
@@ -544,7 +534,7 @@ namespace PhotoReviewer.ViewModel
             var photo = _photoFactory(fileLocation, photoUserInfo, CancellationToken.None, this);
             _syncContext.Send(x => Add(photo), null);
             RefreshViewAsync();
-            await photo.LoadAdditionalInfoTask.ConfigureAwait(true);
+            await photo.LoadAdditionalInfoAsync(CancellationToken.None).ConfigureAwait(true);
         }
 
         async void DirectoryWatcher_FileDeletedAsync(object? sender, EventArgs<string> e)
@@ -638,7 +628,7 @@ namespace PhotoReviewer.ViewModel
                 .ConfigureAwait(false);
         }
 
-        async Task RenamePhotoToDateAsync(Photo photo)
+        async Task RenamePhotoToDateAsync(Photo photo, CancellationToken cancellationToken)
         {
             if (!File.Exists(photo.FileLocation.ToString()))
             {
@@ -646,12 +636,12 @@ namespace PhotoReviewer.ViewModel
             }
 
             // As Metadata is needed to get the date of capture, there is is essential to wait until it's loaded before renaming
-            await photo.LoadAdditionalInfoTask.ConfigureAwait(false);
+            await photo.LoadAdditionalInfoAsync(cancellationToken).ConfigureAwait(true);
 
             var newName = GetNameFromDate(photo);
             if (newName == null)
             {
-                _logger.LogWarning($"Cannot get new name for {photo}");
+                _logger.LogWarning("Cannot get new name for {Photo}", photo);
                 return;
             }
 
@@ -660,7 +650,7 @@ namespace PhotoReviewer.ViewModel
                 return;
             }
 
-            var newFilePath = $"{photo.FileLocation.Directory}\\{newName}{photo.FileLocation.Extension}";
+            var newFilePath = Path.Combine(photo.FileLocation.Directory, $"{newName}{photo.FileLocation.Extension}");
             RenameFile(photo, newFilePath);
         }
 
@@ -678,7 +668,7 @@ namespace PhotoReviewer.ViewModel
             }
             else
             {
-                _logger.LogWarning($"Favorited file {favoritedFilePath} already exists, skipped copying");
+                _logger.LogWarning("Favorited file {FilePath} already exists, skipped copying", favoritedFilePath);
             }
         }
 
@@ -753,7 +743,7 @@ namespace PhotoReviewer.ViewModel
             var photo = this.SingleOrDefault(x => x.FileLocation.ToString() == filePath);
             if (photo == null)
             {
-                _logger.LogWarning($"Photo not found in collection for filepath {filePath}");
+                _logger.LogWarning("Photo not found in collection for filepath {FilePath}", filePath);
             }
 
             return photo;

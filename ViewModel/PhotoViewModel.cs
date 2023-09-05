@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-
 using Easy.MessageHub;
 using Microsoft.Extensions.Logging;
 using PhotoReviewer.Contracts.View;
@@ -142,9 +141,8 @@ namespace PhotoReviewer.ViewModel
                         }
                         catch (Exception ex)
                         {
-                            var message = $"Cannot load image {newPhotoFileLocation}";
-                            _logger.LogWarning(message, ex);
-                            _messenger.Publish(message.ToError());
+                            _logger.LogWarning(ex, "Cannot load image {FilePath}", newPhotoFileLocation);
+                            _messenger.Publish($"Cannot load image {newPhotoFileLocation}".ToError());
                         }
                     })
                 .ConfigureAwait(true);
@@ -153,11 +151,11 @@ namespace PhotoReviewer.ViewModel
         // TODO: Move to PhotoCollection. Apply multiple rotations at once
         async void RotateAsync(RotationType rotationType)
         {
-            _logger.LogInformation($"Rotating {Photo} {rotationType}...");
+            _logger.LogInformation("Rotating {Photo} {RotationType}...", Photo, rotationType);
 
             if (!Photo.OrientationIsSpecified)
             {
-                _logger.LogWarning($"Orientation is not specified for {Photo}");
+                _logger.LogWarning("Orientation is not specified for {Photo}", Photo);
                 _messenger.Publish(Errors.NoMetadata.ToWarning());
                 return;
             }
@@ -177,7 +175,7 @@ namespace PhotoReviewer.ViewModel
                     var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FileLocation.ToString(), false, token);
                     RotateVisualRepresentation(angle);
                     await task.ConfigureAwait(true);
-                    _logger.LogInformation($"{Photo} is rotated {rotationType}");
+                    _logger.LogInformation("{Photo} is rotated {RotationType}", Photo, rotationType);
                 }
                 catch (OperationCanceledException)
                 {
@@ -186,7 +184,7 @@ namespace PhotoReviewer.ViewModel
                 catch (InvalidOperationException ex)
                 {
                     _messenger.Publish(Errors.RotationFailed.ToWarning());
-                    _logger.LogWarning("Rotation failed", ex);
+                    _logger.LogWarning(ex, "Rotation failed");
                     Photo.Metadata.Orientation = originalOrientation;
                     RotateVisualRepresentation(-angle);
                 }

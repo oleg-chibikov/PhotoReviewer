@@ -70,6 +70,7 @@
         <DockPanel>
             <TextBlock>Zoom:</TextBlock>
             <Slider
+                Cursor="Hand"
                 Margin="10,0,0,0"
                 Orientation="Horizontal"
                 Minimum="80"

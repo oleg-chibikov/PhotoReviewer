@@ -26,9 +26,13 @@ namespace PhotoReviewer.ViewModel
         readonly IImageRetriever _imageRetriever;
         readonly ILogger _logger;
         readonly IMessageHub _messenger;
+        readonly IMetadataExtractor _metadataExtractor;
+        readonly IPhotoUserInfoRepository _photoUserInfoRepository;
         int? _index;
         bool _markedForDeletion;
         bool _favorited;
+        bool _loaded;
+        bool _isLoading;
 
         public Photo(
             FileLocation fileLocation,
@@ -38,16 +42,15 @@ namespace PhotoReviewer.ViewModel
             IMessageHub messenger,
             IImageRetriever imageRetriever,
             IMetadataExtractor metadataExtractor,
-            IPhotoUserInfoRepository photoUserInfoRepository,
-            CancellationToken cancellationToken)
+            IPhotoUserInfoRepository photoUserInfoRepository)
         {
             if (photoUserInfo == null)
             {
                 throw new ArgumentNullException(nameof(photoUserInfo));
             }
 
-            photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
-            metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
+            _photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
+            _metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
@@ -56,29 +59,7 @@ namespace PhotoReviewer.ViewModel
             FileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
             Favorited = photoUserInfo.Favorited;
             MarkedForDeletion = photoUserInfo.MarkedForDeletion;
-            LoadAdditionalInfoTask = Task.Run(
-                async () =>
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    var favoritedFileExists = File.Exists(FileLocation.FavoriteFilePath);
-                    if (!Favorited && favoritedFileExists)
-                    {
-                        _logger.LogInformation($"Favoriting {this} due to existence of favorited file...");
-                        photoUserInfoRepository.Favorite(fileLocation);
-                        Favorited = true;
-                    }
-
-                    // await Task.Delay(5000, _cancellationToken);
-                    Metadata = await metadataExtractor.ExtractAsync(FileLocation.ToString()).ConfigureAwait(false);
-                    await LoadThumbnailAsync(cancellationToken).ConfigureAwait(false);
-                }, cancellationToken);
         }
-
-        public Task LoadAdditionalInfoTask { get; } // TODO: create the proper task during construction
 
         [DependsOn(nameof(Metadata))]
         public bool OrientationIsSpecified => Metadata.Orientation != Orientation.NotSpecified;
@@ -196,21 +177,48 @@ namespace PhotoReviewer.ViewModel
             return FileLocation.ToString();
         }
 
+        public async Task LoadAdditionalInfoAsync(CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var favoritedFileExists = File.Exists(FileLocation.FavoriteFilePath);
+            if (!Favorited && favoritedFileExists)
+            {
+                _logger.LogInformation("Favoriting {Photo} due to existence of favorited file...", this);
+                _photoUserInfoRepository.Favorite(FileLocation);
+                Favorited = true;
+            }
+
+            // await Task.Delay(5000, _cancellationToken);
+            Metadata = await _metadataExtractor.ExtractAsync(FileLocation.ToString()).ConfigureAwait(false);
+            await LoadThumbnailAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         async Task LoadThumbnailAsync(CancellationToken cancellationToken)
         {
             try
             {
+                if (_loaded || _isLoading)
+                {
+                    return;
+                }
+
+                _isLoading = true;
                 var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FileLocation.ToString(), cancellationToken).ConfigureAwait(false);
                 Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation).ConfigureAwait(false);
+                _loaded = true;
+                _isLoading = false;
             }
             catch (OperationCanceledException)
             {
             }
             catch (Exception ex)
             {
-                var message = $"Cannot load thumbnail for {this}";
-                _logger.LogWarning(message, ex);
-                _messenger.Publish(message.ToError());
+                _logger.LogWarning(ex, "Cannot load thumbnail for {Photo}", this);
+                _messenger.Publish($"Cannot load thumbnail for {this}".ToError());
             }
         }
     }
