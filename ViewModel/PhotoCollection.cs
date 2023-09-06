@@ -208,7 +208,7 @@ namespace PhotoReviewer.ViewModel
             // TODO: don't process photos without metadata (warn user)
             await StartLongOperationAsync(
                     _operationsCancellationTokenSourceProvider,
-                    async token =>
+                    async cancellationToken =>
                     {
                         // TODO: Mark photos as failed/processed until new operation
                         var notificationSupresser = _directoryWatcher.SupressNotification();
@@ -221,7 +221,7 @@ namespace PhotoReviewer.ViewModel
                                 .Distinct()
                                 .Select(x => $"{x.AddTrailingBackslash()}*{OperationPostfix}")
                                 .ToArray();
-                            await _exifTool.ShiftDateAsync(shiftBy, plus, exifToolPatterns, false, token).ConfigureAwait(false);
+                            await _exifTool.ShiftDateAsync(shiftBy, plus, exifToolPatterns, false, cancellationToken).ConfigureAwait(false);
                         }
                         catch (OperationCanceledException)
                         {
@@ -307,7 +307,7 @@ namespace PhotoReviewer.ViewModel
 
             await StartLongOperationAsync(
                     _operationsCancellationTokenSourceProvider,
-                    token =>
+                    cancellationToken =>
                     {
                         var i = 0;
                         var count = Count;
@@ -337,7 +337,7 @@ namespace PhotoReviewer.ViewModel
 
             await StartLongOperationAsync(
                     _operationsCancellationTokenSourceProvider,
-                    token =>
+                    cancellationToken =>
                     {
                         var favoriteDirectories = this.Select(x => x.FileLocation.FavoriteDirectory).Distinct().ToArray();
 
@@ -599,11 +599,11 @@ namespace PhotoReviewer.ViewModel
         async Task StartLongOperationAsync(ICancellationTokenSourceProvider provider, Action<CancellationToken> action, bool cancelCurrent)
         {
             await provider.StartNewTaskAsync(
-                    token =>
+                    cancellationToken =>
                     {
                         OnProgress(0, 100);
-                        action(token);
-                        if (!token.IsCancellationRequested)
+                        action(cancellationToken);
+                        if (!cancellationToken.IsCancellationRequested)
                         {
                             OnProgress(100, 100);
                         }
@@ -615,11 +615,11 @@ namespace PhotoReviewer.ViewModel
         async Task StartLongOperationAsync(ICancellationTokenSourceProvider provider, Func<CancellationToken, Task> func, bool cancelCurrent)
         {
             await provider.ExecuteOperationAsync(
-                    async token =>
+                    async cancellationToken =>
                     {
                         OnProgress(0, 100);
-                        await func(token).ConfigureAwait(false);
-                        if (!token.IsCancellationRequested)
+                        await func(cancellationToken).ConfigureAwait(false);
+                        if (!cancellationToken.IsCancellationRequested)
                         {
                             OnProgress(100, 100);
                         }

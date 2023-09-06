@@ -118,7 +118,7 @@ namespace PhotoReviewer.ViewModel
             }
 
             await _cancellationTokenSourceProvider.StartNewTaskAsync(
-                    async token =>
+                    async cancellationToken =>
                     {
                         _mainViewModel.SelectedPhoto = Photo;
                         newPhoto.ReloadCollectionInfoIfNeeded();
@@ -128,13 +128,13 @@ namespace PhotoReviewer.ViewModel
                         var orientation = newPhoto.Metadata.Orientation;
                         try
                         {
-                            var bytes = await newPhotoFileLocation.ToString().ReadFileAsync(token).ConfigureAwait(false);
+                            var bytes = await newPhotoFileLocation.ToString().ReadFileAsync(cancellationToken).ConfigureAwait(false);
 
                             // Firstly load and display low quality image
-                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation, previewWidth).ConfigureAwait(false);
+                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, cancellationToken, orientation, previewWidth).ConfigureAwait(false);
 
                             // Then load full image
-                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, token, orientation).ConfigureAwait(false);
+                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, cancellationToken, orientation).ConfigureAwait(false);
                         }
                         catch (OperationCanceledException)
                         {
@@ -167,12 +167,12 @@ namespace PhotoReviewer.ViewModel
             await _cancellationTokenSourceProvider.StartNewTaskAsync(SetOrientationAsync).ConfigureAwait(true);
             return;
 
-            async void SetOrientationAsync(CancellationToken token)
+            async void SetOrientationAsync(CancellationToken cancellationToken)
             {
                 try
                 {
                     // no need to cancel this operation (if rotation starts it should be finished)
-                    var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FileLocation.ToString(), false, token);
+                    var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FileLocation.ToString(), false, cancellationToken);
                     RotateVisualRepresentation(angle);
                     await task.ConfigureAwait(true);
                     _logger.LogInformation("{Photo} is rotated {RotationType}", Photo, rotationType);
