@@ -30,7 +30,7 @@ namespace PhotoReviewer.Launcher
 {
     public sealed partial class App
     {
-        public App() : base(alreadyRunningMessage: Errors.AlreadyRunning, configureLogging: (h, loggingBuilder) =>
+        public App() : base(alreadyRunningMessage: Errors.AlreadyRunning, configureLogging: (_, loggingBuilder) =>
         {
             if (File.Exists(PathsProvider.LogsPath))
             {

@@ -6,5 +6,7 @@ namespace PhotoReviewer.DAL.Model
     public sealed class Settings : Entity<int>, ISettings
     {
         public string? LastUsedDirectoryPath { get; set; }
+
+        public double? LastScrollOffset { get; set; }
     }
 }

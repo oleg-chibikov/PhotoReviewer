@@ -34,17 +34,17 @@ namespace PhotoReviewer.Core
 
         public event EventHandler<EventArgs<FileRenamedArgs>>? FileRenamed;
 
-        public bool NotificationIsSupressed { get; set; }
+        public bool NotificationIsSuppressed { get; set; }
 
         public void SetDirectoryPath(string directoryPath)
         {
-            using (SupressNotification())
+            using (SuppressNotification())
             {
                 _fileSystemWatcher.Path = directoryPath;
             }
         }
 
-        public NotificationSuppressor SupressNotification()
+        public NotificationSuppressor SuppressNotification()
         {
             // TODO: DI
             return new FileSystemWatcherNotificationSuppressor(this, _fileSystemWatcher, _logger);

@@ -21,7 +21,7 @@ namespace PhotoReviewer.ViewModel
 
     public partial class Photo : IPhoto
     {
-        static readonly ExifMetadata EmptyMetadataForInit = new ExifMetadata();
+        static readonly ExifMetadata EmptyMetadataForInit = new ();
         readonly PhotoCollection _collection;
         readonly IImageRetriever _imageRetriever;
         readonly ILogger _logger;

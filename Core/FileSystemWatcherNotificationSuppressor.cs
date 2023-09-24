@@ -13,7 +13,7 @@ namespace PhotoReviewer.Core
 
         // TODO: Instantiate with DI and pass generic logger
         public FileSystemWatcherNotificationSuppressor(
-            INotificationSupressable notificationSuppressable,
+            INotificationSuppressable notificationSuppressable,
             FileSystemWatcher fileSystemWatcher,
             ILogger logger)
             : base(notificationSuppressable)

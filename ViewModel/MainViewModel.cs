@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Shell;
@@ -35,11 +36,13 @@ namespace PhotoReviewer.ViewModel
         readonly WindowFactory<IMainWindow> _mainWindowFactory;
         readonly ILogger _logger;
         readonly IRateLimiter _reloadMetadataRateLimiter;
+        readonly IRateLimiter _scrollRateLimiter;
         readonly ISettingsRepository _settingsRepository;
         readonly SynchronizationContext _syncContext = SynchronizationContext.Current ?? throw new InvalidOperationException("SynchronizationContext.Current is null");
         readonly WindowsArranger _windowsArranger;
         readonly IAssemblyInfoProvider _assemblyInfoProvider;
-        Action? _loadMetadataForVisibleItems;
+        Action<double?>? _loadMetadataForVisibleItems;
+        bool _allPhotosLoaded;
 
         public MainViewModel(
             PhotoCollection photoCollection,
@@ -52,7 +55,8 @@ namespace PhotoReviewer.ViewModel
             Func<IMainWindow, PhotoViewModel, IPhotoWindow> photoWindowFactory,
             ICommandManager commandManager,
             IAssemblyInfoProvider assemblyInfoProvider,
-            IRateLimiter reloadMetadataRateLimiter)
+            IRateLimiter reloadMetadataRateLimiter,
+            IRateLimiter scrollRateLimiter)
         {
             _ = commandManager ?? throw new ArgumentNullException(nameof(commandManager));
             PhotoCollection = photoCollection ?? throw new ArgumentNullException(nameof(photoCollection));
@@ -65,6 +69,7 @@ namespace PhotoReviewer.ViewModel
             _photoWindowFactory = photoWindowFactory ?? throw new ArgumentNullException(nameof(photoWindowFactory));
             _assemblyInfoProvider = assemblyInfoProvider ?? throw new ArgumentNullException(nameof(assemblyInfoProvider));
             _reloadMetadataRateLimiter = reloadMetadataRateLimiter ?? throw new ArgumentNullException(nameof(reloadMetadataRateLimiter));
+            _scrollRateLimiter = scrollRateLimiter ?? throw new ArgumentNullException(nameof(scrollRateLimiter));
 
             BrowseDirectoryCommand = new CorrelationCommand(commandManager, BrowseDirectory);
             ChangeDirectoryPathCommand = new CorrelationCommand<string>(commandManager, ChangeDirectoryPath);
@@ -78,10 +83,11 @@ namespace PhotoReviewer.ViewModel
             OpenDirectoryInExplorerCommand = new CorrelationCommand(commandManager, OpenDirectoryInExplorer);
             OpenPhotoCommand = new CorrelationCommand(commandManager, OpenPhotoAsync);
             SelectionChangedCommand = new CorrelationCommand<IList>(commandManager, SelectionChanged);
+            ScrollChangedCommand = new CorrelationCommand<ScrollChangedEventArgs>(commandManager, ScrollChangedAsync);
             WindowClosingCommand = new CorrelationCommand(commandManager, WindowClosing);
             OpenSettingsFolderCommand = new CorrelationCommand(commandManager, OpenSettingsFolder);
             ItemsVisibilityChangedCommand = new CorrelationCommand<IList<object>>(commandManager, ItemsVisibilityChanged);
-            ScrollViewLoadedCommand = new CorrelationCommand<Action>(commandManager, ScrollViewLoaded);
+            ScrollViewLoadedCommand = new CorrelationCommand<Action<double?>>(commandManager, ScrollViewLoaded);
             ViewLogsCommand = new CorrelationCommand(commandManager, ViewLogs);
             PhotoCollection.Progress += PhotosCollection_Progress;
             PhotoCollection.CollectionChanged += PhotoCollection_CollectionChanged;
@@ -92,7 +98,7 @@ namespace PhotoReviewer.ViewModel
             var directoryPath = settingsRepository.Settings.LastUsedDirectoryPath;
             if (!string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath))
             {
-                SetDirectoryPathAsync(directoryPath);
+                SetDirectoryPathAsync(directoryPath, false);
             }
         }
 
@@ -139,6 +145,8 @@ namespace PhotoReviewer.ViewModel
         public ICommand OpenPhotoCommand { get; }
 
         public ICommand SelectionChangedCommand { get; }
+
+        public ICommand ScrollChangedCommand { get; }
 
         public ICommand WindowClosingCommand { get; }
 
@@ -207,10 +215,11 @@ namespace PhotoReviewer.ViewModel
 
         void PhotoCollection_AllPhotosLoaded(object? sender, EventArgs e)
         {
-            _loadMetadataForVisibleItems?.Invoke();
+            _loadMetadataForVisibleItems?.Invoke(_settingsRepository.Settings.LastScrollOffset);
+            _allPhotosLoaded = true;
         }
 
-        void ScrollViewLoaded(Action loadMetadataForVisibleItems)
+        void ScrollViewLoaded(Action<double?> loadMetadataForVisibleItems)
         {
             _ = loadMetadataForVisibleItems ?? throw new ArgumentNullException(nameof(loadMetadataForVisibleItems));
             _loadMetadataForVisibleItems = loadMetadataForVisibleItems;
@@ -232,7 +241,7 @@ namespace PhotoReviewer.ViewModel
         void BeginProgress()
         {
             ProgressState = TaskbarItemProgressState.Normal;
-            ProgressDescription = "Caclulating...";
+            ProgressDescription = "Calculating...";
             Progress = 0;
         }
 
@@ -281,7 +290,7 @@ namespace PhotoReviewer.ViewModel
         void PhotosCollection_Progress(object? sender, ProgressEventArgs e)
         {
             _syncContext.Send(
-                x =>
+                _ =>
                 {
                     Progress = e.Percentage;
                     ProgressDescription = $"{e.Current} of {e.Total} ({e.Percentage} %)";
@@ -305,7 +314,7 @@ namespace PhotoReviewer.ViewModel
             SelectedPhoto = photo;
         }
 
-        async void SetDirectoryPathAsync(string directoryPath)
+        async void SetDirectoryPathAsync(string directoryPath, bool needChange = true)
         {
             directoryPath = directoryPath.RemoveTrailingBackslash();
             var settings = _settingsRepository.Settings;
@@ -320,8 +329,15 @@ namespace PhotoReviewer.ViewModel
             else
             {
                 _windowsArranger.ClosePhotos();
-                settings.LastUsedDirectoryPath = CurrentDirectoryPath = directoryPath;
-                _settingsRepository.Settings = settings;
+                CurrentDirectoryPath = directoryPath;
+
+                if (needChange)
+                {
+                    settings.LastUsedDirectoryPath = directoryPath;
+                    settings.LastScrollOffset = null;
+                    _settingsRepository.Settings = settings;
+                    _allPhotosLoaded = false;
+                }
             }
 
             await task.ConfigureAwait(true);
@@ -417,11 +433,26 @@ namespace PhotoReviewer.ViewModel
             _windowsArranger.Add(window);
         }
 
-        void SelectionChanged(IList items)
+        void SelectionChanged(IList? items)
         {
             SelectedPhotos = items?.Cast<Photo>() ?? throw new ArgumentNullException(nameof(items));
             SelectedCount = SelectedPhotos.Count();
             SelectedPhoto?.ReloadCollectionInfoIfNeeded();
+        }
+
+        async void ScrollChangedAsync(ScrollChangedEventArgs e)
+        {
+            if (!_allPhotosLoaded)
+            {
+                return;
+            }
+
+            await _scrollRateLimiter.ThrottleAsync(TimeSpan.FromMilliseconds(1000), () =>
+            {
+                var settings = _settingsRepository.Settings;
+                settings.LastScrollOffset = e.VerticalOffset;
+                _settingsRepository.Settings = settings;
+            }).ConfigureAwait(true);
         }
 
         void WindowClosing()
@@ -449,7 +480,7 @@ namespace PhotoReviewer.ViewModel
         void OnPhotoSizeChanged()
 #pragma warning restore IDE0051
         {
-            _loadMetadataForVisibleItems?.Invoke();
+            _loadMetadataForVisibleItems?.Invoke(_settingsRepository.Settings.LastScrollOffset);
         }
     }
 }

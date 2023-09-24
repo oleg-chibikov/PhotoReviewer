@@ -46,7 +46,7 @@ namespace PhotoReviewer.DAL
             var intersection = allFavorited.Intersect(allMarkedForDeletion).ToArray();
             var onlyFavorited = allFavorited.Except(intersection);
             var onlyMarked = allMarkedForDeletion.Except(intersection);
-            var ultimateInfo = intersection.ToDictionary(fileLocation => fileLocation, photoInfo => new PhotoUserInfo(true, true));
+            var ultimateInfo = intersection.ToDictionary(fileLocation => fileLocation, _ => new PhotoUserInfo(true, true));
             foreach (var fileLocation in onlyFavorited)
             {
                 ultimateInfo.Add(fileLocation, new PhotoUserInfo(true, false));

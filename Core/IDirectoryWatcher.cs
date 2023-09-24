@@ -4,7 +4,7 @@ using Scar.Common.Notification;
 
 namespace PhotoReviewer.Core
 {
-    public interface IDirectoryWatcher : INotificationSupressable
+    public interface IDirectoryWatcher : INotificationSuppressable
     {
         event EventHandler<EventArgs<string>> FileAdded;
 
