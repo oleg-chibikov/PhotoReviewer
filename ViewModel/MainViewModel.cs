@@ -317,13 +317,13 @@ namespace PhotoReviewer.ViewModel
         async void SetDirectoryPathAsync(string directoryPath, bool needChange = true)
         {
             directoryPath = directoryPath.RemoveTrailingBackslash();
-            var settings = _settingsRepository.Settings;
             var task = PhotoCollection.SetDirectoryPathAsync(directoryPath);
 
             if (task.IsCompleted || task.IsFaulted)
             {
                 // Restore previous path since current is corrupted
                 CurrentDirectoryPath = null;
+                var settings = _settingsRepository.Settings;
                 CurrentDirectoryPath = settings.LastUsedDirectoryPath;
             }
             else
@@ -333,6 +333,7 @@ namespace PhotoReviewer.ViewModel
 
                 if (needChange)
                 {
+                    var settings = _settingsRepository.Settings;
                     settings.LastUsedDirectoryPath = directoryPath;
                     settings.LastScrollOffset = null;
                     _settingsRepository.Settings = settings;
@@ -449,6 +450,7 @@ namespace PhotoReviewer.ViewModel
 
             await _scrollRateLimiter.ThrottleAsync(TimeSpan.FromMilliseconds(1000), () =>
             {
+                // TODO: Can we avoid reading settings here? we just need to write the value
                 var settings = _settingsRepository.Settings;
                 settings.LastScrollOffset = e.VerticalOffset;
                 _settingsRepository.Settings = settings;
