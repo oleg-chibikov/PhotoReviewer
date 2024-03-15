@@ -1,9 +1,8 @@
-using Scar.Common.WPF.View.Contracts;
+using Scar.Common.WPF.Contracts;
 
-namespace PhotoReviewer.Contracts.View
+namespace PhotoReviewer.Contracts.View;
+
+public interface IResizableWindow : IWindow
 {
-    public interface IResizableWindow : IWindow
-    {
-        bool IsFullHeight { get; }
-    }
+    bool IsFullHeight { get; }
 }

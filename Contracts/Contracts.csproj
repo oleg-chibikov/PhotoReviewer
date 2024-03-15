@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\DAL\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\DAL\Contracts\DAL.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Contracts\WPF.Contracts.csproj" />
   </ItemGroup>
 </Project>

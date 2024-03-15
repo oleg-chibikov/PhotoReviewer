@@ -1,8 +1,7 @@
 using Scar.Common.DAL.Contracts.Model;
 
-namespace PhotoReviewer.Contracts.DAL.Data
+namespace PhotoReviewer.Contracts.DAL.Data;
+
+public interface IPhotoInfo : IEntity<FileLocation>
 {
-    public interface IPhotoInfo : IEntity<FileLocation>
-    {
-    }
 }

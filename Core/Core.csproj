@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Common\Common.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\WindowCreation\WindowCreation.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Contracts\WPF.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\WindowCreation\WPF.WindowCreation.csproj" />
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\Resources\Resources.csproj" />
   </ItemGroup>

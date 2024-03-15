@@ -1,10 +1,9 @@
-namespace PhotoReviewer.View.Controls
+namespace PhotoReviewer.View.Controls;
+
+public sealed partial class PhotosList
 {
-   public sealed partial class PhotosList
+    public PhotosList()
     {
-        public PhotosList()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

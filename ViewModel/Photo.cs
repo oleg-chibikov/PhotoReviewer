@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Easy.MessageHub;
 using Microsoft.Extensions.Logging;
@@ -14,212 +10,208 @@ using Scar.Common.ImageProcessing.MetadataExtraction;
 using Scar.Common.Messages;
 using Scar.Common.WPF.ImageRetrieval;
 
-namespace PhotoReviewer.ViewModel
+namespace PhotoReviewer.ViewModel;
+
+/// <summary>This class describes a single photo - its location, the image and the metadata extracted from the image.</summary>
+[AddINotifyPropertyChangedInterface]
+
+public partial class Photo : IPhoto
 {
-    /// <summary>This class describes a single photo - its location, the image and the metadata extracted from the image.</summary>
-    [AddINotifyPropertyChangedInterface]
+    static readonly ExifMetadata EmptyMetadataForInit = new ();
+    readonly PhotoCollection _collection;
+    readonly IImageRetriever _imageRetriever;
+    readonly ILogger _logger;
+    readonly IMessageHub _messenger;
+    readonly IMetadataExtractor _metadataExtractor;
+    readonly IPhotoUserInfoRepository _photoUserInfoRepository;
+    int? _index;
+    bool _markedForDeletion;
+    bool _favorited;
+    bool _loaded;
+    bool _isLoading;
 
-    public partial class Photo : IPhoto
+    public Photo(
+        FileLocation fileLocation,
+        PhotoUserInfo photoUserInfo,
+        PhotoCollection collection,
+        ILogger<Photo> logger,
+        IMessageHub messenger,
+        IImageRetriever imageRetriever,
+        IMetadataExtractor metadataExtractor,
+        IPhotoUserInfoRepository photoUserInfoRepository)
     {
-        static readonly ExifMetadata EmptyMetadataForInit = new ();
-        readonly PhotoCollection _collection;
-        readonly IImageRetriever _imageRetriever;
-        readonly ILogger _logger;
-        readonly IMessageHub _messenger;
-        readonly IMetadataExtractor _metadataExtractor;
-        readonly IPhotoUserInfoRepository _photoUserInfoRepository;
-        int? _index;
-        bool _markedForDeletion;
-        bool _favorited;
-        bool _loaded;
-        bool _isLoading;
+        ArgumentNullException.ThrowIfNull(photoUserInfo);
 
-        public Photo(
-            FileLocation fileLocation,
-            PhotoUserInfo photoUserInfo,
-            PhotoCollection collection,
-            ILogger<Photo> logger,
-            IMessageHub messenger,
-            IImageRetriever imageRetriever,
-            IMetadataExtractor metadataExtractor,
-            IPhotoUserInfoRepository photoUserInfoRepository)
+        _photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
+        _metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
+
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+        _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
+        _collection = collection ?? throw new ArgumentNullException(nameof(collection));
+        FileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
+        Favorited = photoUserInfo.Favorited;
+        MarkedForDeletion = photoUserInfo.MarkedForDeletion;
+    }
+
+    [DependsOn(nameof(Metadata))]
+    public bool OrientationIsSpecified => Metadata.Orientation != Orientation.NotSpecified;
+
+    [DependsOn(nameof(Metadata))]
+    public bool DateImageTakenIsSpecified => Metadata.DateImageTaken != null;
+
+    public bool LastOperationFailed { get; set; }
+
+    public bool LastOperationFinished { get; set; }
+
+    public ExifMetadata Metadata { get; set; } = EmptyMetadataForInit;
+
+    public string PositionInCollection { get; set; } = "Not set";
+
+    [DependsOn(nameof(Name), nameof(PositionInCollection))]
+
+    public string DisplayedInfo => $"{Name} {Metadata.CameraModel} {PositionInCollection}";
+
+    [DependsOn(nameof(MarkedForDeletion), nameof(Favorited))]
+    public bool IsValuable => MarkedForDeletion || Favorited;
+
+    [DoNotNotify]
+    public Photo? Next
+    {
+        get
         {
-            if (photoUserInfo == null)
-            {
-                throw new ArgumentNullException(nameof(photoUserInfo));
-            }
-
-            _photoUserInfoRepository = photoUserInfoRepository ?? throw new ArgumentNullException(nameof(photoUserInfoRepository));
-            _metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
-
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
-            _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
-            _collection = collection ?? throw new ArgumentNullException(nameof(collection));
-            FileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
-            Favorited = photoUserInfo.Favorited;
-            MarkedForDeletion = photoUserInfo.MarkedForDeletion;
+            var index = Index;
+            return index == _collection.FilteredView.Count - 1 || index == -1 ? null : (Photo)_collection.FilteredView.GetItemAt(index + 1);
         }
+    }
 
-        [DependsOn(nameof(Metadata))]
-        public bool OrientationIsSpecified => Metadata.Orientation != Orientation.NotSpecified;
-
-        [DependsOn(nameof(Metadata))]
-        public bool DateImageTakenIsSpecified => Metadata.DateImageTaken != null;
-
-        public bool LastOperationFailed { get; set; }
-
-        public bool LastOperationFinished { get; set; }
-
-        public ExifMetadata Metadata { get; set; } = EmptyMetadataForInit;
-
-        public string PositionInCollection { get; set; } = "Not set";
-
-        [DependsOn(nameof(Name), nameof(PositionInCollection))]
-
-        public string DisplayedInfo => $"{Name} {Metadata.CameraModel} {PositionInCollection}";
-
-        [DependsOn(nameof(MarkedForDeletion), nameof(Favorited))]
-        public bool IsValuable => MarkedForDeletion || Favorited;
-
-        [DoNotNotify]
-        public Photo? Next
+    [DoNotNotify]
+    public Photo? Prev
+    {
+        get
         {
-            get
-            {
-                var index = Index;
-                return index == _collection.FilteredView.Count - 1 || index == -1 ? null : (Photo)_collection.FilteredView.GetItemAt(index + 1);
-            }
+            var index = Index;
+            return index == 0 || index == -1 ? null : (Photo)_collection.FilteredView.GetItemAt(index - 1);
         }
+    }
 
-        [DoNotNotify]
-        public Photo? Prev
+    public bool MarkedForDeletion
+    {
+        get => _markedForDeletion;
+        set
         {
-            get
+            _markedForDeletion = value;
+            if (value)
             {
-                var index = Index;
-                return index == 0 || index == -1 ? null : (Photo)_collection.FilteredView.GetItemAt(index - 1);
+                _collection.MarkedForDeletionCount++;
+            }
+            else
+            {
+                _collection.MarkedForDeletionCount--;
             }
         }
+    }
 
-        public bool MarkedForDeletion
+    public bool Favorited
+    {
+        get => _favorited;
+        set
         {
-            get => _markedForDeletion;
-            set
+            _favorited = value;
+            if (value)
             {
-                _markedForDeletion = value;
-                if (value)
-                {
-                    _collection.MarkedForDeletionCount++;
-                }
-                else
-                {
-                    _collection.MarkedForDeletionCount--;
-                }
+                _collection.FavoritedCount++;
+            }
+            else
+            {
+                _collection.FavoritedCount--;
             }
         }
+    }
 
-        public bool Favorited
+    public FileLocation FileLocation { get; set; }
+
+    public string Name => FileLocation.FileName;
+
+    public BitmapSource? Thumbnail { get; set; }
+
+    [DoNotNotify]
+    int Index => _index ?? (_index = _collection.FilteredView.IndexOf(this)).Value;
+
+    /// <summary>
+    /// A hack to raise NotifyPropertyChanged for other properties.
+    /// </summary>
+    [AlsoNotifyFor(nameof(Metadata))]
+    bool ReRenderMetadataSwitch { get; set; }
+
+    // TODO: replace by collection event?
+    public void ReloadCollectionInfoIfNeeded()
+    {
+        if (_index != null)
         {
-            get => _favorited;
-            set
-            {
-                _favorited = value;
-                if (value)
-                {
-                    _collection.FavoritedCount++;
-                }
-                else
-                {
-                    _collection.FavoritedCount--;
-                }
-            }
+            return;
         }
 
-        public FileLocation FileLocation { get; set; }
+        PositionInCollection = $"{Index + 1} of {_collection.FilteredView.Count}";
+    }
 
-        public string Name => FileLocation.FileName;
+    public void MarkAsNotSynced()
+    {
+        _index = null;
+    }
 
-        public BitmapSource? Thumbnail { get; set; }
+    public void ReloadMetadata()
+    {
+        ReRenderMetadataSwitch = !ReRenderMetadataSwitch;
+    }
 
-        [DoNotNotify]
-        int Index => _index ?? (_index = _collection.FilteredView.IndexOf(this)).Value;
+    public override string ToString()
+    {
+        return FileLocation.ToString();
+    }
 
-        /// <summary>
-        /// A hack to raise NotifyPropertyChanged for other properties.
-        /// </summary>
-        [AlsoNotifyFor(nameof(Metadata))]
-        bool ReRenderMetadataSwitch { get; set; }
-
-        // TODO: replace by collection event?
-        public void ReloadCollectionInfoIfNeeded()
+    public async Task LoadAdditionalInfoAsync(CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
         {
-            if (_index != null)
+            return;
+        }
+
+        var favoritedFileExists = File.Exists(FileLocation.FavoriteFilePath);
+        if (!Favorited && favoritedFileExists)
+        {
+            _logger.LogInformation("Favoriting {Photo} due to existence of favorited file...", this);
+            _photoUserInfoRepository.Favorite(FileLocation);
+            Favorited = true;
+        }
+
+        // await Task.Delay(5000, _cancellationToken);
+        Metadata = await _metadataExtractor.ExtractAsync(FileLocation.ToString()).ConfigureAwait(false);
+        await LoadThumbnailAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    async Task LoadThumbnailAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (_loaded || _isLoading)
             {
                 return;
             }
 
-            PositionInCollection = $"{Index + 1} of {_collection.FilteredView.Count}";
+            _isLoading = true;
+            var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FileLocation.ToString(), cancellationToken).ConfigureAwait(false);
+            Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation).ConfigureAwait(false);
+            _loaded = true;
+            _isLoading = false;
         }
-
-        public void MarkAsNotSynced()
+        catch (OperationCanceledException)
         {
-            _index = null;
         }
-
-        public void ReloadMetadata()
+        catch (Exception ex)
         {
-            ReRenderMetadataSwitch = !ReRenderMetadataSwitch;
-        }
-
-        public override string ToString()
-        {
-            return FileLocation.ToString();
-        }
-
-        public async Task LoadAdditionalInfoAsync(CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            var favoritedFileExists = File.Exists(FileLocation.FavoriteFilePath);
-            if (!Favorited && favoritedFileExists)
-            {
-                _logger.LogInformation("Favoriting {Photo} due to existence of favorited file...", this);
-                _photoUserInfoRepository.Favorite(FileLocation);
-                Favorited = true;
-            }
-
-            // await Task.Delay(5000, _cancellationToken);
-            Metadata = await _metadataExtractor.ExtractAsync(FileLocation.ToString()).ConfigureAwait(false);
-            await LoadThumbnailAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        async Task LoadThumbnailAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (_loaded || _isLoading)
-                {
-                    return;
-                }
-
-                _isLoading = true;
-                var thumbnailBytes = Metadata.ThumbnailBytes ?? await _imageRetriever.GetThumbnailAsync(FileLocation.ToString(), cancellationToken).ConfigureAwait(false);
-                Thumbnail = await _imageRetriever.LoadImageAsync(thumbnailBytes, cancellationToken, Metadata.Orientation).ConfigureAwait(false);
-                _loaded = true;
-                _isLoading = false;
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Cannot load thumbnail for {Photo}", this);
-                _messenger.Publish($"Cannot load thumbnail for {this}".ToError());
-            }
+            _logger.LogWarning(ex, "Cannot load thumbnail for {Photo}", this);
+            _messenger.Publish($"Cannot load thumbnail for {this}".ToError());
         }
     }
 }

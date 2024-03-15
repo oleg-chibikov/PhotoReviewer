@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\Converters\Converters.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Converters\WPF.Converters.csproj" />
     <ProjectReference Include="..\ViewModel\ViewModel.csproj" />
   </ItemGroup>
 </Project>

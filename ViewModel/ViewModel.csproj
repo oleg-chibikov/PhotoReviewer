@@ -12,16 +12,17 @@
     </PropertyChangedAnalyzerConfiguration>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\ApplicationLifetime\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Common\Common.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\ImageProcessing\ExifExtraction\ExifExtraction.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\ImageProcessing\MetadataExtraction\MetadataExtraction.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Various\Async\Async.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Various\Processes\Processes.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Various\RateLimiting\RateLimiting.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\ImageRetrieval\ImageRetrieval.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\WindowCreation\WindowCreation.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\ApplicationLifetime\Contracts\ApplicationLifetime.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\ImageProcessing\ExifExtraction\ImageProcessing.ExifExtraction.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\ImageProcessing\MetadataExtraction\ImageProcessing.MetadataExtraction.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\Async\Async.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\Processes\Processes.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\RateLimiting\RateLimiting.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\ImageRetrieval\WPF.ImageRetrieval.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Core\WPF.Core.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\WindowCreation\WPF.WindowCreation.csproj" />
+    <ProjectReference Include="..\..\Memories\Memories\Memories.csproj" />
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Resources\Resources.csproj" />

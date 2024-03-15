@@ -6,9 +6,9 @@
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
   </ItemGroup>    
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\TimePicker\TimePicker.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\ZoomBorder\ZoomBorder.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\Converters\Converters.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\TimePicker\WPF.Controls.TimePicker.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Controls\ZoomBorder\WPF.Controls.ZoomBorder.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Converters\WPF.Converters.csproj" />
     <ProjectReference Include="..\Resources\Resources.csproj" />
     <ProjectReference Include="..\View.Controls\View.Controls.csproj" />
     <ProjectReference Include="..\View.Converters\View.Converters.csproj" />

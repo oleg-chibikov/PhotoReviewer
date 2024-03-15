@@ -1,9 +1,8 @@
-namespace PhotoReviewer.Contracts.DAL.Data
-{
-    public interface ISettings
-    {
-        string? LastUsedDirectoryPath { get; set; }
+namespace PhotoReviewer.Contracts.DAL.Data;
 
-        double? LastScrollOffset { get; set; }
-    }
+public interface ISettings
+{
+    string? LastUsedDirectoryPath { get; set; }
+
+    double? LastScrollOffset { get; set; }
 }

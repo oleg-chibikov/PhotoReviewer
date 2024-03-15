@@ -1,5 +1,3 @@
-﻿using System;
-
 namespace PhotoReviewer.Core;
 
 public class FileRenamedArgs

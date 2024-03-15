@@ -1,10 +1,9 @@
-namespace PhotoReviewer.View.Controls
+namespace PhotoReviewer.View.Controls;
+
+public sealed partial class PathSelector
 {
-   public sealed partial class PathSelector
+    public PathSelector()
     {
-        public PathSelector()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

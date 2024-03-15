@@ -1,32 +1,30 @@
-using System.Collections.Generic;
 using PhotoReviewer.Contracts.DAL.Data;
 
-namespace PhotoReviewer.Contracts.DAL
+namespace PhotoReviewer.Contracts.DAL;
+
+public interface IPhotoUserInfoRepository
 {
-    public interface IPhotoUserInfoRepository
-    {
-        PhotoUserInfo Check(FileLocation fileLocation);
+    PhotoUserInfo Check(FileLocation fileLocation);
 
-        void Delete(FileLocation fileLocation);
+    void Delete(FileLocation fileLocation);
 
-        void Favorite(FileLocation fileLocation);
+    void Favorite(FileLocation fileLocation);
 
-        void Favorite(FileLocation[] fileLocations);
+    void Favorite(FileLocation[] fileLocations);
 
-        IDictionary<FileLocation, PhotoUserInfo> GetUltimateInfo(string directoryPath);
+    IDictionary<FileLocation, PhotoUserInfo> GetUltimateInfo(string directoryPath);
 
-        void MarkForDeletion(FileLocation fileLocation);
+    void MarkForDeletion(FileLocation fileLocation);
 
-        void MarkForDeletion(FileLocation[] fileLocations);
+    void MarkForDeletion(FileLocation[] fileLocations);
 
-        void Rename(FileLocation oldFileLocation, FileLocation newFileLocation);
+    void Rename(FileLocation oldFileLocation, FileLocation newFileLocation);
 
-        void UnFavorite(FileLocation fileLocation);
+    void UnFavorite(FileLocation fileLocation);
 
-        void UnFavorite(FileLocation[] fileLocations);
+    void UnFavorite(FileLocation[] fileLocations);
 
-        void UnMarkForDeletion(FileLocation fileLocation);
+    void UnMarkForDeletion(FileLocation fileLocation);
 
-        void UnMarkForDeletion(FileLocation[] fileLocations);
-    }
+    void UnMarkForDeletion(FileLocation[] fileLocations);
 }

@@ -5,7 +5,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
-    xmlns:core="clr-namespace:Scar.Common.WPF.View.Core;assembly=Scar.Common.WPF.View.Core"
+    xmlns:core="clr-namespace:Scar.Common.WPF.Core;assembly=Scar.Common.WPF.Core"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance Type=viewModel:MainViewModel, IsDesignTimeCreatable=False}">
     <StackPanel

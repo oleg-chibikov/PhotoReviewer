@@ -1,10 +1,9 @@
-namespace PhotoReviewer.View.Controls
+namespace PhotoReviewer.View.Controls;
+
+public sealed partial class ShiftDateDialog
 {
-   public sealed partial class ShiftDateDialog
+    public ShiftDateDialog()
     {
-        public ShiftDateDialog()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

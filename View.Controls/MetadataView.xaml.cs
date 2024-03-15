@@ -1,10 +1,9 @@
-namespace PhotoReviewer.View.Controls
+namespace PhotoReviewer.View.Controls;
+
+public sealed partial class MetadataView
 {
-   public sealed partial class MetadataView
+    public MetadataView()
     {
-        public MetadataView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

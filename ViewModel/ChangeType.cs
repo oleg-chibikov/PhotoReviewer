@@ -1,10 +1,9 @@
-namespace PhotoReviewer.ViewModel
+namespace PhotoReviewer.ViewModel;
+
+public enum ChangeType
 {
-    public enum ChangeType
-    {
-        None,
-        Reload,
-        Next,
-        Prev
-    }
+    None,
+    Reload,
+    Next,
+    Prev
 }

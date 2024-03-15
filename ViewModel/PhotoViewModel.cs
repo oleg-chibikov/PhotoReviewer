@@ -1,5 +1,3 @@
-using System;
-using System.Threading;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Easy.MessageHub;
@@ -16,214 +14,214 @@ using Scar.Common.Messages;
 using Scar.Common.MVVM.Commands;
 using Scar.Common.WPF.ImageRetrieval;
 
-namespace PhotoReviewer.ViewModel
+namespace PhotoReviewer.ViewModel;
+
+[AddINotifyPropertyChangedInterface]
+
+public partial class PhotoViewModel
 {
-    [AddINotifyPropertyChangedInterface]
+    readonly ICancellationTokenSourceProvider _cancellationTokenSourceProvider;
 
-    public partial class PhotoViewModel
+    readonly IExifTool _exifTool;
+
+    readonly IImageRetriever _imageRetriever;
+
+    readonly ILogger _logger;
+
+    readonly MainViewModel _mainViewModel;
+
+    readonly IMessageHub _messenger;
+
+    public PhotoViewModel(
+        Photo photo,
+        MainViewModel mainViewModel,
+        WindowsArranger windowsArranger,
+        ILogger<PhotoViewModel> logger,
+        IExifTool exifTool,
+        IMessageHub messenger,
+        ICancellationTokenSourceProvider cancellationTokenSourceProvider,
+        IImageRetriever imageRetriever,
+        ICommandManager commandManager)
     {
-        readonly ICancellationTokenSourceProvider _cancellationTokenSourceProvider;
+        _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
+        _cancellationTokenSourceProvider = cancellationTokenSourceProvider ?? throw new ArgumentNullException(nameof(cancellationTokenSourceProvider));
+        _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _exifTool = exifTool ?? throw new ArgumentNullException(nameof(exifTool));
+        _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+        _ = commandManager ?? throw new ArgumentNullException(nameof(commandManager));
+        Photo = photo ?? throw new ArgumentNullException(nameof(photo));
+        windowsArranger = windowsArranger ?? throw new ArgumentNullException(nameof(windowsArranger));
 
-        readonly IExifTool _exifTool;
+        ChangePhotoAsync(ChangeType.Reload);
+        ToggleFullHeightCommand = new CorrelationCommand<IPhotoWindow>(commandManager, windowsArranger.ToggleFullHeight);
+        FavoriteCommand = new CorrelationCommand(commandManager, Favorite);
+        MarkForDeletionCommand = new CorrelationCommand(commandManager, MarkForDeletion);
+        RenameToDateCommand = new CorrelationCommand(commandManager, RenameToDate);
+        OpenPhotoInExplorerCommand = new CorrelationCommand(commandManager, OpenPhotoInExplorer);
+        ChangePhotoCommand = new CorrelationCommand<ChangeType>(commandManager, ChangePhotoAsync);
+        RotateCommand = new CorrelationCommand<RotationType>(commandManager, RotateAsync);
+        WindowClosingCommand = new CorrelationCommand(commandManager, WindowClosing);
+    }
 
-        readonly IImageRetriever _imageRetriever;
+    [DependsOn(nameof(Photo))]
+    public bool NextPhotoAvailable => Photo.Next != null;
 
-        readonly ILogger _logger;
+    [DependsOn(nameof(Photo))]
+    public bool PrevPhotoAvailable => Photo.Prev != null;
 
-        readonly MainViewModel _mainViewModel;
+    public ICommand ToggleFullHeightCommand { get; }
 
-        readonly IMessageHub _messenger;
+    public ICommand FavoriteCommand { get; }
 
-        public PhotoViewModel(
-            Photo photo,
-            MainViewModel mainViewModel,
-            WindowsArranger windowsArranger,
-            ILogger<PhotoViewModel> logger,
-            IExifTool exifTool,
-            IMessageHub messenger,
-            ICancellationTokenSourceProvider cancellationTokenSourceProvider,
-            IImageRetriever imageRetriever,
-            ICommandManager commandManager)
+    public ICommand MarkForDeletionCommand { get; }
+
+    public ICommand OpenPhotoInExplorerCommand { get; }
+
+    public ICommand RenameToDateCommand { get; }
+
+    public ICommand ChangePhotoCommand { get; }
+
+    public ICommand RotateCommand { get; }
+
+    public ICommand WindowClosingCommand { get; }
+
+    public BitmapSource? BitmapSource { get; set; }
+
+    public Photo Photo { get; set; }
+
+    async void ChangePhotoAsync(ChangeType changeType)
+    {
+        Photo? newPhoto;
+        switch (changeType)
         {
-            _imageRetriever = imageRetriever ?? throw new ArgumentNullException(nameof(imageRetriever));
-            _cancellationTokenSourceProvider = cancellationTokenSourceProvider ?? throw new ArgumentNullException(nameof(cancellationTokenSourceProvider));
-            _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _exifTool = exifTool ?? throw new ArgumentNullException(nameof(exifTool));
-            _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
-            _ = commandManager ?? throw new ArgumentNullException(nameof(commandManager));
-            Photo = photo ?? throw new ArgumentNullException(nameof(photo));
-            windowsArranger = windowsArranger ?? throw new ArgumentNullException(nameof(windowsArranger));
-
-            ChangePhotoAsync(ChangeType.Reload);
-            ToggleFullHeightCommand = new CorrelationCommand<IPhotoWindow>(commandManager, windowsArranger.ToggleFullHeight);
-            FavoriteCommand = new CorrelationCommand(commandManager, Favorite);
-            MarkForDeletionCommand = new CorrelationCommand(commandManager, MarkForDeletion);
-            RenameToDateCommand = new CorrelationCommand(commandManager, RenameToDate);
-            OpenPhotoInExplorerCommand = new CorrelationCommand(commandManager, OpenPhotoInExplorer);
-            ChangePhotoCommand = new CorrelationCommand<ChangeType>(commandManager, ChangePhotoAsync);
-            RotateCommand = new CorrelationCommand<RotationType>(commandManager, RotateAsync);
-            WindowClosingCommand = new CorrelationCommand(commandManager, WindowClosing);
+            case ChangeType.None:
+                return;
+            case ChangeType.Reload:
+                newPhoto = Photo;
+                break;
+            case ChangeType.Next:
+                newPhoto = Photo.Next;
+                break;
+            case ChangeType.Prev:
+                newPhoto = Photo.Prev;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(changeType), changeType, null);
         }
 
-        [DependsOn(nameof(Photo))]
-        public bool NextPhotoAvailable => Photo.Next != null;
-
-        [DependsOn(nameof(Photo))]
-        public bool PrevPhotoAvailable => Photo.Prev != null;
-
-        public ICommand ToggleFullHeightCommand { get; }
-
-        public ICommand FavoriteCommand { get; }
-
-        public ICommand MarkForDeletionCommand { get; }
-
-        public ICommand OpenPhotoInExplorerCommand { get; }
-
-        public ICommand RenameToDateCommand { get; }
-
-        public ICommand ChangePhotoCommand { get; }
-
-        public ICommand RotateCommand { get; }
-
-        public ICommand WindowClosingCommand { get; }
-
-        public BitmapSource? BitmapSource { get; set; }
-
-        public Photo Photo { get; set; }
-
-        async void ChangePhotoAsync(ChangeType changeType)
+        if (newPhoto == null)
         {
-            Photo? newPhoto;
-            switch (changeType)
-            {
-                case ChangeType.None:
-                    return;
-                case ChangeType.Reload:
-                    newPhoto = Photo;
-                    break;
-                case ChangeType.Next:
-                    newPhoto = Photo.Next;
-                    break;
-                case ChangeType.Prev:
-                    newPhoto = Photo.Prev;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(changeType), changeType, null);
-            }
-
-            if (newPhoto == null)
-            {
-                return;
-            }
-
-            await _cancellationTokenSourceProvider.StartNewTaskAsync(
-                    async cancellationToken =>
-                    {
-                        _mainViewModel.SelectedPhoto = Photo;
-                        newPhoto.ReloadCollectionInfoIfNeeded();
-                        Photo = newPhoto;
-                        const int previewWidth = 800;
-                        var newPhotoFileLocation = newPhoto.FileLocation;
-                        var orientation = newPhoto.Metadata.Orientation;
-                        try
-                        {
-                            var bytes = await newPhotoFileLocation.ToString().ReadFileAsync(cancellationToken).ConfigureAwait(false);
-
-                            // Firstly load and display low quality image
-                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, cancellationToken, orientation, previewWidth).ConfigureAwait(false);
-
-                            // Then load full image
-                            BitmapSource = await _imageRetriever.LoadImageAsync(bytes, cancellationToken, orientation).ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Cannot load image {FilePath}", newPhotoFileLocation);
-                            _messenger.Publish($"Cannot load image {newPhotoFileLocation}".ToError());
-                        }
-                    })
-                .ConfigureAwait(true);
-        }
-
-        // TODO: Move to PhotoCollection. Apply multiple rotations at once
-        async void RotateAsync(RotationType rotationType)
-        {
-            _logger.LogInformation("Rotating {Photo} {RotationType}...", Photo, rotationType);
-
-            if (!Photo.OrientationIsSpecified)
-            {
-                _logger.LogWarning("Orientation is not specified for {Photo}", Photo);
-                _messenger.Publish(Errors.NoMetadata.ToWarning());
-                return;
-            }
-
-            var originalOrientation = Photo.Metadata.Orientation;
-            Photo.Metadata.Orientation = originalOrientation.GetNextOrientation(rotationType);
-            var angle = rotationType == RotationType.Clockwise ? 90 : -90;
-
-            await _cancellationTokenSourceProvider.StartNewTaskAsync(SetOrientationAsync).ConfigureAwait(true);
             return;
+        }
 
-            async void SetOrientationAsync(CancellationToken cancellationToken)
+        await _cancellationTokenSourceProvider.StartNewTaskAsync(ChangePhotoCoreAsync).ConfigureAwait(true);
+        return;
+
+        async void ChangePhotoCoreAsync(CancellationToken cancellationToken)
+        {
+            _mainViewModel.SelectedPhoto = Photo;
+            newPhoto.ReloadCollectionInfoIfNeeded();
+            Photo = newPhoto;
+            const int previewWidth = 800;
+            var newPhotoFileLocation = newPhoto.FileLocation;
+            var orientation = newPhoto.Metadata.Orientation;
+            try
             {
-                try
-                {
-                    // no need to cancel this operation (if rotation starts it should be finished)
-                    var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FileLocation.ToString(), false, cancellationToken);
-                    RotateVisualRepresentation(angle);
-                    await task.ConfigureAwait(true);
-                    _logger.LogInformation("{Photo} is rotated {RotationType}", Photo, rotationType);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogWarning("Rotation is cancelled");
-                }
-                catch (InvalidOperationException ex)
-                {
-                    _messenger.Publish(Errors.RotationFailed.ToWarning());
-                    _logger.LogWarning(ex, "Rotation failed");
-                    Photo.Metadata.Orientation = originalOrientation;
-                    RotateVisualRepresentation(-angle);
-                }
+                var bytes = await newPhotoFileLocation.ToString().ReadFileAsync(cancellationToken).ConfigureAwait(false);
+
+                // Firstly load and display low quality image
+                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, cancellationToken, orientation, previewWidth).ConfigureAwait(false);
+
+                // Then load full image
+                BitmapSource = await _imageRetriever.LoadImageAsync(bytes, cancellationToken, orientation).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Cannot load image {FilePath}", newPhotoFileLocation);
+                _messenger.Publish($"Cannot load image {newPhotoFileLocation}".ToError());
             }
         }
+    }
 
-        void RotateVisualRepresentation(int angle)
+    // TODO: Move to PhotoCollection. Apply multiple rotations at once
+    async void RotateAsync(RotationType rotationType)
+    {
+        _logger.LogInformation("Rotating {Photo} {RotationType}...", Photo, rotationType);
+
+        if (!Photo.OrientationIsSpecified)
         {
-            BitmapSource = _imageRetriever.ApplyRotateTransform(angle, BitmapSource ?? throw new InvalidOperationException());
-            Photo.Thumbnail = _imageRetriever.ApplyRotateTransform(angle, Photo.Thumbnail ?? throw new InvalidOperationException());
-            Photo.ReloadMetadata();
+            _logger.LogWarning("Orientation is not specified for {Photo}", Photo);
+            _messenger.Publish(Errors.NoMetadata.ToWarning());
+            return;
         }
 
-        void Favorite()
-        {
-            _mainViewModel.SelectedPhoto = Photo;
-            _mainViewModel.Favorite();
-        }
+        var originalOrientation = Photo.Metadata.Orientation;
+        Photo.Metadata.Orientation = originalOrientation.GetNextOrientation(rotationType);
+        var angle = rotationType == RotationType.Clockwise ? 90 : -90;
 
-        void MarkForDeletion()
-        {
-            _mainViewModel.SelectedPhoto = Photo;
-            _mainViewModel.MarkForDeletion();
-        }
+        await _cancellationTokenSourceProvider.StartNewTaskAsync(SetOrientationAsync).ConfigureAwait(true);
+        return;
 
-        void RenameToDate()
+        async void SetOrientationAsync(CancellationToken cancellationToken)
         {
-            _mainViewModel.SelectedPhoto = Photo;
-            _mainViewModel.RenameToDateAsync();
+            try
+            {
+                // no need to cancel this operation (if rotation starts it should be finished)
+                var task = _exifTool.SetOrientationAsync(Photo.Metadata.Orientation, Photo.FileLocation.ToString(), backup: false, cancellationToken);
+                RotateVisualRepresentation(angle);
+                await task.ConfigureAwait(true);
+                _logger.LogInformation("{Photo} is rotated {RotationType}", Photo, rotationType);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Rotation is cancelled");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _messenger.Publish(Errors.RotationFailed.ToWarning());
+                _logger.LogWarning(ex, "Rotation failed");
+                Photo.Metadata.Orientation = originalOrientation;
+                RotateVisualRepresentation(-angle);
+            }
         }
+    }
 
-        void OpenPhotoInExplorer()
-        {
-            Photo.FileLocation.ToString().OpenFileInExplorer();
-        }
+    void RotateVisualRepresentation(int angle)
+    {
+        BitmapSource = _imageRetriever.ApplyRotateTransform(angle, BitmapSource ?? throw new InvalidOperationException());
+        Photo.Thumbnail = _imageRetriever.ApplyRotateTransform(angle, Photo.Thumbnail ?? throw new InvalidOperationException());
+        Photo.ReloadMetadata();
+    }
 
-        void WindowClosing()
-        {
-            _cancellationTokenSourceProvider.Cancel();
-        }
+    void Favorite()
+    {
+        _mainViewModel.SelectedPhoto = Photo;
+        _mainViewModel.Favorite();
+    }
+
+    void MarkForDeletion()
+    {
+        _mainViewModel.SelectedPhoto = Photo;
+        _mainViewModel.MarkForDeletion();
+    }
+
+    void RenameToDate()
+    {
+        _mainViewModel.SelectedPhoto = Photo;
+        _mainViewModel.RenameToDateAsync();
+    }
+
+    void OpenPhotoInExplorer()
+    {
+        Photo.FileLocation.ToString().OpenFileInExplorer();
+    }
+
+    void WindowClosing()
+    {
+        _cancellationTokenSourceProvider.Cancel();
     }
 }

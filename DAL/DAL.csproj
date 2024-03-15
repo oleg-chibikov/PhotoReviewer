@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\ApplicationLifetime\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\DAL\LiteDB\LiteDB.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\ApplicationLifetime\Contracts\ApplicationLifetime.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\DAL\LiteDB\DAL.LiteDB.csproj" />
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
   </ItemGroup>
 </Project>

@@ -7,7 +7,7 @@
     xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:converters="clr-namespace:Scar.Common.WPF.Converters;assembly=Scar.Common.WPF.Converters"
-    xmlns:core="clr-namespace:Scar.Common.WPF.View.Core;assembly=Scar.Common.WPF.View.Core"
+    xmlns:core="clr-namespace:Scar.Common.WPF.Core;assembly=Scar.Common.WPF.Core"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance Type=viewModel:MainViewModel, IsDesignTimeCreatable=False}">
     <UserControl.Resources>
@@ -99,7 +99,7 @@
                 <UniformGrid.Resources>
                     <Style
                         TargetType="Button"
-                        BasedOn="{StaticResource MaterialDesignFloatingActionMiniAccentButton}">
+                        BasedOn="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}">
                         <Setter
                             Property="Width"
                             Value="25" />
@@ -198,6 +198,10 @@
             Content="Open folder in Explorer"
             Command="{Binding OpenDirectoryInExplorerCommand, Mode=OneTime}"
             IsEnabled="{Binding CurrentDirectoryPath, Mode=OneWay, Converter={StaticResource NullToBooleanConverter}}" />
+
+        <!-- Memories Button -->
+        <Button Content="Memories"
+                Command="{Binding ShowMemoriesCommand, Mode=OneTime}" />
 
     </StackPanel>
 </UserControl>

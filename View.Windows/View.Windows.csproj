@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <UseWpf>True</UseWpf>
+    <UseWindowsForms>True</UseWindowsForms>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\Various\RateLimiting\RateLimiting.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\View\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\RateLimiting\RateLimiting.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Core\WPF.Core.csproj" />
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
   </ItemGroup>
 </Project>

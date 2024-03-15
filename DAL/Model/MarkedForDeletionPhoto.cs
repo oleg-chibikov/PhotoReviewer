@@ -1,6 +1,5 @@
-namespace PhotoReviewer.DAL.Model
+namespace PhotoReviewer.DAL.Model;
+
+public sealed class MarkedForDeletionPhoto : PhotoInfo
 {
-    public sealed class MarkedForDeletionPhoto : PhotoInfo
-    {
-    }
 }

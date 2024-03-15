@@ -1,9 +1,8 @@
 using PhotoReviewer.Contracts.DAL.Data;
 
-namespace PhotoReviewer.Contracts.DAL
+namespace PhotoReviewer.Contracts.DAL;
+
+public interface ISettingsRepository
 {
-    public interface ISettingsRepository
-    {
-        ISettings Settings { get; set; }
-    }
+    ISettings Settings { get; set; }
 }

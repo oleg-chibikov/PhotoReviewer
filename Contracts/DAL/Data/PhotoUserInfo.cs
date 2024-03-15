@@ -1,15 +1,8 @@
-﻿namespace PhotoReviewer.Contracts.DAL.Data
+namespace PhotoReviewer.Contracts.DAL.Data;
+
+public sealed class PhotoUserInfo(bool favorited, bool markedForDeletion)
 {
-    public sealed class PhotoUserInfo
-    {
-        public PhotoUserInfo(bool favorited, bool markedForDeletion)
-        {
-            Favorited = favorited;
-            MarkedForDeletion = markedForDeletion;
-        }
+    public bool Favorited { get; } = favorited;
 
-        public bool Favorited { get; }
-
-        public bool MarkedForDeletion { get; }
-    }
+    public bool MarkedForDeletion { get; } = markedForDeletion;
 }

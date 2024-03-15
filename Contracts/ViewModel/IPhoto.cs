@@ -1,7 +1,6 @@
-﻿namespace PhotoReviewer.Contracts.ViewModel
+namespace PhotoReviewer.Contracts.ViewModel;
+
+public interface IPhoto
 {
-    public interface IPhoto
-    {
-        void ReloadCollectionInfoIfNeeded();
-    }
+    void ReloadCollectionInfoIfNeeded();
 }

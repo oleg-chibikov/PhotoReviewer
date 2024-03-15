@@ -1,10 +1,9 @@
-namespace PhotoReviewer.View.Controls
+namespace PhotoReviewer.View.Controls;
+
+public sealed partial class MainControls
 {
-   public sealed partial class MainControls
+    public MainControls()
     {
-        public MainControls()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

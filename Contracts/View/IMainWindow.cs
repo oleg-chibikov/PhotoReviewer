@@ -1,6 +1,5 @@
-namespace PhotoReviewer.Contracts.View
+namespace PhotoReviewer.Contracts.View;
+
+public interface IMainWindow : IWindowWithActiveScreenArea
 {
-    public interface IMainWindow : IWindowWithActiveScreenArea
-    {
-    }
 }

@@ -6,15 +6,15 @@
     <StartupObject>PhotoReviewer.Launcher.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\View\AutofacWindowProvision\AutofacWindowProvision.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\NetStandard\View\WindowCreation\WindowCreation.csproj" />
-    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Various\Startup\Startup.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\View\AutofacWindowProvision\View.AutofacWindowProvision.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\View\WindowCreation\View.WindowCreation.csproj" />
+    <ProjectReference Include="..\..\..\Libraries\Common\WPF\Startup\WPF.Startup.csproj" />
+    <ProjectReference Include="..\..\Memories\Memories\Memories.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
     <ProjectReference Include="..\View\View.csproj" />
   </ItemGroup>
@@ -24,6 +24,9 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="exiftool.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

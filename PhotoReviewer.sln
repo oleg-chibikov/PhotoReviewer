@@ -21,41 +21,41 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scar.Common", "Scar.Common"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WPF", "WPF", "{857ACB0A-FE80-4C4C-BAE6-59560B998EF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZoomBorder", "..\..\Libraries\Common\WPF\Controls\ZoomBorder\ZoomBorder.csproj", "{571CC6BC-3F28-4EEB-8601-B6D046BD5728}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Controls.ZoomBorder", "..\..\Libraries\Common\WPF\Controls\ZoomBorder\WPF.Controls.ZoomBorder.csproj", "{571CC6BC-3F28-4EEB-8601-B6D046BD5728}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePicker", "..\..\Libraries\Common\WPF\Controls\TimePicker\TimePicker.csproj", "{17C2C396-6CC9-4DFD-B2CB-A85FA6659C0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Controls.TimePicker", "..\..\Libraries\Common\WPF\Controls\TimePicker\WPF.Controls.TimePicker.csproj", "{17C2C396-6CC9-4DFD-B2CB-A85FA6659C0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Behaviors", "..\..\Libraries\Common\WPF\Various\Behaviors\Behaviors.csproj", "{76AD78EA-BADE-4305-ABD0-3D4DADECEB01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Behaviors", "..\..\Libraries\Common\WPF\Behaviors\WPF.Behaviors.csproj", "{76AD78EA-BADE-4305-ABD0-3D4DADECEB01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Converters", "..\..\Libraries\Common\WPF\Various\Converters\Converters.csproj", "{C77DBC6E-EA7E-4B42-ACDF-A6620BAA79A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Converters", "..\..\Libraries\Common\WPF\Converters\WPF.Converters.csproj", "{C77DBC6E-EA7E-4B42-ACDF-A6620BAA79A9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Startup", "..\..\Libraries\Common\WPF\Various\Startup\Startup.csproj", "{F394F515-BDFF-4B67-9C51-D4655F5F8EEB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Startup", "..\..\Libraries\Common\WPF\Startup\WPF.Startup.csproj", "{F394F515-BDFF-4B67-9C51-D4655F5F8EEB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\..\Libraries\Common\WPF\View\Core\Core.csproj", "{7F90151C-1FD5-4E9E-A892-B5FF33486D37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Core", "..\..\Libraries\Common\WPF\Core\WPF.Core.csproj", "{7F90151C-1FD5-4E9E-A892-B5FF33486D37}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowCreation", "..\..\Libraries\Common\WPF\View\WindowCreation\WindowCreation.csproj", "{FF1874D2-CE27-4A2A-A256-A941735C94D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.WindowCreation", "..\..\Libraries\Common\WPF\WindowCreation\WPF.WindowCreation.csproj", "{FF1874D2-CE27-4A2A-A256-A941735C94D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "..\..\Libraries\Common\WPF\View\Contracts\Contracts.csproj", "{F9B9E398-EFF4-42F4-A2AD-4680EDEC1525}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Contracts", "..\..\Libraries\Common\WPF\Contracts\WPF.Contracts.csproj", "{F9B9E398-EFF4-42F4-A2AD-4680EDEC1525}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExifExtraction", "..\..\Libraries\Common\NetStandard\ImageProcessing\ExifExtraction\ExifExtraction.csproj", "{13FEB9FD-CFA1-4AA5-A378-AE13CC1EB993}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageProcessing.ExifExtraction", "..\..\Libraries\Common\ImageProcessing\ExifExtraction\ImageProcessing.ExifExtraction.csproj", "{13FEB9FD-CFA1-4AA5-A378-AE13CC1EB993}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Metadata", "..\..\Libraries\Common\NetStandard\ImageProcessing\Metadata\Metadata.csproj", "{BDFAF320-FCC4-4BF3-83D4-20C59207A0B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageProcessing.Metadata", "..\..\Libraries\Common\ImageProcessing\Metadata\ImageProcessing.Metadata.csproj", "{BDFAF320-FCC4-4BF3-83D4-20C59207A0B0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataExtraction", "..\..\Libraries\Common\NetStandard\ImageProcessing\MetadataExtraction\MetadataExtraction.csproj", "{8DE4361E-BA4E-4504-ADB4-FFFCC35BC6C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageProcessing.MetadataExtraction", "..\..\Libraries\Common\ImageProcessing\MetadataExtraction\ImageProcessing.MetadataExtraction.csproj", "{8DE4361E-BA4E-4504-ADB4-FFFCC35BC6C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LiteDB", "..\..\Libraries\Common\NetStandard\DAL\LiteDB\LiteDB.csproj", "{20F1D1D0-DB16-45C4-858E-459D1C27CB51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DAL.LiteDB", "..\..\Libraries\Common\DAL\LiteDB\DAL.LiteDB.csproj", "{20F1D1D0-DB16-45C4-858E-459D1C27CB51}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DAL", "DAL", "{9BD61F9C-025C-4B74-8979-B6BA897A5AB2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "..\..\Libraries\Common\NetStandard\DAL\Contracts\Contracts.csproj", "{8B0FC7AC-6A37-4DF0-B33F-C84E5B042F78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DAL.Contracts", "..\..\Libraries\Common\DAL\Contracts\DAL.Contracts.csproj", "{8B0FC7AC-6A37-4DF0-B33F-C84E5B042F78}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "..\..\Libraries\Common\NetStandard\Common\Common.csproj", "{4758343C-00F8-47B5-97FA-73985DFAD3A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "..\..\Libraries\Common\Common\Common.csproj", "{4758343C-00F8-47B5-97FA-73985DFAD3A3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Async", "..\..\Libraries\Common\NetStandard\Various\Async\Async.csproj", "{6E146FED-CEA1-4038-8BAF-577A28D39373}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Async", "..\..\Libraries\Common\Async\Async.csproj", "{6E146FED-CEA1-4038-8BAF-577A28D39373}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RateLimiting", "..\..\Libraries\Common\NetStandard\Various\RateLimiting\RateLimiting.csproj", "{B4B08715-EC4B-4936-8C34-67FC504ACF74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RateLimiting", "..\..\Libraries\Common\RateLimiting\RateLimiting.csproj", "{B4B08715-EC4B-4936-8C34-67FC504ACF74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Processes", "..\..\Libraries\Common\NetStandard\Various\Processes\Processes.csproj", "{F6CBC160-6CC2-4E24-91DE-F3CF994957A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Processes", "..\..\Libraries\Common\Processes\Processes.csproj", "{F6CBC160-6CC2-4E24-91DE-F3CF994957A9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E36444D3-7712-4217-A39F-82F3C3DF6CE2}"
 	ProjectSection(SolutionItems) = preProject
@@ -67,9 +67,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApplicationLifetime", "ApplicationLifetime", "{774E7D86-737F-4596-8239-B13DB38EF4BA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "..\..\Libraries\Common\NetStandard\ApplicationLifetime\Contracts\Contracts.csproj", "{DE14C228-321B-4FB5-A140-D177ABCCFA37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationLifetime.Contracts", "..\..\Libraries\Common\ApplicationLifetime\Contracts\ApplicationLifetime.Contracts.csproj", "{DE14C228-321B-4FB5-A140-D177ABCCFA37}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageRetrieval", "..\..\Libraries\Common\WPF\Various\ImageRetrieval\ImageRetrieval.csproj", "{E78A7B5A-76BB-4CBF-A444-1C0C234AD3CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.ImageRetrieval", "..\..\Libraries\Common\WPF\ImageRetrieval\WPF.ImageRetrieval.csproj", "{E78A7B5A-76BB-4CBF-A444-1C0C234AD3CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "View.Converters", "View.Converters\View.Converters.csproj", "{61A31034-729A-480A-9EB7-4CE363F27AFE}"
 EndProject
@@ -77,21 +77,31 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "View.Windows", "View.Window
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "View.Controls", "View.Controls\View.Controls.csproj", "{81AB27E9-BC44-40B2-AB24-8C2DF6FBB027}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutofacWindowProvision", "..\..\Libraries\Common\NetStandard\View\AutofacWindowProvision\AutofacWindowProvision.csproj", "{BC1321B5-9317-4F5F-A2B1-3A62B750352F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "View.AutofacWindowProvision", "..\..\Libraries\Common\View\AutofacWindowProvision\View.AutofacWindowProvision.csproj", "{BC1321B5-9317-4F5F-A2B1-3A62B750352F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowCreation", "..\..\Libraries\Common\NetStandard\View\WindowCreation\WindowCreation.csproj", "{7ACCE4DE-92B6-4684-9EEE-305E4450FA38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "View.WindowCreation", "..\..\Libraries\Common\View\WindowCreation\View.WindowCreation.csproj", "{7ACCE4DE-92B6-4684-9EEE-305E4450FA38}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "..\..\Libraries\Common\NetStandard\View\Contracts\Contracts.csproj", "{1F6ED298-C1B1-4B20-AA50-16379D72AE6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "View.Contracts", "..\..\Libraries\Common\View\Contracts\View.Contracts.csproj", "{1F6ED298-C1B1-4B20-AA50-16379D72AE6F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO", "..\..\Libraries\Common\NetStandard\Various\IO\IO.csproj", "{32F474D8-D33C-48FA-8115-FE3B2B81EDC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO", "..\..\Libraries\Common\IO\IO.csproj", "{32F474D8-D33C-48FA-8115-FE3B2B81EDC9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NumericUpDown", "..\..\Libraries\Common\WPF\Controls\NumericUpDown\NumericUpDown.csproj", "{5ED4ABC4-E203-4D46-ABE6-C134773A7147}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Controls.NumericUpDown", "..\..\Libraries\Common\WPF\Controls\NumericUpDown\WPF.Controls.NumericUpDown.csproj", "{5ED4ABC4-E203-4D46-ABE6-C134773A7147}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Localization", "..\..\Libraries\Common\WPF\Various\Localization\Localization.csproj", "{2DD29DA7-F137-4D5D-81D8-C64AA911D0D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Localization", "..\..\Libraries\Common\WPF\Localization\WPF.Localization.csproj", "{2DD29DA7-F137-4D5D-81D8-C64AA911D0D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Localization", "..\..\Libraries\Common\NetStandard\Various\Localization\Localization.csproj", "{C526BE58-A5DE-4D08-9111-F1A8AF929BA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Localization", "..\..\Libraries\Common\Localization\Localization.csproj", "{C526BE58-A5DE-4D08-9111-F1A8AF929BA0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViewModel", "..\..\Libraries\Common\NetStandard\MVVM\ViewModel\ViewModel.csproj", "{6585934B-8BEB-4A25-9CA6-B5F62631E68C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVVM.ViewModel", "..\..\Libraries\Common\MVVM\ViewModel\MVVM.ViewModel.csproj", "{6585934B-8BEB-4A25-9CA6-B5F62631E68C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationLifetime.Core", "..\..\Libraries\Common\ApplicationLifetime\Core\ApplicationLifetime.Core.csproj", "{D0280D49-AF43-4147-919C-C77537E60A09}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PhotoReviewer", "PhotoReviewer", "{30F6004D-FA48-42AA-9CDA-E19269B30367}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console.Startup", "..\..\Libraries\Common\Console.Startup\Console.Startup.csproj", "{15A2A78A-C58B-412D-827F-92086D2D3D40}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVVM.Commands", "..\..\Libraries\Common\MVVM\Commands\MVVM.Commands.csproj", "{5B4E8411-97B2-4749-BC3E-04C003A7333A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Memories", "..\Memories\Memories\Memories.csproj", "{CC4D9BD9-8A48-482C-9EFA-424A8BADD3AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -247,11 +257,34 @@ Global
 		{6585934B-8BEB-4A25-9CA6-B5F62631E68C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6585934B-8BEB-4A25-9CA6-B5F62631E68C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6585934B-8BEB-4A25-9CA6-B5F62631E68C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0280D49-AF43-4147-919C-C77537E60A09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0280D49-AF43-4147-919C-C77537E60A09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0280D49-AF43-4147-919C-C77537E60A09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0280D49-AF43-4147-919C-C77537E60A09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15A2A78A-C58B-412D-827F-92086D2D3D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15A2A78A-C58B-412D-827F-92086D2D3D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15A2A78A-C58B-412D-827F-92086D2D3D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15A2A78A-C58B-412D-827F-92086D2D3D40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B4E8411-97B2-4749-BC3E-04C003A7333A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B4E8411-97B2-4749-BC3E-04C003A7333A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B4E8411-97B2-4749-BC3E-04C003A7333A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B4E8411-97B2-4749-BC3E-04C003A7333A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC4D9BD9-8A48-482C-9EFA-424A8BADD3AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC4D9BD9-8A48-482C-9EFA-424A8BADD3AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC4D9BD9-8A48-482C-9EFA-424A8BADD3AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC4D9BD9-8A48-482C-9EFA-424A8BADD3AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{02D45625-0383-4480-B4BC-05DDE4F3825D} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{FC17F4F2-0577-4054-98DB-44BB9E4B9E3B} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{FD3B66EE-FDE7-41D1-9933-5421454E6EB7} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{6AC38924-FD04-4824-92FC-82356F5A909D} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{53C22BB7-E54D-49B8-A748-11A795E9DE63} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{8645331C-324F-4265-A593-13725FE33A0D} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{37F1D8BD-AE67-4E81-9F6B-D2AABB81AB8D} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
 		{857ACB0A-FE80-4C4C-BAE6-59560B998EF0} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
 		{571CC6BC-3F28-4EEB-8601-B6D046BD5728} = {857ACB0A-FE80-4C4C-BAE6-59560B998EF0}
 		{17C2C396-6CC9-4DFD-B2CB-A85FA6659C0C} = {857ACB0A-FE80-4C4C-BAE6-59560B998EF0}
@@ -274,6 +307,9 @@ Global
 		{774E7D86-737F-4596-8239-B13DB38EF4BA} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
 		{DE14C228-321B-4FB5-A140-D177ABCCFA37} = {774E7D86-737F-4596-8239-B13DB38EF4BA}
 		{E78A7B5A-76BB-4CBF-A444-1C0C234AD3CF} = {857ACB0A-FE80-4C4C-BAE6-59560B998EF0}
+		{61A31034-729A-480A-9EB7-4CE363F27AFE} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{17886837-0175-417E-9372-0FD75F479243} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
+		{81AB27E9-BC44-40B2-AB24-8C2DF6FBB027} = {30F6004D-FA48-42AA-9CDA-E19269B30367}
 		{BC1321B5-9317-4F5F-A2B1-3A62B750352F} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
 		{7ACCE4DE-92B6-4684-9EEE-305E4450FA38} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
 		{1F6ED298-C1B1-4B20-AA50-16379D72AE6F} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
@@ -282,6 +318,9 @@ Global
 		{2DD29DA7-F137-4D5D-81D8-C64AA911D0D1} = {857ACB0A-FE80-4C4C-BAE6-59560B998EF0}
 		{C526BE58-A5DE-4D08-9111-F1A8AF929BA0} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
 		{6585934B-8BEB-4A25-9CA6-B5F62631E68C} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
+		{D0280D49-AF43-4147-919C-C77537E60A09} = {774E7D86-737F-4596-8239-B13DB38EF4BA}
+		{15A2A78A-C58B-412D-827F-92086D2D3D40} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
+		{5B4E8411-97B2-4749-BC3E-04C003A7333A} = {B5CFC518-2064-4A35-82BD-CA7C020226FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9ACCCB7B-F186-4378-81DA-6982B4E33C6A}

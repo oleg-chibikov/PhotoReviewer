@@ -7,8 +7,9 @@
     xmlns:viewModel="clr-namespace:PhotoReviewer.ViewModel;assembly=PhotoReviewer.ViewModel"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:converters="clr-namespace:Scar.Common.WPF.Converters;assembly=Scar.Common.WPF.Converters"
-    xmlns:core="clr-namespace:Scar.Common.WPF.View.Core;assembly=Scar.Common.WPF.View.Core"
+    xmlns:core="clr-namespace:Scar.Common.WPF.Core;assembly=Scar.Common.WPF.Core"
     xmlns:controls="clr-namespace:Scar.Common.WPF.Controls;assembly=Scar.Common.WPF.Controls.TimePicker"
+    xmlns:core1="clr-namespace:Scar.Common.WPF.Core;assembly=Scar.Common.WPF.Core"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance Type=viewModel:ShiftDateViewModel, IsDesignTimeCreatable=False}">
     <UserControl.Resources>
@@ -26,7 +27,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <StackPanel
-        core:MarginSetter.Margin="5"
+        core1:MarginSetter.Margin="5"
         Margin="5">
         <TextBlock
             Text="{Binding PhotosCount, Mode=OneWay, StringFormat='Shift date for {0} photos by:'}" />
